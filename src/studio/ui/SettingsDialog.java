@@ -6,6 +6,8 @@ import studio.kdb.Config;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
@@ -18,6 +20,7 @@ public class SettingsDialog extends EscapeDialog {
     private JSpinner spnFontSize;
     private JRadioButton rbLineEndingCRLF;
     private JRadioButton rbLineEndingLF;
+    private JComboBox comboBoxLookAndFeel;
     private JButton btnOk;
     private JButton btnCancel;
 
@@ -42,6 +45,10 @@ public class SettingsDialog extends EscapeDialog {
 
     public boolean isShowServerComboBox() {
         return chBoxShowServerCombo.isSelected();
+    }
+
+    public String getLookAndFeelClassName() {
+        return ((CustomiszedLookAndFeelInfo)comboBoxLookAndFeel.getSelectedItem()).getClassName();
     }
 
     private void refreshCredentials() {
@@ -81,6 +88,15 @@ public class SettingsDialog extends EscapeDialog {
         comboBoxAuthMechanism.getModel().setSelectedItem(Config.getInstance().getDefaultAuthMechanism());
         comboBoxAuthMechanism.addItemListener(e -> refreshCredentials());
 
+        JLabel lblLookAndFeel = new JLabel("Look and Feel:");
+
+        LookAndFeels lookAndFeels = new LookAndFeels();
+        comboBoxLookAndFeel = new JComboBox(lookAndFeels.getLookAndFeels());
+        CustomiszedLookAndFeelInfo lf = lookAndFeels.getLookAndFeel(Config.getInstance().getLookAndFeel());
+        if (lf == null) {
+            lf = lookAndFeels.getLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
+        }
+        comboBoxLookAndFeel.setSelectedItem(lf);
         chBoxShowServerCombo = new JCheckBox("Show server drop down list in the toolbar");
         JLabel lblAuthMechanism = new JLabel("Authentication:");
         JLabel lblUser = new JLabel("  User:");
@@ -105,6 +121,7 @@ public class SettingsDialog extends EscapeDialog {
 
         Component glue = Box.createGlue();
         Component glue1 = Box.createGlue();
+        Component glue2 = Box.createGlue();
 
         btnOk = new JButton("OK");
         btnCancel = new JButton("Cancel");
@@ -121,7 +138,13 @@ public class SettingsDialog extends EscapeDialog {
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup()
-                    .addComponent(chBoxShowServerCombo)
+                    .addGroup(
+                            layout.createSequentialGroup()
+                                        .addComponent(lblLookAndFeel)
+                                        .addComponent(comboBoxLookAndFeel)
+                                        .addComponent(glue2)
+                        )
+                        .addComponent(chBoxShowServerCombo)
                     .addGroup(
                         layout.createSequentialGroup()
                                     .addComponent(lblAuthMechanism)
@@ -154,7 +177,12 @@ public class SettingsDialog extends EscapeDialog {
 
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                    .addComponent(chBoxShowServerCombo)
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblLookAndFeel)
+                                .addComponent(comboBoxLookAndFeel)
+                                .addComponent(glue2)
+                    ).addComponent(chBoxShowServerCombo)
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(lblAuthMechanism)
@@ -188,4 +216,31 @@ public class SettingsDialog extends EscapeDialog {
         setContentPane(root);
     }
 
+    private static class LookAndFeels {
+        private Map<String, CustomiszedLookAndFeelInfo> mapLookAndFeels;
+
+        public LookAndFeels() {
+            mapLookAndFeels = new HashMap<>();
+            for (UIManager.LookAndFeelInfo lf: UIManager.getInstalledLookAndFeels()) {
+                mapLookAndFeels.put(lf.getClassName(), new CustomiszedLookAndFeelInfo(lf));
+            }
+        }
+        public CustomiszedLookAndFeelInfo[] getLookAndFeels() {
+            return mapLookAndFeels.values().toArray(new CustomiszedLookAndFeelInfo[0]);
+        }
+        public CustomiszedLookAndFeelInfo getLookAndFeel(String className) {
+            return mapLookAndFeels.get(className);
+        }
+    }
+
+    private static class CustomiszedLookAndFeelInfo extends UIManager.LookAndFeelInfo {
+        public CustomiszedLookAndFeelInfo(UIManager.LookAndFeelInfo lfInfo) {
+            super(lfInfo.getName(), lfInfo.getClassName());
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+    }
 }

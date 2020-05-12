@@ -1382,6 +1382,13 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
         Config.getInstance().setFont(font);
         Config.getInstance().setLineEnding(dialog.getLineEnding());
+
+        String lfClass = dialog.getLookAndFeelClassName();
+        if (!lfClass.equals(UIManager.getLookAndFeel().getClass().getName())) {
+            Config.getInstance().setLookAndFeel(lfClass);
+            JOptionPane.showMessageDialog(frame, "Look and Feel was changed. New L&F will take effect on the next start up.", "Look and Feel Setting Changed", JOptionPane.INFORMATION_MESSAGE);
+        }
+
         rebuildToolbar();
     }
 
@@ -1804,6 +1811,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
     private JToolBar createToolbar() {
         toolbar = new JToolBar();
+        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
         toolbar.setFloatable(false);
         rebuildToolbar();
         return toolbar;
