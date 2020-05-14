@@ -5,6 +5,7 @@ import studio.core.Credentials;
 import studio.kdb.Config;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class SettingsDialog extends EscapeDialog {
     private JRadioButton rbLineEndingCRLF;
     private JRadioButton rbLineEndingLF;
     private JComboBox comboBoxLookAndFeel;
+    private JFormattedTextField txtTabsCount;
     private JButton btnOk;
     private JButton btnCancel;
 
@@ -49,6 +51,10 @@ public class SettingsDialog extends EscapeDialog {
 
     public String getLookAndFeelClassName() {
         return ((CustomiszedLookAndFeelInfo)comboBoxLookAndFeel.getSelectedItem()).getClassName();
+    }
+
+    public int getResultTabsCount() {
+        return (Integer) txtTabsCount.getValue();
     }
 
     private void refreshCredentials() {
@@ -97,6 +103,12 @@ public class SettingsDialog extends EscapeDialog {
             lf = lookAndFeels.getLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
         }
         comboBoxLookAndFeel.setSelectedItem(lf);
+        JLabel lblResultTabsCount = new JLabel("Result tabs count");
+        NumberFormatter formatter = new NumberFormatter();
+        formatter.setMinimum(new Integer(1));
+        formatter.setAllowsInvalid(false);
+        txtTabsCount = new JFormattedTextField(formatter);
+        txtTabsCount.setValue(Config.getInstance().getResultTabsCount());
         chBoxShowServerCombo = new JCheckBox("Show server drop down list in the toolbar");
         JLabel lblAuthMechanism = new JLabel("Authentication:");
         JLabel lblUser = new JLabel("  User:");
@@ -144,8 +156,12 @@ public class SettingsDialog extends EscapeDialog {
                                         .addComponent(comboBoxLookAndFeel)
                                         .addComponent(glue2)
                         )
-                        .addComponent(chBoxShowServerCombo)
-                    .addGroup(
+                        .addGroup(
+                            layout.createSequentialGroup()
+                                        .addComponent(lblResultTabsCount)
+                                        .addComponent(txtTabsCount)
+                                        .addComponent(chBoxShowServerCombo)
+                    ).addGroup(
                         layout.createSequentialGroup()
                                     .addComponent(lblAuthMechanism)
                                     .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
@@ -182,8 +198,12 @@ public class SettingsDialog extends EscapeDialog {
                                 .addComponent(lblLookAndFeel)
                                 .addComponent(comboBoxLookAndFeel)
                                 .addComponent(glue2)
-                    ).addComponent(chBoxShowServerCombo)
-                    .addGroup(
+                    ).addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblResultTabsCount)
+                                .addComponent(txtTabsCount)
+                                .addComponent(chBoxShowServerCombo)
+                    ).addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(lblAuthMechanism)
                                 .addComponent(comboBoxAuthMechanism)
@@ -211,7 +231,7 @@ public class SettingsDialog extends EscapeDialog {
                                 .addComponent(btnCancel)
                     )
         );
-        layout.linkSize(SwingConstants.HORIZONTAL, txtUser, txtPassword);
+        layout.linkSize(SwingConstants.HORIZONTAL, txtUser, txtPassword, txtTabsCount);
         layout.linkSize(SwingConstants.HORIZONTAL, btnOk, btnCancel);
         setContentPane(root);
     }

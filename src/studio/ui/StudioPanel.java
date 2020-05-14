@@ -1370,6 +1370,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         Config.getInstance().setDefaultAuthMechanism(auth);
         Config.getInstance().setDefaultCredentials(auth, new Credentials(dialog.getUser(), dialog.getPassword()));
         Config.getInstance().setShowServerComboBox(dialog.isShowServerComboBox());
+        Config.getInstance().setResultTabsCount(dialog.getResultTabsCount());
         Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
 
         Coloring c = (Coloring)Settings.getValue(BaseKit.class, "line-number-coloring");
@@ -2190,6 +2191,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         else {
             // Log that execute was successful
         }
+        tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
     }
     Server server = null;
 
@@ -2197,7 +2199,11 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         final Cursor cursor = textArea.getCursor();
 
         textArea.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        tabbedPane.removeAll();
+
+          if(tabbedPane.getTabCount()>=Config.getInstance().getResultTabsCount()) {
+              tabbedPane.remove(0);
+          }
+
         worker = new SwingWorker() {
             Server s = null;
             c c = null;
@@ -2267,8 +2273,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                             frame.setTitle("Error Details ");
 
                             tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
-
-                        //            tabbedPane.setSelectedComponent(resultsTabbedPane);
+                            tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
                         }
                         catch (java.lang.OutOfMemoryError ex) {
                             JOptionPane.showMessageDialog(frame,
