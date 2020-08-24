@@ -4,5 +4,4 @@
 .idea/
 out/
 .gradle/
-gradlew*
 build/
