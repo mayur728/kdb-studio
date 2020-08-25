@@ -94,13 +94,15 @@ public class Config {
             return;
         }
 
-        try {
-            InputStream in = Files.newInputStream(file);
-            p.load(in);
-            in.close();
-        } catch (IOException e) {
-            System.err.println("Cant't read configuration from file " + FILENAME);
-            e.printStackTrace(System.err);
+        if (Files.exists(file)) {
+            try {
+                InputStream in = Files.newInputStream(file);
+                p.load(in);
+                in.close();
+            } catch (IOException e) {
+                System.err.println("Cant't read configuration from file " + FILENAME);
+                e.printStackTrace(System.err);
+            }
         }
         initServers();
     }
@@ -310,7 +312,7 @@ public class Config {
     private void convertFromOldVerion() {
         try {
             System.out.println("Found old config. Converting...");
-            String[] names = p.getProperty("Servers").split(",");
+            String[] names = p.getProperty("Servers","").split(",");
             List<Server> list = new ArrayList<>();
             for (String name : names) {
                 Server server = initServerFromKey(name);
@@ -330,7 +332,7 @@ public class Config {
     }
 
     private void initServers() {
-        if (p.getProperty("version").equals(OLD_VERSION)) {
+        if (p.getProperty("version","").equals(OLD_VERSION)) {
             convertFromOldVerion();
         }
         serverNames = new ArrayList<>();
@@ -430,12 +432,13 @@ public class Config {
         if (name.trim().length() == 0) {
             throw new IllegalArgumentException("Server name can't be empty");
         }
-        if (name.contains(",")) {
-            throw new IllegalArgumentException("Server name can't contains ,");
-        }
-        if (name.contains("/")) {
-            throw new IllegalArgumentException("Server name can't contains /");
-        }
+        //this would break if the user's config happened to contain these characters, causing them to lose their config
+        //if (name.contains(",")) {
+        //    throw new IllegalArgumentException("Server name can't contain ,");
+        //}
+        //if (name.contains("/")) {
+        //    throw new IllegalArgumentException("Server name can't contain /");
+        //}
         servers.put(fullName, server);
         serverNames.add(fullName);
     }
