@@ -94,6 +94,32 @@ public class Config {
             return;
         }
 
+        if (!Files.exists(file) && System.getProperty("os.name").startsWith("Windows")) {
+            System.out.println("Config not found in userprofile. Trying legacy path.");
+            //Old Java versions returned a different place for user.home on Windows.
+            //A user upgrading from such old directory would suddenly "lose" their config.
+            String oldpath = null;
+            try {
+                Process process = Runtime.getRuntime().exec("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders\" /v Desktop");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains("Desktop") && line.contains("REG_SZ")) {
+                        //    Desktop    REG_SZ    \\path\to\Desktop
+                        String[] tokens = line.split("[ \t]");
+                        int tc=0;
+                        for (int i=0; i<tokens.length; ++i) {
+                            if (tokens[i].length() > 0) ++tc;
+                            if (tc==3) oldpath = tokens[i];
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                //ignore
+            }
+            System.out.println("Old path: "+oldpath);
+            if (oldpath != null) file = Paths.get(oldpath.substring(0,oldpath.lastIndexOf('\\'))+"\\.studioforkdb\\studio.properties");
+        }
         if (Files.exists(file)) {
             try {
                 InputStream in = Files.newInputStream(file);
