@@ -1013,6 +1013,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
     }
 
     private void initActions() {
+        StudioPanel thePanel = this;
         newFileAction = new UserAction(I18n.getString("New"),
                                         Util.NEW_DOCUMENT_ICON,
                                        "Create a blank script",
@@ -1104,7 +1105,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                 Rectangle bounds = Config.getInstance().getServerListBounds();
                                 bounds.translate(frame.getX(), frame.getY());
 
-                                serverList = new ServerList(frame);
+                                serverList = new ServerList(frame, thePanel);
                                 if (screenBounds != null && screenBounds.contains(bounds)) {
                                     serverList.setBounds(bounds);
                                 } else {
@@ -1674,6 +1675,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
     }
 
     private void selectServerName() {
+        if (comboServer.getSelectedItem() == null) return;
         String selection = comboServer.getSelectedItem().toString();
         if(! Config.getInstance().getServerNames().contains(selection)) return;
 
@@ -1725,6 +1727,11 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         toolbar.add(txtServer);
         toolbar.add(serverListAction);
         toolbar.addSeparator();
+    }
+
+    public void updateServerComboBox() {
+        comboServer.removeAllItems();
+        for (String name : Config.getInstance().getServerNames()) comboServer.addItem(name);
     }
 
     private void rebuildToolbar() {
