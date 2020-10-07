@@ -1377,6 +1377,17 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         Config.getInstance().setDefaultAuthMechanism(auth);
         Config.getInstance().setDefaultCredentials(auth, new Credentials(dialog.getUser(), dialog.getPassword()));
         Config.getInstance().setShowServerComboBox(dialog.isShowServerComboBox());
+        font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
+
+        Coloring c = (Coloring)Settings.getValue(BaseKit.class, "line-number-coloring");
+        Coloring c2 = new Coloring(font, null, null);
+        Settings.setValue(BaseKit.class, "line-number-coloring", c2.apply(c));
+        c = (Coloring)Settings.getValue(BaseKit.class, "status-bar-coloring");
+        Settings.setValue(BaseKit.class, "status-bar-coloring", c2.apply(c));
+        c = Utilities.getEditorUI(textArea).getDefaultColoring();
+        Utilities.getEditorUI(textArea).setDefaultColoring(c2.apply(c));
+
+        Config.getInstance().setFont(font);
         rebuildToolbar();
     }
 
