@@ -16,6 +16,8 @@ public class SettingsDialog extends EscapeDialog {
     private JCheckBox chBoxShowServerCombo;
     private JComboBox cbFontName;
     private JSpinner spnFontSize;
+    private JRadioButton rbLineEndingCRLF;
+    private JRadioButton rbLineEndingLF;
     private JButton btnOk;
     private JButton btnCancel;
 
@@ -58,6 +60,12 @@ public class SettingsDialog extends EscapeDialog {
         return (Integer)spnFontSize.getValue();
     }
 
+    public String getLineEnding() {
+        if (rbLineEndingCRLF.isSelected()) return "CRLF";
+        else if (rbLineEndingLF.isSelected()) return "LF";
+        else return "";
+    }
+
     @Override
     public void align() {
         super.align();
@@ -84,6 +92,16 @@ public class SettingsDialog extends EscapeDialog {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         cbFontName = new JComboBox(ge.getAvailableFontFamilyNames());
         cbFontName.getModel().setSelectedItem(Config.getInstance().getFontName());
+
+        JLabel lblLineEnding = new JLabel("Line ending:");
+        rbLineEndingCRLF = new JRadioButton("Windows (CR+LF)");
+        rbLineEndingLF = new JRadioButton("UNIX (LF)");
+        ButtonGroup group = new ButtonGroup();
+        group.add(rbLineEndingCRLF);
+        group.add(rbLineEndingLF);
+        String lineEnding = Config.getInstance().getLineEnding();
+        if (lineEnding.equals("CRLF")) rbLineEndingCRLF.setSelected(true);
+        else if (lineEnding.equals("LF")) rbLineEndingLF.setSelected(true);
 
         Component glue = Box.createGlue();
         Component glue1 = Box.createGlue();
@@ -121,6 +139,12 @@ public class SettingsDialog extends EscapeDialog {
                     )
                     .addGroup(
                         layout.createSequentialGroup()
+                                .addComponent(lblLineEnding)
+                                .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                                .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                    )
+                    .addGroup(
+                        layout.createSequentialGroup()
                                 .addComponent(glue1)
                                 .addComponent(btnOk)
                                 .addComponent(btnCancel)
@@ -145,6 +169,12 @@ public class SettingsDialog extends EscapeDialog {
                                 .addComponent(lblFontSize)
                                 .addComponent(spnFontSize)
                                 .addComponent(cbFontName)
+                    )
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblLineEnding)
+                                .addComponent(rbLineEndingCRLF)
+                                .addComponent(rbLineEndingLF)
                     )
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)

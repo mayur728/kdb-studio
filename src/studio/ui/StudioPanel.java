@@ -802,7 +802,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
         try {
             InputStreamReader isr = new InputStreamReader(new FileInputStream(aFile),
-						          "UTF-8");
+                                  "UTF-8");
             BufferedReader input = new BufferedReader(isr);
             try {
 
@@ -914,6 +914,10 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
             if (!force)
                 if (null == textArea.getDocument().getProperty("filename"))
                     return saveAsFile();
+
+            String lineEnding = Config.getInstance().getLineEnding();
+            if (lineEnding.equals("CRLF")) textArea.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty,"\r\n");
+            else if (lineEnding.equals("LF")) textArea.getDocument().putProperty(DefaultEditorKit.EndOfLineStringProperty,"\n");
 
             textArea.write(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "UTF-8")));
             textArea.getDocument().putProperty("filename",filename);
@@ -1034,7 +1038,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                 arrangeAll();
             }
         };
-    
+
         minMaxDividerAction = new UserAction(I18n.getString("MaximizeEditorPane"),
                                              Util.MAXIMIZE_EDITOR_ICON,
                                              "Maximize editor pane",
@@ -1270,7 +1274,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                      "Open in Excel",
                                      new Integer(KeyEvent.VK_O),
                                      null) {
-            
+
             public void actionPerformed(ActionEvent e) {
                 try {
                     File file = File.createTempFile("studioExport",".xlsx");
@@ -1288,7 +1292,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                        "Execute the full or highlighted text as a query",
                                        new Integer(KeyEvent.VK_E),
                                        KeyStroke.getKeyStroke(KeyEvent.VK_E,menuShortcutKeyMask)) {
-            
+
             public void actionPerformed(ActionEvent e) {
                 executeQuery();
             }
@@ -1300,7 +1304,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                                   "Execute the current line as a query",
                                                   new Integer(KeyEvent.VK_ENTER),
                                                   KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,menuShortcutKeyMask)) {
-            
+
             public void actionPerformed(ActionEvent e) {
                 executeQueryCurrentLine();
             }
@@ -1312,7 +1316,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                        "Refresh the result set",
                                        new Integer(KeyEvent.VK_R),
                                        KeyStroke.getKeyStroke(KeyEvent.VK_Y,menuShortcutKeyMask | Event.SHIFT_MASK)) {
-            
+
             public void actionPerformed(ActionEvent e) {
                 refreshQuery();
             }
@@ -1323,7 +1327,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                      "About Studio for kdb+",
                                      new Integer(KeyEvent.VK_E),
                                      null) {
-            
+
             public void actionPerformed(ActionEvent e) {
                 about();
             }
@@ -1334,7 +1338,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                     "Close all windows",
                                     new Integer(KeyEvent.VK_X),
                                     null) {
-            
+
             public void actionPerformed(ActionEvent e) {
                 if (quit())
                     System.exit(0);
@@ -1357,7 +1361,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                                          "Open code.kx.com",
                                          new Integer(KeyEvent.VK_C),
                                          null) {
-            
+
             public void actionPerformed(ActionEvent e) {
                     try {
                         BrowserLaunch.openURL("http://code.kx.com/trac/wiki/Reference");
@@ -1388,6 +1392,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         Utilities.getEditorUI(textArea).setDefaultColoring(c2.apply(c));
 
         Config.getInstance().setFont(font);
+        Config.getInstance().setLineEnding(dialog.getLineEnding());
         rebuildToolbar();
     }
 
@@ -1460,7 +1465,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         menubar = createMenuBar();
         SwingUtilities.invokeLater(
             new Runnable() {
-            
+
                 public void run() {
                     if (frame != null) {
                         frame.setJMenuBar(menubar);
@@ -1508,7 +1513,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                 item.setMnemonic(mnems[i]);
                 //item.setIcon(Util.BLANK_ICON);
                 item.addActionListener(new ActionListener() {
-                    
+
                                        public void actionPerformed(ActionEvent e) {
                                            loadMRUFile(filename,(String) textArea.getDocument().getProperty("filename"));
                                        }
@@ -1558,7 +1563,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                 count--;
                 JMenuItem item = new JMenuItem(s.getFullName());
                 item.addActionListener(new ActionListener() {
-                                        
+
                                        public void actionPerformed(ActionEvent e) {
                                            Server clone = new Server(s);
                                            clone.setName("Clone of " + clone.getName());
@@ -1631,7 +1636,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
                 JMenuItem item = new JMenuItem("" + (i + 1) + " " + t);
                 item.addActionListener(new ActionListener() {
-                    
+
                                        public void actionPerformed(ActionEvent e) {
                                            if (o instanceof StudioPanel) {
                                                JFrame f = ((StudioPanel) o).frame;
@@ -1815,30 +1820,30 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         return toolbar;
     }
 
-    private static class Impl extends FileView implements 
+    private static class Impl extends FileView implements
         LocaleSupport.Localizer {
         // FileView implementation
-        
+
         public String getName(File f) {
             return null;
         }
 
-        
+
         public String getDescription(File f) {
             return null;
         }
 
-        
+
         public String getTypeDescription(File f) {
             return null;
         }
 
-        
+
         public Boolean isTraversable(File f) {
             return null;
         }
 
-        
+
         public Icon getIcon(File f) {
             if (f.isDirectory())
                 return null;
@@ -1852,7 +1857,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
             bundle = ResourceBundle.getBundle(bundleName);
         }
         // Localizer
-        
+
         public String getString(String key) {
             return bundle.getString(key);
         }
@@ -1904,7 +1909,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         registerForMacOSXEvents();
 
         windowListChangedEventListener = new WindowListChangedEventListener() {
-            
+
             public void WindowListChangedEventOccurred(WindowListChangedEvent evt) {
                 rebuildMenuBar();
                 rebuildToolbar();
@@ -1931,7 +1936,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
             Component divider = ((BasicSplitPaneUI) splitpane.getUI()).getDivider();
 
             divider.addMouseListener(new MouseAdapter() {
-                
+
                                      public void mouseClicked(MouseEvent event) {
                                          if (event.getClickCount() == 2)
                                              toggleDividerOrientation();
@@ -2330,36 +2335,36 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         worker.start();
     }
     private SwingWorker worker;
-    
+
     public void windowClosing(WindowEvent e) {
         if (quitWindow())
             if (windowList.size() == 0)
                 System.exit(0);
     }
 
-    
+
     public void windowClosed(WindowEvent e) {
     }
 
-    
+
     public void windowOpened(WindowEvent e) {
     }
     // ctrl-alt spacebar to minimize window
-    
+
     public void windowIconified(WindowEvent e) {
     }
 
-    
+
     public void windowDeiconified(WindowEvent e) {
     }
 
-    
+
     public void windowActivated(WindowEvent e) {
         this.invalidate();
         SwingUtilities.updateComponentTreeUI(this);
     }
 
-    
+
     public void windowDeactivated(WindowEvent e) {
     }
 
@@ -2384,16 +2389,16 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
             refreshFrameTitle();
         }
 
-        
+
         public void changedUpdate(DocumentEvent e) {
         }
 
-        
+
         public void insertUpdate(DocumentEvent evt) {
             markChanged(evt);
         }
 
-        
+
         public void removeUpdate(DocumentEvent evt) {
             markChanged(evt);
         }
