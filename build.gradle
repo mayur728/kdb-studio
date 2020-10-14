@@ -37,3 +37,9 @@ sourceSets {
 application {
     mainClassName = 'studio.core.Studio'
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'studio.core.Studio'
+    }
+}
