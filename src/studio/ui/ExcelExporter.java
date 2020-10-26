@@ -100,7 +100,7 @@ class ExcelExporter {
                                     cell.setCellValue(K.decode(b, false));
                                 }
                             } else {
-                                cell.setCellValue("???");
+                                cell.setCellValue("");
                             }
                         }
 
