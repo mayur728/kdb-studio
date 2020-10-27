@@ -2145,6 +2145,8 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         if (r != null) {
             exportAction.setEnabled(true);
             KTableModel model = KTableModel.getModel(r);
+            chartAction.setEnabled(false);
+            openInExcel.setEnabled(false);
             if (model != null) {
                 boolean dictModel = model instanceof DictModel;
                 boolean listModel = model instanceof ListModel;
@@ -2159,39 +2161,33 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                         grid);
 //                frame.setTitle(I18n.getString("Table")+" [" + grid.getRowCount() + " "+I18n.getString("rows")+"] ");
                 tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
-            } else {
-                chartAction.setEnabled(false);
-                openInExcel.setEnabled(false);
-                LimitedWriter lm = new LimitedWriter(50000);
-                try {
-                  if(!(r instanceof K.UnaryPrimitive&&0==((K.UnaryPrimitive)r).getPrimitiveAsInt()))
-                    r.toString(lm,true);
-                }
-                catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                catch (LimitedWriter.LimitException ex) {
-                }
-
-                JEditorPane pane = new JEditorPane("text/plain",lm.toString());
-                //not setting a font results in exception e.g. on a string like "\331\203"
-                pane.setFont(Config.getInstance().getFont());
-
-//pane.setLineWrap( false);
-//pane.setWrapStyleWord( false);
-
-                JScrollPane scrollpane = new JScrollPane(pane,
-                                                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-                TabPanel frame = new TabPanel("Console View ",
-                                              Util.CONSOLE_ICON,
-                                              scrollpane);
-
-                frame.setTitle(I18n.getString("ConsoleView"));
-
-                tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
             }
+            LimitedWriter lm = new LimitedWriter(50000);
+            try {
+              if(!(r instanceof K.UnaryPrimitive&&0==((K.UnaryPrimitive)r).getPrimitiveAsInt()))
+                r.toString(lm,true);
+            }
+            catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            catch (LimitedWriter.LimitException ex) {
+            }
+
+            JEditorPane pane = new JEditorPane("text/plain",lm.toString());
+            //not setting a font results in exception e.g. on a string like "\331\203"
+            pane.setFont(Config.getInstance().getFont());
+
+            JScrollPane scrollpane = new JScrollPane(pane,
+                                                     ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                                                     ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+            TabPanel frame = new TabPanel("Console View ",
+                                          Util.CONSOLE_ICON,
+                                          scrollpane);
+
+            frame.setTitle(I18n.getString("ConsoleView"));
+
+            tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
         }
         else {
             // Log that execute was successful
