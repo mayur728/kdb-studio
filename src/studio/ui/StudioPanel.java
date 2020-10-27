@@ -64,7 +64,6 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
     private JSplitPane splitpane;
     private JTabbedPane tabbedPane;
     private ServerList serverList;
-    private Font font = null;
     private UserAction arrangeAllAction;
     private UserAction closeFileAction;
     private UserAction newFileAction;
@@ -1381,7 +1380,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         Config.getInstance().setDefaultAuthMechanism(auth);
         Config.getInstance().setDefaultCredentials(auth, new Credentials(dialog.getUser(), dialog.getPassword()));
         Config.getInstance().setShowServerComboBox(dialog.isShowServerComboBox());
-        font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
+        Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
 
         Coloring c = (Coloring)Settings.getValue(BaseKit.class, "line-number-coloring");
         Coloring c2 = new Coloring(font, null, null);
@@ -2175,7 +2174,8 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                 }
 
                 JEditorPane pane = new JEditorPane("text/plain",lm.toString());
-                pane.setFont(font);
+                //not setting a font results in exception e.g. on a string like "\331\203"
+                pane.setFont(Config.getInstance().getFont());
 
 //pane.setLineWrap( false);
 //pane.setWrapStyleWord( false);
@@ -2302,7 +2302,8 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                         }
                         catch (Exception e) {
                             JOptionPane.showMessageDialog(frame,
-                                                          "\nAn unexpected error occurred whilst communicating with " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + e.getMessage() + "\n\n",
+                                                          "\nAn unexpected error occurred while processing results from " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + e.getMessage() + "\n\n"
+                                                            + Util.extractStackTrace(e),
                                                           "Studio for kdb+",
                                                           JOptionPane.ERROR_MESSAGE,
                                                           Util.ERROR_ICON);
