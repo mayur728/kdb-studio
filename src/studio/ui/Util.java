@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.io.CharArrayWriter;
+import java.io.PrintWriter;
 
 public class Util {
     private final static String IMAGE_BASE = "/images/";
@@ -93,6 +95,12 @@ public class Util {
     public static String getAcceleratorString(KeyStroke keyStroke) {
         return KeyEvent.getKeyModifiersText(keyStroke.getModifiers()) + (MAC_OS_X ? "": "+") +
                 KeyEvent.getKeyText(keyStroke.getKeyCode());
+    }
+
+    public static String extractStackTrace(Throwable e) {
+        CharArrayWriter caw = new CharArrayWriter();
+        e.printStackTrace(new PrintWriter(caw));
+        return caw.toString();
     }
 
 }
