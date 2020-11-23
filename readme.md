@@ -21,12 +21,7 @@ Additionally the application features
 
 Screenshot
 ---------
-![alt tag](https://raw.githubusercontent.com/CharlesSkelton/studio/master/meta/ssthumb.png)
-
-Current Version
-----
-
-3.34 build date 2018.02.28
+![screenshot](meta/ssthumb.png)
 
 Credits
 -----------
@@ -36,16 +31,16 @@ Studio for kdb+ uses the following open source projects:
 * [NetBeans] - text editor component
 * [JFreeChart] - charting component
 * [Kx Systems] - kdb+ driver c.java
+* [Apache] - POI for Excel export
+* [Jackson] - JSON API
 
 Installation
 --------------
-Download the latest release from
+Click on the tags icon on the right in the "Releases" box. Expand the "Assets" section and download studio.zip. Extract to a local directory. Go to the "lib" directory inside and run kdb-studio.jar.
 
-https://github.com/CharlesSkelton/studio/tree/master/releases
+    javaw -jar kdb-studio.jar
 
-unzip it to reveal the studio.jar file. This can be then executed with the command
-
-    java -jar studio.jar
+On Windows, the Java installer will set it up such that double-clicking on the jar file will launch it.
 
 
 Background
@@ -56,19 +51,12 @@ Studio is written 100% in Java. The primary motivation for its development was t
 
 License
 -------
-Apache 2 , see LICENSE file in repository root.
+Apache 2, see LICENSE file in repository root.
 
 N.B. Netbeans, JFreeChart and c.java components have their own respective licenses.
 
-Icon Experience Collection
-
-Selected icons within the lib/images directory are part of the Icon Experience
-collection (http://www.iconexperience.com) and may be freely used with Studio for kdb+
-without charge, but may not be used separately from Studio for kdb+ without a purchase
-of a license from Icon Experience.
-
 [Kx Systems]:http://www.kx.com
+[Apache]:https://www.apache.org/
+[Jackson]:https://github.com/FasterXML/jackson
 [Netbeans]:http:///netbeans.org
-[license]:https://github.com/CharlesSkelton/studio/blob/master/license.md
-[git-repo-url]:https://github.com/CharlesSkelton/studio
 [JFreeChart]:http://www.jfree.org/jfreechart/
