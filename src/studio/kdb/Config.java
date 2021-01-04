@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import javax.swing.tree.TreeNode;
+
 public class Config {
     private final static String PATH = System.getProperties().getProperty("user.home") + "/.studioforkdb/";
     private final static String FILENAME = PATH + "studio.properties";
@@ -180,8 +182,8 @@ public class Config {
         if(root.isFolder()) {
             ArrayList<Object> children = new ArrayList<>();
             result.put("children", children);
-            for (Enumeration<ServerTreeNode> e = root.children(); e.hasMoreElements();) {
-                children.add(serverTreeToObj(e.nextElement()));
+            for (Enumeration<TreeNode> e = root.children(); e.hasMoreElements();) {
+                children.add(serverTreeToObj((ServerTreeNode) e.nextElement()));
             }
         }
         return result;
