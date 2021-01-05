@@ -119,8 +119,8 @@ public class Config {
                 Files.createDirectories(dir);
             } catch (IOException e) {
                 System.err.println("Can't create configuration folder: " + PATH);
+                return;
             }
-            return;
         }
 
         if (!Files.exists(file) && System.getProperty("os.name").startsWith("Windows")) {
