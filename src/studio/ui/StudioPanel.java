@@ -1927,6 +1927,15 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         toolbar = createToolbar();
 
         tabbedPane = new JTabbedPane();
+        final JPopupMenu popup = createJPopupMenu();
+        tabbedPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
         splitpane.setBottomComponent(tabbedPane);
         splitpane.setOneTouchExpandable(true);
         splitpane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -1988,8 +1997,50 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         dividerLastPosition=splitpane.getDividerLocation();
     }
 
+    private JPopupMenu createJPopupMenu() {
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem close = new JMenuItem("Close");
+        close.addActionListener(e -> {
+            int idx = tabbedPane.getSelectedIndex();
+            if (idx >= 0) {
+                tabbedPane.removeTabAt(idx);
+            }
+        });
+
+        JMenuItem closeOthers = new JMenuItem("Close others");
+        closeOthers.addActionListener(e -> {
+            Component selected = tabbedPane.getSelectedComponent();
+            if (selected != null) {
+                int selectedIndex = tabbedPane.getSelectedIndex();
+                if (selectedIndex > 0) {
+                    String title = tabbedPane.getTitleAt(selectedIndex);
+                    Icon icon = tabbedPane.getIconAt(selectedIndex);
+                    tabbedPane.setComponentAt(tabbedPane.getSelectedIndex(), null);
+                    tabbedPane.setComponentAt(0, selected);
+                    tabbedPane.setTitleAt(0, title);
+                    tabbedPane.setIconAt(0, icon);
+                }
+
+                while (tabbedPane.getTabCount() > 1) {
+                    tabbedPane.removeTabAt(1);
+                }
+
+                tabbedPane.setSelectedIndex(0);
+            }
+        });
+        JMenuItem closeAll = new JMenuItem("Close all");
+        closeAll.addActionListener(e -> tabbedPane.removeAll());
+
+        popup.add(close);
+        popup.add(closeOthers);
+        popup.add(closeAll);
+
+        return popup;
+    }
+
     public void update(Observable obs,Object obj) {
     }
+
     private static boolean registeredForMaxOSXEvents = false;
 
     public void registerForMacOSXEvents() {
