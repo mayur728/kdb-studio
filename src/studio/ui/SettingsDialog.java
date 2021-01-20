@@ -103,9 +103,9 @@ public class SettingsDialog extends EscapeDialog {
             lf = lookAndFeels.getLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
         }
         comboBoxLookAndFeel.setSelectedItem(lf);
-        JLabel lblResultTabsCount = new JLabel("Result tabs count");
+        JLabel lblResultTabsCount = new JLabel("Result tabs count:");
         NumberFormatter formatter = new NumberFormatter();
-        formatter.setMinimum(new Integer(1));
+        formatter.setMinimum(1);
         formatter.setAllowsInvalid(false);
         txtTabsCount = new JFormattedTextField(formatter);
         txtTabsCount.setValue(Config.getInstance().getResultTabsCount());
@@ -134,6 +134,7 @@ public class SettingsDialog extends EscapeDialog {
         Component glue = Box.createGlue();
         Component glue1 = Box.createGlue();
         Component glue2 = Box.createGlue();
+        Component glue3 = Box.createGlue();
 
         btnOk = new JButton("OK");
         btnCancel = new JButton("Cancel");
@@ -151,43 +152,42 @@ public class SettingsDialog extends EscapeDialog {
         layout.setHorizontalGroup(
                 layout.createParallelGroup()
                     .addGroup(
-                            layout.createSequentialGroup()
-                                        .addComponent(lblLookAndFeel)
-                                        .addComponent(comboBoxLookAndFeel)
-                                        .addComponent(glue2)
-                        )
-                        .addGroup(
-                            layout.createSequentialGroup()
-                                        .addComponent(lblResultTabsCount)
-                                        .addComponent(txtTabsCount)
-                                        .addComponent(chBoxShowServerCombo)
-                    ).addGroup(
                         layout.createSequentialGroup()
-                                    .addComponent(lblAuthMechanism)
-                                    .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-                                    .addComponent(lblUser)
-                                    .addComponent(txtUser, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                                    .addComponent(lblPassword)
-                                    .addComponent(txtPassword, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                    ).addComponent(glue)
+                            .addComponent(lblLookAndFeel)
+                            .addComponent(comboBoxLookAndFeel)
+                            .addComponent(glue2))
                     .addGroup(
                         layout.createSequentialGroup()
-                                .addComponent(lblFontSize)
-                                .addComponent(spnFontSize, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                                .addComponent(cbFontName, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                    )
+                            .addComponent(lblResultTabsCount)
+                            .addComponent(txtTabsCount))
                     .addGroup(
                         layout.createSequentialGroup()
-                                .addComponent(lblLineEnding)
-                                .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                                .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                    )
+                            .addComponent(chBoxShowServerCombo))
+                            .addComponent(glue3)
                     .addGroup(
                         layout.createSequentialGroup()
-                                .addComponent(glue1)
-                                .addComponent(btnOk)
-                                .addComponent(btnCancel)
-                    )
+                            .addComponent(lblAuthMechanism)
+                            .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+                            .addComponent(lblUser)
+                            .addComponent(txtUser, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                            .addComponent(lblPassword)
+                            .addComponent(txtPassword, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    .addComponent(glue)
+                    .addGroup(
+                        layout.createSequentialGroup()
+                            .addComponent(lblFontSize)
+                            .addComponent(spnFontSize, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                            .addComponent(cbFontName, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    .addGroup(
+                        layout.createSequentialGroup()
+                            .addComponent(lblLineEnding)
+                            .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                            .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    .addGroup(
+                        layout.createSequentialGroup()
+                            .addComponent(glue1)
+                            .addComponent(btnOk)
+                            .addComponent(btnCancel))
         );
 
 
@@ -195,41 +195,41 @@ public class SettingsDialog extends EscapeDialog {
                 layout.createSequentialGroup()
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblLookAndFeel)
-                                .addComponent(comboBoxLookAndFeel)
-                                .addComponent(glue2)
+                            .addComponent(lblLookAndFeel)
+                            .addComponent(comboBoxLookAndFeel)
+                            .addComponent(glue2))
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblResultTabsCount)
+                            .addComponent(txtTabsCount))
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(chBoxShowServerCombo)
+                            .addComponent(glue3)
                     ).addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblResultTabsCount)
-                                .addComponent(txtTabsCount)
-                                .addComponent(chBoxShowServerCombo)
-                    ).addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblAuthMechanism)
-                                .addComponent(comboBoxAuthMechanism)
-                                .addComponent(lblUser)
-                                .addComponent(txtUser)
-                                .addComponent(lblPassword)
-                                .addComponent(txtPassword)
-                    ).addComponent(glue)
+                            .addComponent(lblAuthMechanism)
+                            .addComponent(comboBoxAuthMechanism)
+                            .addComponent(lblUser)
+                            .addComponent(txtUser)
+                            .addComponent(lblPassword)
+                            .addComponent(txtPassword))
+                    .addComponent(glue)
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblFontSize)
-                                .addComponent(spnFontSize)
-                                .addComponent(cbFontName)
-                    )
+                            .addComponent(lblFontSize)
+                            .addComponent(spnFontSize)
+                            .addComponent(cbFontName))
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblLineEnding)
-                                .addComponent(rbLineEndingCRLF)
-                                .addComponent(rbLineEndingLF)
-                    )
+                            .addComponent(lblLineEnding)
+                            .addComponent(rbLineEndingCRLF)
+                            .addComponent(rbLineEndingLF))
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(glue1)
-                                .addComponent(btnOk)
-                                .addComponent(btnCancel)
-                    )
+                            .addComponent(glue1)
+                            .addComponent(btnOk)
+                            .addComponent(btnCancel))
         );
         layout.linkSize(SwingConstants.HORIZONTAL, txtUser, txtPassword, txtTabsCount);
         layout.linkSize(SwingConstants.HORIZONTAL, btnOk, btnCancel);
@@ -237,7 +237,7 @@ public class SettingsDialog extends EscapeDialog {
     }
 
     private static class LookAndFeels {
-        private Map<String, CustomiszedLookAndFeelInfo> mapLookAndFeels;
+        private final Map<String, CustomiszedLookAndFeelInfo> mapLookAndFeels;
 
         public LookAndFeels() {
             mapLookAndFeels = new HashMap<>();

@@ -2242,7 +2242,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         else {
             // Log that execute was successful
         }
-        tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
+        tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-2); // 2 is to give focus on "table" view
     }
     Server server = null;
 
@@ -2251,7 +2251,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
         textArea.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
 
-          if(tabbedPane.getTabCount()>=Config.getInstance().getResultTabsCount()) {
+          while (tabbedPane.getTabCount()>=Config.getInstance().getResultTabsCount()) {
               tabbedPane.remove(0);
           }
 
