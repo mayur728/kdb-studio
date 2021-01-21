@@ -2193,6 +2193,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
     private void processK4Results(K.KBase r) throws c.K4Exception {
         if (r != null) {
+            short tabAdded = 0;
             exportAction.setEnabled(true);
             KTableModel model = KTableModel.getModel(r);
             chartAction.setEnabled(false);
@@ -2211,6 +2212,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                         grid);
 //                frame.setTitle(I18n.getString("Table")+" [" + grid.getRowCount() + " "+I18n.getString("rows")+"] ");
                 tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
+                ++tabAdded;
             }
             LimitedWriter lm = new LimitedWriter(50000);
             try {
@@ -2238,11 +2240,13 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
             frame.setTitle(I18n.getString("ConsoleView"));
 
             tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
+            ++tabAdded;
+
+            tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-tabAdded); // 2 is to give focus on "table" view
         }
         else {
             // Log that execute was successful
         }
-        tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-2); // 2 is to give focus on "table" view
     }
     Server server = null;
 
