@@ -5,7 +5,10 @@ import studio.core.Credentials;
 import studio.kdb.Config;
 
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
@@ -18,6 +21,8 @@ public class SettingsDialog extends EscapeDialog {
     private JSpinner spnFontSize;
     private JRadioButton rbLineEndingCRLF;
     private JRadioButton rbLineEndingLF;
+    private JComboBox comboBoxLookAndFeel;
+    private JFormattedTextField txtTabsCount;
     private JButton btnOk;
     private JButton btnCancel;
 
@@ -42,6 +47,14 @@ public class SettingsDialog extends EscapeDialog {
 
     public boolean isShowServerComboBox() {
         return chBoxShowServerCombo.isSelected();
+    }
+
+    public String getLookAndFeelClassName() {
+        return ((CustomiszedLookAndFeelInfo)comboBoxLookAndFeel.getSelectedItem()).getClassName();
+    }
+
+    public int getResultTabsCount() {
+        return (Integer) txtTabsCount.getValue();
     }
 
     private void refreshCredentials() {
@@ -81,6 +94,21 @@ public class SettingsDialog extends EscapeDialog {
         comboBoxAuthMechanism.getModel().setSelectedItem(Config.getInstance().getDefaultAuthMechanism());
         comboBoxAuthMechanism.addItemListener(e -> refreshCredentials());
 
+        JLabel lblLookAndFeel = new JLabel("Look and Feel:");
+
+        LookAndFeels lookAndFeels = new LookAndFeels();
+        comboBoxLookAndFeel = new JComboBox(lookAndFeels.getLookAndFeels());
+        CustomiszedLookAndFeelInfo lf = lookAndFeels.getLookAndFeel(Config.getInstance().getLookAndFeel());
+        if (lf == null) {
+            lf = lookAndFeels.getLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
+        }
+        comboBoxLookAndFeel.setSelectedItem(lf);
+        JLabel lblResultTabsCount = new JLabel("Result tabs count:");
+        NumberFormatter formatter = new NumberFormatter();
+        formatter.setMinimum(1);
+        formatter.setAllowsInvalid(false);
+        txtTabsCount = new JFormattedTextField(formatter);
+        txtTabsCount.setValue(Config.getInstance().getResultTabsCount());
         chBoxShowServerCombo = new JCheckBox("Show server drop down list in the toolbar");
         JLabel lblAuthMechanism = new JLabel("Authentication:");
         JLabel lblUser = new JLabel("  User:");
@@ -105,6 +133,8 @@ public class SettingsDialog extends EscapeDialog {
 
         Component glue = Box.createGlue();
         Component glue1 = Box.createGlue();
+        Component glue2 = Box.createGlue();
+        Component glue3 = Box.createGlue();
 
         btnOk = new JButton("OK");
         btnCancel = new JButton("Cancel");
@@ -121,71 +151,116 @@ public class SettingsDialog extends EscapeDialog {
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup()
-                    .addComponent(chBoxShowServerCombo)
                     .addGroup(
                         layout.createSequentialGroup()
-                                    .addComponent(lblAuthMechanism)
-                                    .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-                                    .addComponent(lblUser)
-                                    .addComponent(txtUser, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                                    .addComponent(lblPassword)
-                                    .addComponent(txtPassword, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                    ).addComponent(glue)
+                            .addComponent(lblLookAndFeel)
+                            .addComponent(comboBoxLookAndFeel)
+                            .addComponent(glue2))
                     .addGroup(
                         layout.createSequentialGroup()
-                                .addComponent(lblFontSize)
-                                .addComponent(spnFontSize, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                                .addComponent(cbFontName, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                    )
+                            .addComponent(lblResultTabsCount)
+                            .addComponent(txtTabsCount))
                     .addGroup(
                         layout.createSequentialGroup()
-                                .addComponent(lblLineEnding)
-                                .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                                .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                    )
+                            .addComponent(chBoxShowServerCombo))
+                            .addComponent(glue3)
                     .addGroup(
                         layout.createSequentialGroup()
-                                .addComponent(glue1)
-                                .addComponent(btnOk)
-                                .addComponent(btnCancel)
-                    )
+                            .addComponent(lblAuthMechanism)
+                            .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+                            .addComponent(lblUser)
+                            .addComponent(txtUser, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                            .addComponent(lblPassword)
+                            .addComponent(txtPassword, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    .addComponent(glue)
+                    .addGroup(
+                        layout.createSequentialGroup()
+                            .addComponent(lblFontSize)
+                            .addComponent(spnFontSize, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                            .addComponent(cbFontName, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    .addGroup(
+                        layout.createSequentialGroup()
+                            .addComponent(lblLineEnding)
+                            .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                            .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                    .addGroup(
+                        layout.createSequentialGroup()
+                            .addComponent(glue1)
+                            .addComponent(btnOk)
+                            .addComponent(btnCancel))
         );
 
 
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                    .addComponent(chBoxShowServerCombo)
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblAuthMechanism)
-                                .addComponent(comboBoxAuthMechanism)
-                                .addComponent(lblUser)
-                                .addComponent(txtUser)
-                                .addComponent(lblPassword)
-                                .addComponent(txtPassword)
-                    ).addComponent(glue)
+                            .addComponent(lblLookAndFeel)
+                            .addComponent(comboBoxLookAndFeel)
+                            .addComponent(glue2))
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblFontSize)
-                                .addComponent(spnFontSize)
-                                .addComponent(cbFontName)
-                    )
+                            .addComponent(lblResultTabsCount)
+                            .addComponent(txtTabsCount))
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(lblLineEnding)
-                                .addComponent(rbLineEndingCRLF)
-                                .addComponent(rbLineEndingLF)
-                    )
+                            .addComponent(chBoxShowServerCombo)
+                            .addComponent(glue3)
+                    ).addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblAuthMechanism)
+                            .addComponent(comboBoxAuthMechanism)
+                            .addComponent(lblUser)
+                            .addComponent(txtUser)
+                            .addComponent(lblPassword)
+                            .addComponent(txtPassword))
+                    .addComponent(glue)
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(glue1)
-                                .addComponent(btnOk)
-                                .addComponent(btnCancel)
-                    )
+                            .addComponent(lblFontSize)
+                            .addComponent(spnFontSize)
+                            .addComponent(cbFontName))
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblLineEnding)
+                            .addComponent(rbLineEndingCRLF)
+                            .addComponent(rbLineEndingLF))
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(glue1)
+                            .addComponent(btnOk)
+                            .addComponent(btnCancel))
         );
-        layout.linkSize(SwingConstants.HORIZONTAL, txtUser, txtPassword);
+        layout.linkSize(SwingConstants.HORIZONTAL, txtUser, txtPassword, txtTabsCount);
         layout.linkSize(SwingConstants.HORIZONTAL, btnOk, btnCancel);
         setContentPane(root);
     }
 
+    private static class LookAndFeels {
+        private final Map<String, CustomiszedLookAndFeelInfo> mapLookAndFeels;
+
+        public LookAndFeels() {
+            mapLookAndFeels = new HashMap<>();
+            for (UIManager.LookAndFeelInfo lf: UIManager.getInstalledLookAndFeels()) {
+                mapLookAndFeels.put(lf.getClassName(), new CustomiszedLookAndFeelInfo(lf));
+            }
+        }
+        public CustomiszedLookAndFeelInfo[] getLookAndFeels() {
+            return mapLookAndFeels.values().toArray(new CustomiszedLookAndFeelInfo[0]);
+        }
+        public CustomiszedLookAndFeelInfo getLookAndFeel(String className) {
+            return mapLookAndFeels.get(className);
+        }
+    }
+
+    private static class CustomiszedLookAndFeelInfo extends UIManager.LookAndFeelInfo {
+        public CustomiszedLookAndFeelInfo(UIManager.LookAndFeelInfo lfInfo) {
+            super(lfInfo.getName(), lfInfo.getClassName());
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+    }
 }

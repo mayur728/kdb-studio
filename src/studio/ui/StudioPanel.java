@@ -1370,6 +1370,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         Config.getInstance().setDefaultAuthMechanism(auth);
         Config.getInstance().setDefaultCredentials(auth, new Credentials(dialog.getUser(), dialog.getPassword()));
         Config.getInstance().setShowServerComboBox(dialog.isShowServerComboBox());
+        Config.getInstance().setResultTabsCount(dialog.getResultTabsCount());
         Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
 
         Coloring c = (Coloring)Settings.getValue(BaseKit.class, "line-number-coloring");
@@ -1382,6 +1383,13 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
         Config.getInstance().setFont(font);
         Config.getInstance().setLineEnding(dialog.getLineEnding());
+
+        String lfClass = dialog.getLookAndFeelClassName();
+        if (!lfClass.equals(UIManager.getLookAndFeel().getClass().getName())) {
+            Config.getInstance().setLookAndFeel(lfClass);
+            JOptionPane.showMessageDialog(frame, "Look and Feel was changed. New L&F will take effect on the next start up.", "Look and Feel Setting Changed", JOptionPane.INFORMATION_MESSAGE);
+        }
+
         rebuildToolbar();
     }
 
@@ -1804,6 +1812,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
     private JToolBar createToolbar() {
         toolbar = new JToolBar();
+        toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
         toolbar.setFloatable(false);
         rebuildToolbar();
         return toolbar;
@@ -1918,6 +1927,15 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         toolbar = createToolbar();
 
         tabbedPane = new JTabbedPane();
+        final JPopupMenu popup = createJPopupMenu();
+        tabbedPane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    popup.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
         splitpane.setBottomComponent(tabbedPane);
         splitpane.setOneTouchExpandable(true);
         splitpane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -1979,8 +1997,50 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         dividerLastPosition=splitpane.getDividerLocation();
     }
 
+    private JPopupMenu createJPopupMenu() {
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem close = new JMenuItem("Close");
+        close.addActionListener(e -> {
+            int idx = tabbedPane.getSelectedIndex();
+            if (idx >= 0) {
+                tabbedPane.removeTabAt(idx);
+            }
+        });
+
+        JMenuItem closeOthers = new JMenuItem("Close others");
+        closeOthers.addActionListener(e -> {
+            Component selected = tabbedPane.getSelectedComponent();
+            if (selected != null) {
+                int selectedIndex = tabbedPane.getSelectedIndex();
+                if (selectedIndex > 0) {
+                    String title = tabbedPane.getTitleAt(selectedIndex);
+                    Icon icon = tabbedPane.getIconAt(selectedIndex);
+                    tabbedPane.setComponentAt(tabbedPane.getSelectedIndex(), null);
+                    tabbedPane.setComponentAt(0, selected);
+                    tabbedPane.setTitleAt(0, title);
+                    tabbedPane.setIconAt(0, icon);
+                }
+
+                while (tabbedPane.getTabCount() > 1) {
+                    tabbedPane.removeTabAt(1);
+                }
+
+                tabbedPane.setSelectedIndex(0);
+            }
+        });
+        JMenuItem closeAll = new JMenuItem("Close all");
+        closeAll.addActionListener(e -> tabbedPane.removeAll());
+
+        popup.add(close);
+        popup.add(closeOthers);
+        popup.add(closeAll);
+
+        return popup;
+    }
+
     public void update(Observable obs,Object obj) {
     }
+
     private static boolean registeredForMaxOSXEvents = false;
 
     public void registerForMacOSXEvents() {
@@ -2133,6 +2193,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
 
     private void processK4Results(K.KBase r) throws c.K4Exception {
         if (r != null) {
+            short tabAdded = 0;
             exportAction.setEnabled(true);
             KTableModel model = KTableModel.getModel(r);
             chartAction.setEnabled(false);
@@ -2151,6 +2212,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                         grid);
 //                frame.setTitle(I18n.getString("Table")+" [" + grid.getRowCount() + " "+I18n.getString("rows")+"] ");
                 tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
+                ++tabAdded;
             }
             LimitedWriter lm = new LimitedWriter(50000);
             try {
@@ -2178,6 +2240,9 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
             frame.setTitle(I18n.getString("ConsoleView"));
 
             tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
+            ++tabAdded;
+
+            tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-tabAdded); // 2 is to give focus on "table" view
         }
         else {
             // Log that execute was successful
@@ -2189,7 +2254,11 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
         final Cursor cursor = textArea.getCursor();
 
         textArea.setCursor(new java.awt.Cursor(java.awt.Cursor.WAIT_CURSOR));
-        tabbedPane.removeAll();
+
+          while (tabbedPane.getTabCount()>=Config.getInstance().getResultTabsCount()) {
+              tabbedPane.remove(0);
+          }
+
         worker = new SwingWorker() {
             Server s = null;
             c c = null;
@@ -2259,8 +2328,7 @@ public class StudioPanel extends JPanel implements Observer,WindowListener {
                             frame.setTitle("Error Details ");
 
                             tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
-
-                        //            tabbedPane.setSelectedComponent(resultsTabbedPane);
+                            tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
                         }
                         catch (java.lang.OutOfMemoryError ex) {
                             JOptionPane.showMessageDialog(frame,
