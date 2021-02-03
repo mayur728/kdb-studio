@@ -156,7 +156,8 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
 
         Document doc = null;
         if (textArea == null) {
-            textArea = new JEditorPane("text/q", "");
+            textArea = new JEditorPane("text/q","");
+            textArea.setName("qEditor");
             Action[] actions = textArea.getActions();
 
             for (int i = 0; i < actions.length; i++)
@@ -1758,8 +1759,8 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             toolbar.add(chartAction);
             toolbar.addSeparator();
 
-            toolbar.add(undoAction);
-            toolbar.add(redoAction);
+            toolbar.add(undoAction).setName("undo");
+            toolbar.add(redoAction).setName("redo");
             toolbar.addSeparator();
 
             toolbar.add(cutAction);
@@ -2038,8 +2039,9 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             }
     }
 
-    public static void init(String[] args) {
+    public static StudioPanel init(String[] args) {
         try {
+            studio.ui.I18n.setLocale(Locale.getDefault());
             String filename = null;
 
             String[] mruFiles = Config.getInstance().getMRUFiles();
@@ -2060,10 +2062,12 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             if (Config.getInstance().getServerNames().contains(lruServer)) {
                 s = Config.getInstance().getServer(lruServer);
             }
-            new StudioPanel(s, filename);
-        } catch (Exception e) {
+            return new StudioPanel(s,filename);
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void refreshQuery() {
@@ -2438,5 +2442,9 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
          * Document property holding Boolean modified information
          */
         private static final String MODIFIED = "modified";
+    }
+
+    public JFrame frame() {
+        return frame;
     }
 }

@@ -18,12 +18,16 @@ dependencies {
     compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.2'
+    testCompile group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
 }
 
 sourceSets {
     main {
         java {
-            srcDirs 'src'
+            srcDirs += ['src/studio']
+            srcDirs += ['src/kx']
+            srcDirs += ['src/org']
+            srcDirs += ['src/com']
         }
         resources {
             srcDir 'src'
@@ -31,6 +35,17 @@ sourceSets {
             include 'org/netbeans/editor/Bundle*.properties'
             include 'images/**'
         }
+    }
+    test {
+        java.srcDirs += ['src/test']
+    }
+}
+
+test {
+    useJUnit()
+    reports {
+        junitXml.enabled = true
+        html.enabled = true
     }
 }
 

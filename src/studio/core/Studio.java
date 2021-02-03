@@ -32,29 +32,6 @@ public class Studio {
             }
         }
 
-        studio.ui.I18n.setLocale(Locale.getDefault());
-
-     //   studio.ui.I18n.setLocale(new Locale("zh", "cn"));
-
-        /*if (!Config.getInstance().getAcceptedLicense()) {
-            LicensePanel panel = new LicensePanel();
-            Object[] options = new String[]{
-                "Accept","Do Not Accept"
-            };
-            int answer = JOptionPane.showOptionDialog(null,
-                                                      panel,"Studio for kdb+",
-                                                      JOptionPane.YES_NO_OPTION,
-                                                      JOptionPane.QUESTION_MESSAGE,
-                                                      Studio.getImage(Config.imageBase + "32x32/question.png"), //do not use a custom Icon
-                                                      options, //the titles of buttons
-                                                      options[1]); //default button title
-
-            if (answer == JOptionPane.NO_OPTION)
-                System.exit(0);
-
-            Config.getInstance().setAcceptedLicense(Lm.buildDate);
-        }
-        */
         UIManager.put("Table.font",new javax.swing.plaf.FontUIResource("Monospaced",Font.PLAIN,UIManager.getFont("Table.font").getSize()));
         System.setProperty("awt.useSystemAAFontSettings","on");
         System.setProperty("swing.aatext", "true");
