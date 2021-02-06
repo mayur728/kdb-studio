@@ -1346,6 +1346,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         Config.getInstance().setDefaultAuthMechanism(auth);
         Config.getInstance().setDefaultCredentials(auth, new Credentials(dialog.getUser(), dialog.getPassword()));
         Config.getInstance().setShowServerComboBox(dialog.isShowServerComboBox());
+        Config.getInstance().setShowConsoleView(dialog.isShowConsoleView());
         Config.getInstance().setResultTabsCount(dialog.getResultTabsCount());
         Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
 
@@ -2186,31 +2187,34 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                 tabbedPane.addTab(frame.getTitle(), frame.getIcon(), frame.getComponent());
                 ++tabAdded;
             }
-            LimitedWriter lm = new LimitedWriter(50000);
-            try {
-                if (!(r instanceof K.UnaryPrimitive && 0 == ((K.UnaryPrimitive) r).getPrimitiveAsInt()))
-                    r.toString(lm, true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (LimitedWriter.LimitException ex) {
+
+            if (Config.getInstance().isShowConsoleView()) {
+                LimitedWriter lm = new LimitedWriter(50000);
+                try {
+                    if (!(r instanceof K.UnaryPrimitive && 0 == ((K.UnaryPrimitive) r).getPrimitiveAsInt()))
+                        r.toString(lm, true);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } catch (LimitedWriter.LimitException ex) {
+                }
+
+                JEditorPane pane = new JEditorPane("text/plain", lm.toString());
+                //not setting a font results in exception e.g. on a string like "\331\203"
+                pane.setFont(Config.getInstance().getFont());
+
+                JScrollPane scrollpane = new JScrollPane(pane,
+                        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+                TabPanel frame = new TabPanel("Console View ",
+                        Util.CONSOLE_ICON,
+                        scrollpane);
+
+                frame.setTitle(I18n.getString("ConsoleView"));
+
+                tabbedPane.addTab(frame.getTitle(), frame.getIcon(), frame.getComponent());
+                ++tabAdded;
             }
-
-            JEditorPane pane = new JEditorPane("text/plain", lm.toString());
-            //not setting a font results in exception e.g. on a string like "\331\203"
-            pane.setFont(Config.getInstance().getFont());
-
-            JScrollPane scrollpane = new JScrollPane(pane,
-                    ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-                    ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-            TabPanel frame = new TabPanel("Console View ",
-                    Util.CONSOLE_ICON,
-                    scrollpane);
-
-            frame.setTitle(I18n.getString("ConsoleView"));
-
-            tabbedPane.addTab(frame.getTitle(), frame.getIcon(), frame.getComponent());
-            ++tabAdded;
 
             tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - tabAdded); // 2 is to give focus on "table" view
         } else {
