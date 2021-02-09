@@ -365,7 +365,6 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             public void run() {
                 if (filename != null) {
                     String lineSeparator = System.getProperty("line.separator");
-                    ;
 
                     BufferedWriter fw;
 
@@ -416,13 +415,11 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         }
 
                         fw.close();
-                    } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    } catch (IOException ex) {
-                        ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    } catch (Exception ex) {
-                        ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    } finally {
+                    }
+                    catch (Exception ex) {
+                        StudioOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE, Util.ERROR_ICON);
+                    }
+                    finally {
                         pm.close();
                     }
                 }
@@ -667,23 +664,21 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         exportAsBin(exportFilename);
                         }
                          */
-                    else
-                        JOptionPane.showMessageDialog(frame,
-                                "You did not specify what format to export the file as.\n Cancelling data export",
-                                "Warning",
-                                JOptionPane.WARNING_MESSAGE,
-                                Util.WARNING_ICON);
-            /*                else {
-            exportAsBin(exportFilename);
+                        else
+                            StudioOptionPane.showMessageDialog(frame,
+                                                          "You did not specify what format to export the file as.\n Cancelling data export",
+                                                          "Warning",
+                                                          JOptionPane.WARNING_MESSAGE,
+                                                          Util.WARNING_ICON);
             }
-             */
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(frame,
-                        "An error occurred whilst writing the export file.\n Details are: " + e.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE,
-                        Util.ERROR_ICON);
-            } finally {
+            catch (Exception e) {
+                StudioOptionPane.showMessageDialog(frame,
+                                              "An error occurred whilst writing the export file.\n Details are: " + e.getMessage(),
+                                              "Error",
+                                              JOptionPane.ERROR_MESSAGE,
+                                              Util.ERROR_ICON);
+            }
+            finally {
                 //            frame.setCursor(cursor);
             }
         }
@@ -721,14 +716,14 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
     // returns true to continue
     public boolean saveIfModified(String filename) {
         if (getModified()) {
-            int choice = JOptionPane.showOptionDialog(frame,
-                    "Changes not saved.\nSave now?",
-                    "Save changes?",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    Util.QUESTION_ICON,
-                    null, // use standard button titles
-                    null);      // no default selection
+            int choice = StudioOptionPane.showOptionDialog(frame,
+                                                      "Changes not saved.\nSave now?",
+                                                      "Save changes?",
+                                                      JOptionPane.YES_NO_CANCEL_OPTION,
+                                                      JOptionPane.QUESTION_MESSAGE,
+                                                      Util.QUESTION_ICON,
+                                                      null, // use standard button titles
+                                                      null);      // no default selection
 
             if (choice == JOptionPane.YES_OPTION) {
                 try {
@@ -854,14 +849,14 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                 sf = new File(filename);
 
                 if (sf.exists()) {
-                    int choice = JOptionPane.showOptionDialog(frame,
-                            filename + " already exists.\nOverwrite?",
-                            "Overwrite?",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            Util.QUESTION_ICON,
-                            null, // use standard button titles
-                            null);      // no default selection
+                    int choice = StudioOptionPane.showOptionDialog(frame,
+                                                              filename + " already exists.\nOverwrite?",
+                                                              "Overwrite?",
+                                                              JOptionPane.YES_NO_CANCEL_OPTION,
+                                                              JOptionPane.QUESTION_MESSAGE,
+                                                              Util.QUESTION_ICON,
+                                                              null, // use standard button titles
+                                                              null);      // no default selection
 
                     if (choice != JOptionPane.YES_OPTION)
                         return false;
@@ -1157,14 +1152,14 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                 new Integer(KeyEvent.VK_R),
                 null) {
             public void actionPerformed(ActionEvent e) {
-                int choice = JOptionPane.showOptionDialog(frame,
-                        "Remove server " + server.getFullName() + " from list?",
-                        "Remove server?",
-                        JOptionPane.YES_NO_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        Util.QUESTION_ICON,
-                        null, // use standard button titles
-                        null);      // no default selection
+                int choice = StudioOptionPane.showOptionDialog(frame,
+                                                          "Remove server " + server.getFullName() + " from list?",
+                                                          "Remove server?",
+                                                          JOptionPane.YES_NO_OPTION,
+                                                          JOptionPane.QUESTION_MESSAGE,
+                                                          Util.QUESTION_ICON,
+                                                          null, // use standard button titles
+                                                          null);      // no default selection
 
                 if (choice == 0) {
                     Config.getInstance().removeServer(server);
@@ -1333,11 +1328,11 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                 null) {
 
             public void actionPerformed(ActionEvent e) {
-                try {
-                    BrowserLaunch.openURL("http://code.kx.com/trac/wiki/Reference");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Error attempting to launch web browser:\n" + ex.getLocalizedMessage());
-                }
+                    try {
+                        BrowserLaunch.openURL("https://code.kx.com/q/ref/");
+                    } catch (Exception ex) {
+                       StudioOptionPane.showMessageDialog(null, "Error attempting to launch web browser:\n" + ex.getLocalizedMessage());
+                    }
             }
         };
     }
@@ -1406,14 +1401,14 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
 
     public boolean quitWindow() {
         if (getModified()) {
-            int choice = JOptionPane.showOptionDialog(frame,
-                    "Changes not saved.\nSave now?",
-                    "Save changes?",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    Util.QUESTION_ICON,
-                    null, // use standard button titles
-                    null);      // no default selection
+            int choice = StudioOptionPane.showOptionDialog(frame,
+                                                      "Changes not saved.\nSave now?",
+                                                      "Save changes?",
+                                                      JOptionPane.YES_NO_CANCEL_OPTION,
+                                                      JOptionPane.QUESTION_MESSAGE,
+                                                      Util.QUESTION_ICON,
+                                                      null, // use standard button titles
+                                                      null);      // no default selection
 
             if (choice == 0)
                 try {
@@ -2087,11 +2082,11 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         table = null;
 
         if (text == null) {
-            JOptionPane.showMessageDialog(frame,
-                    "\nNo text available to submit to server.\n\n",
-                    "Studio for kdb+",
-                    JOptionPane.OK_OPTION,
-                    Util.INFORMATION_ICON);
+            StudioOptionPane.showMessageDialog(frame,
+                                          "\nNo text available to submit to server.\n\n",
+                                          "Studio for kdb+",
+                                          JOptionPane.OK_OPTION,
+                                          Util.INFORMATION_ICON);
 
             return;
         }
@@ -2277,13 +2272,15 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                     if (exception != null)
                         try {
                             throw exception;
-                        } catch (IOException ex) {
-                            JOptionPane.showMessageDialog(frame,
-                                    "\nA communications error occurred whilst sending the query.\n\nPlease check that the server is running on " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + ex.getMessage() + "\n\n",
-                                    "Studio for kdb+",
-                                    JOptionPane.ERROR_MESSAGE,
-                                    Util.ERROR_ICON);
-                        } catch (c.K4Exception ex) {
+                        }
+                        catch (IOException ex) {
+                            StudioOptionPane.showMessageDialog(frame,
+                                                          "\nA communications error occurred whilst sending the query.\n\nPlease check that the server is running on " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + ex.getMessage() + "\n\n",
+                                                          "Studio for kdb+",
+                                                          JOptionPane.ERROR_MESSAGE,
+                                                          Util.ERROR_ICON);
+                        }
+                        catch (c.K4Exception ex) {
                             JTextPane pane = new JTextPane();
                             String hint = QErrors.lookup(ex.getMessage());
                             if (hint != null)
@@ -2300,37 +2297,40 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                                     scrollpane);
                             frame.setTitle("Error Details ");
 
-                            tabbedPane.addTab(frame.getTitle(), frame.getIcon(), frame.getComponent());
+                            tabbedPane.addTab(frame.getTitle(),frame.getIcon(),frame.getComponent());
                             tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
-                        } catch (java.lang.OutOfMemoryError ex) {
-                            JOptionPane.showMessageDialog(frame,
-                                    "\nOut of memory whilst communicating with " + server.getHost() + ":" + server.getPort() + "\n\nThe result set is probably too large.\n\nTry increasing the memory available to studio through the command line option -J -Xmx512m\n\n",
-                                    "Studio for kdb+",
-                                    JOptionPane.ERROR_MESSAGE,
-                                    Util.ERROR_ICON);
-                        } catch (Throwable ex) {
+                        }
+                        catch (java.lang.OutOfMemoryError ex) {
+                            StudioOptionPane.showMessageDialog(frame,
+                                                          "\nOut of memory whilst communicating with " + server.getHost() + ":" + server.getPort() + "\n\nThe result set is probably too large.\n\nTry increasing the memory available to studio through the command line option -J -Xmx512m\n\n",
+                                                          "Studio for kdb+",
+                                                          JOptionPane.ERROR_MESSAGE,
+                                                          Util.ERROR_ICON);
+                        }
+                        catch (Throwable ex) {
                             String message = ex.getMessage();
 
                             if ((message == null) || (message.length() == 0))
                                 message = "No message with exception. Exception is " + ex.toString();
 
-                            JOptionPane.showMessageDialog(frame,
-                                    "\nAn unexpected error occurred whilst communicating with " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + message + "\n\n",
-                                    "Studio for kdb+",
-                                    JOptionPane.ERROR_MESSAGE,
-                                    Util.ERROR_ICON);
+                            StudioOptionPane.showMessageDialog(frame,
+                                                          "\nAn unexpected error occurred whilst communicating with " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + message + "\n\n",
+                                                          "Studio for kdb+",
+                                                          JOptionPane.ERROR_MESSAGE,
+                                                          Util.ERROR_ICON);
                         }
                     else
                         try {
                             Utilities.setStatusText(textArea, "Last execution time:" + (execTime > 0 ? "" + execTime : "<1") + " mS");
                             processK4Results(r);
-                        } catch (Exception e) {
-                            JOptionPane.showMessageDialog(frame,
-                                    "\nAn unexpected error occurred while processing results from " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + e.getMessage() + "\n\n"
-                                            + Util.extractStackTrace(e),
-                                    "Studio for kdb+",
-                                    JOptionPane.ERROR_MESSAGE,
-                                    Util.ERROR_ICON);
+                        }
+                        catch (Exception e) {
+                            StudioOptionPane.showMessageDialog(frame,
+                                                          "\nAn unexpected error occurred while processing results from " + server.getHost() + ":" + server.getPort() + "\n\nError detail is\n\n" + e.getMessage() + "\n\n"
+                                                            + Util.extractStackTrace(e),
+                                                          "Studio for kdb+",
+                                                          JOptionPane.ERROR_MESSAGE,
+                                                          Util.ERROR_ICON);
                         }
 
                     cleanup();

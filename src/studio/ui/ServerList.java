@@ -455,7 +455,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
             serverTree = Config.getInstance().getServerTree();
             System.err.println("Error adding new node: " + exception);
             exception.printStackTrace(System.err);
-            JOptionPane.showMessageDialog(this, "Error adding new node:\n" + exception.toString(), "Error", JOptionPane.ERROR_MESSAGE);
+            StudioOptionPane.showMessageDialog(this, "Error adding new node:\n" + exception.toString(), "Error", JOptionPane.ERROR_MESSAGE);
 
         }
         refreshServers();
@@ -502,14 +502,14 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
         if (pickedUpNode == null) return;
         ServerTreeNode selNode  = (ServerTreeNode) tree.getLastSelectedPathComponent();
         if (selNode == pickedUpNode) {
-            JOptionPane.showMessageDialog(this,"Cannot move a node relative to itself.","Error",JOptionPane.ERROR_MESSAGE,Util.ERROR_ICON);
+            StudioOptionPane.showMessageDialog(this,"Cannot move a node relative to itself.","Error",JOptionPane.ERROR_MESSAGE,Util.ERROR_ICON);
             return;
         }
         if (pickedUpNode.isFolder()) {
             ServerTreeNode dropTarget = location == AddNodeLocation.INSERT ? selNode : (ServerTreeNode) selNode.getParent();
             while (dropTarget != root) {
                 if (dropTarget == pickedUpNode) {
-                    JOptionPane.showMessageDialog(this,"Cannot move a folder into itself.","Error",JOptionPane.ERROR_MESSAGE,Util.ERROR_ICON);
+                    StudioOptionPane.showMessageDialog(this,"Cannot move a folder into itself.","Error",JOptionPane.ERROR_MESSAGE,Util.ERROR_ICON);
                     return;
                 }
                 dropTarget = (ServerTreeNode) dropTarget.getParent();
@@ -556,7 +556,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
 
                 if (isSave) {
                     if (sf.exists()) {
-                        int choice = JOptionPane.showOptionDialog(this,
+                        int choice = StudioOptionPane.showOptionDialog(this,
                                                                   filename + " already exists.\nOverwrite?",
                                                                   "Overwrite?",
                                                                   JOptionPane.YES_NO_CANCEL_OPTION,
@@ -570,7 +570,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
                     }
                 } else {
                     if (!sf.exists()) {
-                        JOptionPane.showMessageDialog(this,
+                        StudioOptionPane.showMessageDialog(this,
                                               "File not found: "+sf,
                                               "Error",
                                               JOptionPane.ERROR_MESSAGE,
@@ -582,7 +582,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
             }
             catch (Exception e) {
                 e.printStackTrace(System.err);
-                JOptionPane.showMessageDialog(this,
+                StudioOptionPane.showMessageDialog(this,
                                               "Error while exporting server list:\n" + e,
                                               "Studio for kdb+",
                                               JOptionPane.ERROR_MESSAGE,
@@ -603,7 +603,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
                    file->{
                         String errors = Config.getInstance().importServerListFromJSON(file);
                         if (0<errors.length())
-                            JOptionPane.showMessageDialog(this,
+                            StudioOptionPane.showMessageDialog(this,
                                               "Error while importing server list:\n" + errors,
                                               "Studio for kdb+",
                                               JOptionPane.ERROR_MESSAGE,

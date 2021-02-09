@@ -254,7 +254,7 @@ public class ServerForm extends EscapeDialog {
         
         if(logicalName.getText().length() == 0)
         {
-            JOptionPane.showMessageDialog(this,
+            StudioOptionPane.showMessageDialog(this,
                                           "The server's name cannot be empty",
                                           "Studio for kdb+",
                                           JOptionPane.ERROR_MESSAGE);
@@ -265,7 +265,7 @@ public class ServerForm extends EscapeDialog {
         boolean clash=false;
         if( clash)
         {
-            JOptionPane.showMessageDialog(this,
+            StudioOptionPane.showMessageDialog(this,
                                           "A server already exists with that name.",
                                           "Studio for kdb+",
                                           JOptionPane.ERROR_MESSAGE);
@@ -297,14 +297,14 @@ public class ServerForm extends EscapeDialog {
                 }
                 catch(k4.c.K4Exception e)
                 {
-                    JOptionPane.showMessageDialog(this,
+                    StudioOptionPane.showMessageDialog(this,
                                                   "Failed to connect due to invalid username or password.",
                                                   "Studio for kdb+",
                                                   JOptionPane.ERROR_MESSAGE);
                 }
                 catch(IOException e)
                 {
-                    JOptionPane.showMessageDialog(this,
+                    StudioOptionPane.showMessageDialog(this,
                               "Failed to connect due to network error : " + e.getMessage(),
                               "Studio for kdb+",
                               JOptionPane.ERROR_MESSAGE);

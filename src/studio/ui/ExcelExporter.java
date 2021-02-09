@@ -132,7 +132,7 @@ class ExcelExporter {
                         openTable(file);
                     }
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null,
+                    StudioOptionPane.showMessageDialog(null,
                             "\nThere was an error encoding the K types into Excel types.\n\n" + e.getMessage() + "\n\n",
                             "Studio for kdb+",
                             JOptionPane.OK_OPTION,
@@ -161,7 +161,7 @@ class ExcelExporter {
                 run.exec("cmd.exe /c start " + file);
             }
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,
+            StudioOptionPane.showMessageDialog(null,
                     "\nThere was an error opening excel.\n\n" + e.getMessage() + "\n\nPerhaps you do not have Excel installed,\nor .xls files are not associated with Excel",
                     "Studio for kdb+",
                     JOptionPane.OK_OPTION,
