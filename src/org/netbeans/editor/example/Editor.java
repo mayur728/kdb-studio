@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.List;
 
+import studio.ui.StudioOptionPane;
 
 /**
  *
@@ -312,7 +313,7 @@ public class Editor extends javax.swing.JFrame
         if (checkOverwrite && file.exists())
         {
             tabPane.setSelectedComponent(comp);
-            int choice = JOptionPane.showOptionDialog(this,
+            int choice = StudioOptionPane.showOptionDialog(this,
                                                       "File " + file.getName() + " already exists, overwrite?",
                                                       "File exists",
                                                       JOptionPane.YES_NO_CANCEL_OPTION,
@@ -353,7 +354,7 @@ public class Editor extends javax.swing.JFrame
         }
         catch (IOException exc)
         {
-            JOptionPane.showMessageDialog(this, "Can't write to file '" +
+            StudioOptionPane.showMessageDialog(this, "Can't write to file '" +
                                                 file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
 
             if (safeSave)
@@ -428,7 +429,7 @@ public class Editor extends javax.swing.JFrame
         }
         catch (IOException exc)
         {
-            JOptionPane.showMessageDialog(this, "Can't read from file '" +
+            StudioOptionPane.showMessageDialog(this, "Can't read from file '" +
                                                 file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -500,7 +501,7 @@ public class Editor extends javax.swing.JFrame
 
         for (; ;)
         {
-            int choice = JOptionPane.showOptionDialog(this,
+            int choice = StudioOptionPane.showOptionDialog(this,
                                                       "File " + file.getName() + " was modified, save it?",
                                                       "File modified",
                                                       JOptionPane.YES_NO_CANCEL_OPTION,
@@ -565,7 +566,7 @@ public class Editor extends javax.swing.JFrame
             }
             catch (IOException e)
             {
-                JOptionPane.showMessageDialog(this, "Can't read template", "Error", JOptionPane.ERROR_MESSAGE);
+                StudioOptionPane.showMessageDialog(this, "Can't read template", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         addEditorPane(pane, info.getIcon(), file, true);

@@ -16,7 +16,7 @@ public class ExceptionGroup extends ThreadGroup {
 
         e.printStackTrace(new PrintWriter(caw));
 
-        JOptionPane.showMessageDialog(findActiveFrame(),
+        StudioOptionPane.showMessageDialog(findActiveFrame(),
                                       "An uncaught exception occurred\n\nDetails - \n\n" + caw.toString(),
                                       "Studio for kdb+",
                                       JOptionPane.ERROR_MESSAGE);

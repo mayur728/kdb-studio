@@ -220,7 +220,7 @@ public class QGrid extends JPanel {
                 int[] rowsselected = table.getSelectedRows();
                 int[] colsselected = table.getSelectedColumns();
                 if (!isTableSelectionValid()) {
-                    JOptionPane.showMessageDialog(null,
+                    StudioOptionPane.showMessageDialog(null,
                             "Invalid Copy Selection",
                             "Invalid Copy Selection",
                             JOptionPane.ERROR_MESSAGE);
@@ -273,7 +273,7 @@ public class QGrid extends JPanel {
                 int[] colsselected = table.getSelectedColumns();
 
                 if (!isTableSelectionValid()) {
-                    JOptionPane.showMessageDialog(null,
+                    StudioOptionPane.showMessageDialog(null,
                             "Invalid Copy Selection",
                             "Invalid Copy Selection",
                             JOptionPane.ERROR_MESSAGE);
