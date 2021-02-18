@@ -21,13 +21,10 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs += ['src/studio']
-            srcDirs += ['src/kx']
-            srcDirs += ['src/org']
-            srcDirs += ['src/com']
+            srcDirs += ['src/main']
         }
         resources {
-            srcDir 'src'
+            srcDir 'src/main'
             include 'studio*.properties'
             include 'org/netbeans/editor/Bundle*.properties'
             include 'images/**'
