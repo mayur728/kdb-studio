@@ -4,7 +4,7 @@ import java.io.CharArrayWriter;
 import java.io.IOException;
 
 public class LimitedWriter extends CharArrayWriter {
-    private int limit;
+    private final int limit;
 
     public static class LimitException extends RuntimeException {
     }
