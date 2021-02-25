@@ -17,6 +17,7 @@ public class SettingsDialog extends EscapeDialog {
     private JTextField txtUser;
     private JPasswordField txtPassword;
     private JCheckBox chBoxShowServerCombo;
+    private JCheckBox chBoxShowConsoleView;
     private JComboBox cbFontName;
     private JSpinner spnFontSize;
     private JRadioButton rbLineEndingCRLF;
@@ -49,6 +50,10 @@ public class SettingsDialog extends EscapeDialog {
         return chBoxShowServerCombo.isSelected();
     }
 
+    public boolean isShowConsoleView() {
+        return chBoxShowConsoleView.isSelected();
+    }
+
     public String getLookAndFeelClassName() {
         return ((CustomiszedLookAndFeelInfo)comboBoxLookAndFeel.getSelectedItem()).getClassName();
     }
@@ -63,6 +68,7 @@ public class SettingsDialog extends EscapeDialog {
         txtUser.setText(credentials.getUsername());
         txtPassword.setText(credentials.getPassword());
         chBoxShowServerCombo.setSelected(Config.getInstance().isShowServerComboBox());
+        chBoxShowConsoleView.setSelected(Config.getInstance().isShowConsoleView());
     }
 
     public String getFontName() {
@@ -109,6 +115,9 @@ public class SettingsDialog extends EscapeDialog {
         formatter.setAllowsInvalid(false);
         txtTabsCount = new JFormattedTextField(formatter);
         txtTabsCount.setValue(Config.getInstance().getResultTabsCount());
+
+        chBoxShowConsoleView = new JCheckBox("Always show console view");
+
         chBoxShowServerCombo = new JCheckBox("Show server drop down list in the toolbar");
         JLabel lblAuthMechanism = new JLabel("Authentication:");
         JLabel lblUser = new JLabel("  User:");
@@ -135,6 +144,7 @@ public class SettingsDialog extends EscapeDialog {
         Component glue1 = Box.createGlue();
         Component glue2 = Box.createGlue();
         Component glue3 = Box.createGlue();
+        Component glue4 = Box.createGlue();
 
         btnOk = new JButton("OK");
         btnCancel = new JButton("Cancel");
@@ -161,9 +171,13 @@ public class SettingsDialog extends EscapeDialog {
                             .addComponent(lblResultTabsCount)
                             .addComponent(txtTabsCount))
                     .addGroup(
+                            layout.createSequentialGroup()
+                            .addComponent(chBoxShowConsoleView)
+                            .addComponent(glue3))
+                    .addGroup(
                         layout.createSequentialGroup()
                             .addComponent(chBoxShowServerCombo))
-                            .addComponent(glue3)
+                            .addComponent(glue4)
                     .addGroup(
                         layout.createSequentialGroup()
                             .addComponent(lblAuthMechanism)
@@ -204,9 +218,13 @@ public class SettingsDialog extends EscapeDialog {
                             .addComponent(txtTabsCount))
                     .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(chBoxShowConsoleView)
+                            .addComponent(glue3))
+                    .addGroup(
+                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                             .addComponent(chBoxShowServerCombo)
-                            .addComponent(glue3)
-                    ).addGroup(
+                            .addComponent(glue4))
+                    .addGroup(
                         layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                             .addComponent(lblAuthMechanism)
                             .addComponent(comboBoxAuthMechanism)
