@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class K {
+    private static final int TO_STRING_MAX_LENGTH = 50_000;
     private static final SimpleDateFormat formatter = new SimpleDateFormat();
     private static final DecimalFormat nsFormatter = new DecimalFormat("000000000");
 
@@ -100,6 +101,18 @@ public class K {
 
         public Object getObject() {
             return o;
+        }
+
+        @Override
+        public String toString(boolean showType) {
+            try {
+                LimitedWriter writer = new LimitedWriter(TO_STRING_MAX_LENGTH);
+                toString(writer, showType);
+                return writer.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return super.toString(showType);
+            }
         }
     }
 
@@ -241,12 +254,16 @@ public class K {
         }
 
         private final int primitive;
-        private String s = " ";
+        private final String s;
 
         public Primitive(String[] ops, int i) {
             primitive = i;
-            if (i >= 0 && i < ops.length)
-                s = ops[i];
+            s = i >= 0 && i < ops.length ? ops[i] : " ";
+        }
+
+        @Override
+        public String toString(boolean showType) {
+            return toString();
         }
 
         @Override
@@ -275,50 +292,32 @@ public class K {
             this.objs = objs;
         }
 
+        @Override
+        public String toString(boolean showType) {
+            try {
+                LimitedWriter writer = new LimitedWriter(TO_STRING_MAX_LENGTH);
+                toString(writer, showType);
+                return writer.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return super.toString(showType);
+            }
+        }
+
         public void toString(LimitedWriter w, boolean showType) throws IOException {
-            boolean listProjection = false;
-            if ((objs.getLength() > 0) && (objs.at(0) instanceof UnaryPrimitive)) {
-                UnaryPrimitive up = (UnaryPrimitive) objs.at(0);
-                if (up.getPrimitiveAsInt() == 41) // plist
-                    listProjection = true;
+            if (objs.getLength() == 0) {
+                return;
             }
 
-            if (listProjection) {
-                w.write("(");
-                for (int i = 1; i < objs.getLength(); i++) {
-                    if (i > 1)
-                        w.write(";");
-
-                    objs.at(i).toString(w, showType);
+            objs.at(0).toString(w, showType);
+            w.write('[');
+            for (int i = 1; i < objs.getLength(); i++) {
+                if (i > 1) {
+                    w.write(';');
                 }
-                w.write(")");
-            } else {
-                boolean isFunction = false;
-
-                for (int i = 0; i < objs.getLength(); i++) {
-                    if (i == 0)
-                        if ((objs.at(0) instanceof Function) || (objs.at(0) instanceof UnaryPrimitive) || (objs.at(0) instanceof BinaryPrimitive))
-                            isFunction = true;
-                        else
-                            w.write("(");
-
-                    if (i > 0)
-                        if (i == 1)
-                            if (isFunction)
-                                w.write("[");
-                            else
-                                w.write(";");
-                        else
-                            w.write(";");
-
-                    objs.at(i).toString(w, showType);
-                }
-
-                if (isFunction)
-                    w.write("]");
-                else
-                    w.write(")");
+                objs.at(i).toString(w, showType);
             }
+            w.write(']');
         }
     }
 
@@ -561,7 +560,7 @@ public class K {
         }
 
         public String toString(boolean showType) {
-            return s;
+            return showType ? "`" + s : s;
         }
 
         public boolean isNull() {
@@ -681,18 +680,15 @@ public class K {
 
         public String toString(boolean showType) {
             if (isNull())
-                return "0ne";
+                return showType ? "0Ne" : "0N";
             else if (f == Float.POSITIVE_INFINITY)
-                return "0we";
+                return showType ? "0We" : "0W";
             else if (f == Float.NEGATIVE_INFINITY)
-                return "-0we";
+                return showType ? "-0We" : "-0W";
             else {
                 String s = Config.getInstance().getNumberFormat().format(f);
                 if (showType) {
-                    double epsilon = 1e-9;
-                    double diff = f - Math.round(f);
-                    if ((diff < epsilon) && (diff > -epsilon))
-                        s += "e";
+                    s += "e";
                 }
                 return s;
             }
@@ -731,18 +727,15 @@ public class K {
 
         public String toString(boolean showType) {
             if (isNull())
-                return "0n";
+                return showType ? "0nf" : "0n";
             else if (d == Double.POSITIVE_INFINITY)
-                return "0w";
+                return showType ? "0wf" : "0w";
             else if (d == Double.NEGATIVE_INFINITY)
-                return "-0w";
+                return showType ? "-0wf" : "-0w";
             else {
                 String s = Config.getInstance().getNumberFormat().format(d);
                 if (showType) {
-                    double epsilon = 1e-9;
-                    double diff = d - Math.round(d);
-                    if ((diff < epsilon) && (diff > -epsilon))
-                        s += "f";
+                    s += "f";
                 }
                 return s;
             }
@@ -875,14 +868,15 @@ public class K {
         }
 
         public String toString(boolean showType) {
-            if (isNull())
-                return "0nz";
-            else if (time == Double.POSITIVE_INFINITY)
-                return "0wz";
-            else if (time == Double.NEGATIVE_INFINITY)
-                return "-0wz";
-            else
-                return sd("yyyy.MM.dd HH:mm:ss.SSS", toTimestamp());
+            if (isNull()) {
+                return showType ? "0Nz" : "0N";
+            } else if (time == Double.POSITIVE_INFINITY) {
+                return showType ? "0Wz" : "0W";
+            } else if (time == Double.NEGATIVE_INFINITY) {
+                return showType ? "-0Wz" : "-0W";
+            } else {
+                return sd(showType ? "yyyy.MM.dd HH:mm:ss.SSS'z'" : "yyyy.MM.dd HH:mm:ss.SSS", toTimestamp());
+            }
         }
 
         public void toString(LimitedWriter w, boolean showType) throws IOException {
@@ -1032,11 +1026,11 @@ public class K {
 
         public String toString(boolean showType) {
             if (isNull())
-                return "0Nm";
+                return showType ? "0Nm" : "0N";
             else if (i == Integer.MAX_VALUE)
-                return "0Wm";
+                return showType ? "0Wm" : "0W";
             else if (i == -Integer.MAX_VALUE)
-                return "-0Wm";
+                return showType ? "-0Wm" : "-0W";
             else {
                 int m = i + 24000, y = m / 12;
                 String s = i2(y / 100) + i2(y % 100) + "." + i2(1 + m % 12);
@@ -1238,7 +1232,7 @@ public class K {
 
         public final String toString(boolean showType) {
             try {
-                LimitedWriter writer = new LimitedWriter(256);
+                LimitedWriter writer = new LimitedWriter(TO_STRING_MAX_LENGTH);
                 toString(writer, showType);
                 return writer.toString();
             } catch (IOException e) {
@@ -1379,9 +1373,9 @@ public class K {
         }
 
         void toStringVector(LimitedWriter w, boolean showType) throws IOException {
-            if (getLength() == 0)
+            if (getLength() == 0) {
                 w.write("`float$()");
-            else {
+            } else {
                 if (getLength() == 1)
                     w.write(enlist);
 
@@ -1401,14 +1395,11 @@ public class K {
                         w.write("-0w");
                         printedP = true;
                     } else {
-                        double epsilon = 1e-9;
-                        double diff = d - Math.round(d);
-                        if (!((diff < epsilon) && (diff > -epsilon)))
-                            printedP = true;
+                        printedP = true;
                         w.write(nf.format(d));
                     }
                 }
-                if (!printedP)
+                if (showType && printedP)
                     w.write("f");
             }
         }
@@ -1429,9 +1420,9 @@ public class K {
         }
 
         void toStringVector(LimitedWriter w, boolean showType) throws IOException {
-            if (getLength() == 0)
+            if (getLength() == 0) {
                 w.write("`real$()");
-            else {
+            } else {
                 if (getLength() == 1)
                     w.write(enlist);
 
@@ -1451,12 +1442,11 @@ public class K {
                         w.write("-0W");
                         printedP = true;
                     } else {
-                        if (d != ((int) d))
-                            printedP = true;
+                        printedP = true;
                         w.write(nf.format(d));
                     }
                 }
-                if (!printedP)
+                if (showType && printedP)
                     w.write("e");
             }
         }
@@ -1580,7 +1570,7 @@ public class K {
                         w.write(sd("yyyy.MM.dd", new Date(86400000L * (v + 10957))));
                     }
                 }
-                if (printD)
+                if (showType && printD)
                     w.write("d");
             }
         }
@@ -1670,27 +1660,23 @@ public class K {
             if (getLength() == 0)
                 w.write("`datetime$()");
             else {
-                boolean printZ = true;
                 if (getLength() == 1)
                     w.write(enlist);
                 for (int i = 0; i < getLength(); i++) {
-                    if (i > 0)
-                        w.write(" ");
                     double d = Array.getDouble(array, i);
                     if (i > 0)
                         w.write(" ");
                     if (Double.isNaN(d))
                         w.write("0N");
                     else if (d == Double.POSITIVE_INFINITY)
-                        w.write("0w");
+                        w.write("0W");
                     else if (d == Double.NEGATIVE_INFINITY)
-                        w.write("-0w");
+                        w.write("-0W");
                     else {
-                        printZ = false;
                         w.write(sd("yyyy.MM.dd HH:mm:ss.SSS", new Timestamp(((long) (.5 + 8.64e7 * (d + 10957))))));
                     }
                 }
-                if (printZ)
+                if (showType)
                     w.write("z");
             }
         }
@@ -1867,7 +1853,6 @@ public class K {
         }
 
         void toStringVector(LimitedWriter w, boolean showType) throws IOException {
-            w.write(super.toString(showType));
             if (getLength() == 0)
                 w.write("`boolean$()");
             else {
