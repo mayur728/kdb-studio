@@ -26,15 +26,16 @@ public class AuthenticationManager {
         return (String[]) s.toArray(new String[0]);
     }
 
-    public synchronized static AuthenticationManager getInstance() {
-        if (instance == null)
+    public static synchronized AuthenticationManager getInstance() {
+        if (instance == null) {
             instance = new AuthenticationManager();
+        }
         return instance;
     }
 
     private AuthenticationManager() {
         DefaultAuthenticationMechanism dam = new DefaultAuthenticationMechanism();
-        classMap.put(dam.getMechanismName(),dam.getClass());
+        classMap.put(dam.getMechanismName(), dam.getClass());
 
         String curDir = System.getProperty("user.dir");
         curDir = curDir + "/plugins";
@@ -42,18 +43,15 @@ public class AuthenticationManager {
         //   System.out.println("Looking for plugins at " + curDir);
 
         File dir = new File(curDir);
-        if (!dir.exists())
+        if (!dir.exists()) {
             return;
+        }
 
-        FilenameFilter filter = new FilenameFilter() {
-            public boolean accept(File dir,String name) {
-                return name.endsWith(".jar");
-            }
-        };
+        FilenameFilter filter = (dir1, name) -> name.endsWith(".jar");
 
         String[] children = dir.list(filter);
-        if (children != null)
-            for (int child = 0;child < children.length;child++) {
+        if (children != null) {
+            for (int child = 0; child < children.length; child++) {
                 String filename = dir.getAbsolutePath() + "/" + children[child];
                 try {
                     URL url = new URL("jar:file:" + filename + "/!/");
@@ -65,12 +63,14 @@ public class AuthenticationManager {
                         JarEntry entry = (JarEntry) e.nextElement();
                         String name = entry.getName();
                         if (!entry.isDirectory() && name.endsWith(".class")) {
-                            URLClassLoader loader = new URLClassLoader(new URL[]{url});
-                            String externalName = name.substring(0, name.indexOf('.')).replace('/', '.');
+                            URLClassLoader loader = new URLClassLoader(new URL[] {url});
+                            String externalName =
+                                name.substring(0, name.indexOf('.')).replace('/', '.');
                             try {
                                 Class c = loader.loadClass(externalName);
                                 if (IAuthenticationMechanism.class.isAssignableFrom(c)) {
-                                    IAuthenticationMechanism am = (IAuthenticationMechanism) c.newInstance();
+                                    IAuthenticationMechanism am =
+                                        (IAuthenticationMechanism) c.newInstance();
                                     classMap.put(am.getMechanismName(), c);
                                 }
                             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | Error e1) {
@@ -82,5 +82,6 @@ public class AuthenticationManager {
                     e.printStackTrace(System.err);
                 }
             }
+        }
     }
 }

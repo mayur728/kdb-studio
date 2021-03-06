@@ -1,20 +1,38 @@
 package studio.ui;
 
-import studio.kdb.Config;
-import studio.kdb.K;
-import studio.kdb.TableHeaderRenderer;
-import studio.kdb.TableRowHeader;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JViewport;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import studio.kdb.K;
+import studio.kdb.TableHeaderRenderer;
+import studio.kdb.TableRowHeader;
 
 public class QGrid extends JPanel {
     private final TableModel model;
@@ -53,8 +71,9 @@ public class QGrid extends JPanel {
             Component c = super.prepareRenderer(renderer, rowIndex, vColIndex);
             c.setFont(this.getFont());
 
-            if (isCellSelected(rowIndex, vColIndex))
+            if (isCellSelected(rowIndex, vColIndex)) {
                 bg = bgSelCache;
+            }
 
             return c;
         }
@@ -77,8 +96,9 @@ public class QGrid extends JPanel {
         public void setRowHeight(int rowHeight) {
             originalRowHeight = rowHeight;
             // When setRowHeight() is first called, zoomFactor is 0.
-            if (zoomFactor != 0.0 && zoomFactor != 1.0)
+            if (zoomFactor != 0.0 && zoomFactor != 1.0) {
                 rowHeight = (int) Math.ceil(originalRowHeight * zoomFactor);
+            }
 
             super.setRowHeight(rowHeight);
         }
@@ -88,13 +108,16 @@ public class QGrid extends JPanel {
         }
 
         public void setZoom(float zoomFactor) {
-            if (this.zoomFactor == zoomFactor)
+            if (this.zoomFactor == zoomFactor) {
                 return;
+            }
 
-            if (originalFont == null)
+            if (originalFont == null) {
                 originalFont = getFont();
-            if (originalRowHeight == 0)
+            }
+            if (originalRowHeight == 0) {
                 originalRowHeight = getRowHeight();
+            }
 
             float oldZoomFactor = this.zoomFactor;
             this.zoomFactor = zoomFactor;
@@ -209,10 +232,10 @@ public class QGrid extends JPanel {
         this.add(scrollPane, BorderLayout.CENTER);
 
         UserAction copyExcelFormatAction = new UserAction("Copy (Excel format)",
-                Util.COPY_ICON,
-                "Copy the selected cells to the clipboard using Excel format",
-                KeyEvent.VK_E,
-                null) {
+            Util.COPY_ICON,
+            "Copy the selected cells to the clipboard using Excel format",
+            KeyEvent.VK_E,
+            null) {
             public void actionPerformed(ActionEvent e) {
                 StringBuilder sb = new StringBuilder();
                 int numcols = table.getSelectedColumnCount();
@@ -221,36 +244,43 @@ public class QGrid extends JPanel {
                 int[] colsselected = table.getSelectedColumns();
                 if (!isTableSelectionValid()) {
                     StudioOptionPane.showMessageDialog(null,
-                            "Invalid Copy Selection",
-                            "Invalid Copy Selection",
-                            JOptionPane.ERROR_MESSAGE);
+                        "Invalid Copy Selection",
+                        "Invalid Copy Selection",
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 if (table.getSelectedRowCount() == table.getRowCount()) {
                     for (int col = 0; col < numcols; col++) {
                         sb.append(table.getColumnName(colsselected[col]));
-                        if (col < numcols - 1)
+                        if (col < numcols - 1) {
                             sb.append("\t");
+                        }
                     }
                     sb.append(newline);
                 }
 
                 for (int row = 0; row < numrows; row++) {
-                    if (row > 0)
+                    if (row > 0) {
                         sb.append(newline);
+                    }
                     for (int col = 0; col < numcols; col++) {
                         boolean symColumn = table.getColumnClass(col) == K.KSymbolVector.class;
-                        if (symColumn)
+                        if (symColumn) {
                             sb.append("\"");
+                        }
 
-                        K.KBase b = (K.KBase) table.getValueAt(rowsselected[row], colsselected[col]);
-                        if (!b.isNull())
+                        K.KBase b =
+                            (K.KBase) table.getValueAt(rowsselected[row], colsselected[col]);
+                        if (!b.isNull()) {
                             sb.append(b.toString(false));
-                        if (symColumn)
+                        }
+                        if (symColumn) {
                             sb.append("\"");
-                        if (col < numcols - 1)
+                        }
+                        if (col < numcols - 1) {
                             sb.append("\t");
+                        }
                     }
                 }
                 StringSelection ss = new StringSelection(sb.toString());
@@ -259,10 +289,10 @@ public class QGrid extends JPanel {
         };
 
         UserAction copyHtmlFormatAction = new UserAction("Copy (HTML)",
-                Util.COPY_ICON,
-                "Copy the selected cells to the clipboard using HTML",
-                KeyEvent.VK_H,
-                null) {
+            Util.COPY_ICON,
+            "Copy the selected cells to the clipboard using HTML",
+            KeyEvent.VK_H,
+            null) {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 StringBuilder sb = new StringBuilder();
@@ -274,9 +304,9 @@ public class QGrid extends JPanel {
 
                 if (!isTableSelectionValid()) {
                     StudioOptionPane.showMessageDialog(null,
-                            "Invalid Copy Selection",
-                            "Invalid Copy Selection",
-                            JOptionPane.ERROR_MESSAGE);
+                        "Invalid Copy Selection",
+                        "Invalid Copy Selection",
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -284,7 +314,8 @@ public class QGrid extends JPanel {
 
                 sb.append("<tr>");
                 for (int col = 0; col < numcols; col++) {
-                    sb.append("<th>").append(table.getColumnName(colsselected[col])).append("</th>");
+                    sb.append("<th>").append(table.getColumnName(colsselected[col]))
+                        .append("</th>");
                 }
                 sb.append("</tr>").append(newline);
 
@@ -294,17 +325,20 @@ public class QGrid extends JPanel {
                     }
                     sb.append("<tr>");
                     for (int col = 0; col < numcols; col++) {
-                        K.KBase b = (K.KBase) table.getValueAt(rowsselected[row], colsselected[col]);
+                        K.KBase b =
+                            (K.KBase) table.getValueAt(rowsselected[row], colsselected[col]);
                         sb.append("<td>");
-                        if (!b.isNull())
+                        if (!b.isNull()) {
                             sb.append(b.toString(false));
+                        }
                         sb.append("</td>");
                     }
                     sb.append("</tr>");
                 }
 
                 sb.append("</table>");
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new HtmlSelection(sb.toString()), null);
+                Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new HtmlSelection(sb.toString()), null);
             }
         };
 
@@ -321,9 +355,10 @@ public class QGrid extends JPanel {
             }
 
             private void maybeShowPopup(MouseEvent e) {
-                if (e.isPopupTrigger())
+                if (e.isPopupTrigger()) {
                     popupMenu.show(e.getComponent(),
-                            e.getX(), e.getY());
+                        e.getX(), e.getY());
+                }
             }
         });
     }
@@ -334,8 +369,8 @@ public class QGrid extends JPanel {
         int[] rowsselected = table.getSelectedRows();
         int[] colsselected = table.getSelectedColumns();
         return ((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] &&
-                numrows == rowsselected.length) &&
-                (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] &&
-                        numcols == colsselected.length));
+            numrows == rowsselected.length) &&
+            (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] &&
+                numcols == colsselected.length));
     }
 }

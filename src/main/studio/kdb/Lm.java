@@ -1,9 +1,9 @@
 package studio.kdb;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.text.NumberFormat;
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -17,8 +17,7 @@ public class Lm {
             SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
             f.setTimeZone(TimeZone.getTimeZone("GMT"));
             buildDate = f.parse("20190409");
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
         }
     }
 

@@ -1,7 +1,16 @@
+plugins {
+    id 'checkstyle'
+}
 apply plugin: 'idea'
 //and standard one
 apply plugin: 'java'
 apply plugin: 'application'
+
+checkstyle {
+    toolVersion = '8.41';
+}
+
+checkstyleMain.exclude('**/org/netbeans/editor/**')
 
 repositories {
     mavenCentral()

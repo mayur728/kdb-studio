@@ -6,6 +6,7 @@ public class ListModel extends KTableModel {
     public ListModel(K.KBaseVector list) {
         this.list = list;
     }
+
     @Override
     public boolean isKey(int column) {
         return false;

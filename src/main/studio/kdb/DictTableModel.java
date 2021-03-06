@@ -10,8 +10,9 @@ public class DictTableModel extends KTableModel {
     public boolean isKey(int column) {
         K.Flip f = (K.Flip) dict.x;
 
-        if (column < f.x.getLength())
+        if (column < f.x.getLength()) {
             return true;
+        }
         return false;
     }
 

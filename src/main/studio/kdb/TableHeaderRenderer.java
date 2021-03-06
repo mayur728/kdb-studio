@@ -1,14 +1,17 @@
 package studio.kdb;
 
-import javax.swing.border.Border;
-import studio.ui.BlankIcon;
-import studio.ui.ScaledIcon;
-import studio.ui.Util;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Insets;
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
+import studio.ui.BlankIcon;
+import studio.ui.ScaledIcon;
+import studio.ui.Util;
 
 public class TableHeaderRenderer extends DefaultTableCellRenderer {
     public TableHeaderRenderer() {
@@ -46,29 +49,34 @@ public class TableHeaderRenderer extends DefaultTableCellRenderer {
             int targetHeight = getFontMetrics(getFont()).getHeight() - insets.bottom - insets.top;
             KTableModel ktm = (KTableModel) table.getModel();
             if (ktm.isSortedDesc()) {
-                if (column == ktm.getSortByColumn())
-                    if (ktm.getColumnClass(column) == K.KSymbolVector.class)
-                        icon = new ScaledIcon(Util.SORT_AZ_ASC_ICON,targetHeight);
-                    else
-                        icon = new ScaledIcon(Util.SORT_DESC_ICON,targetHeight);
+                if (column == ktm.getSortByColumn()) {
+                    if (ktm.getColumnClass(column) == K.KSymbolVector.class) {
+                        icon = new ScaledIcon(Util.SORT_AZ_ASC_ICON, targetHeight);
+                    } else {
+                        icon = new ScaledIcon(Util.SORT_DESC_ICON, targetHeight);
+                    }
+                }
+            } else if (ktm.isSortedAsc()) {
+                if (column == ktm.getSortByColumn()) {
+                    if (ktm.getColumnClass(column) == K.KSymbolVector.class) {
+                        icon = new ScaledIcon(Util.SORT_AZ_DESC_ICON, targetHeight);
+                    } else {
+                        icon = new ScaledIcon(Util.SORT_ASC_ICON, targetHeight);
+                    }
+                }
             }
-            else if (ktm.isSortedAsc())
-                if (column == ktm.getSortByColumn())
-                    if (ktm.getColumnClass(column) == K.KSymbolVector.class)
-                        icon = new ScaledIcon(Util.SORT_AZ_DESC_ICON,targetHeight);
-                    else
-                        icon = new ScaledIcon(Util.SORT_ASC_ICON,targetHeight);
-            if (icon != null)
+            if (icon != null) {
                 setIcon(icon);
-            else {
-                icon = new ScaledIcon(Util.SORT_ASC_ICON,targetHeight);
+            } else {
+                icon = new ScaledIcon(Util.SORT_ASC_ICON, targetHeight);
                 setIcon(new BlankIcon(icon));
             }
         }
 
         String text = " ";
-        if (value != null)
+        if (value != null) {
             text = value.toString() + " ";
+        }
 
         setText(text);
 

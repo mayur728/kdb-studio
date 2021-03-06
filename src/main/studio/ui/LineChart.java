@@ -1,23 +1,32 @@
 package studio.ui;
 
-import org.jfree.chart.*;
+import java.util.TimeZone;
+import javax.swing.JFrame;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.LegendItemEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.general.SeriesException;
-import org.jfree.data.time.*;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.Minute;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import studio.kdb.Config;
 import studio.kdb.K;
 import studio.kdb.KTableModel;
 import studio.kdb.ToDouble;
-
-import javax.swing.*;
-import java.util.TimeZone;
 
 public class LineChart {
     public ChartPanel chartPanel;
@@ -82,7 +91,10 @@ public class LineChart {
         if (table.getColumnCount() > 0) {
             Class<?> klass = table.getColumnClass(0);
 
-            if ((klass == K.KTimestampVector.class) || (klass == K.KTimespanVector.class) || (klass == K.KDateVector.class) || (klass == K.KTimeVector.class) || (klass == K.KMonthVector.class) || (klass == K.KMinuteVector.class) || (klass == K.KSecondVector.class) || (klass == K.KDatetimeVector.class)) {
+            if ((klass == K.KTimestampVector.class) || (klass == K.KTimespanVector.class) ||
+                (klass == K.KDateVector.class) || (klass == K.KTimeVector.class) ||
+                (klass == K.KMonthVector.class) || (klass == K.KMinuteVector.class) ||
+                (klass == K.KSecondVector.class) || (klass == K.KDatetimeVector.class)) {
                 TimeSeriesCollection tsc = new TimeSeriesCollection(tz);
 
                 for (int col = 1; col < table.getColumnCount(); col++) {
@@ -113,7 +125,8 @@ public class LineChart {
 
                             for (int row = 0; row < dates.getLength(); row++) {
                                 K.KTimestamp date = (K.KTimestamp) dates.at(row);
-                                Millisecond day = new Millisecond(new java.util.Date(date.toTimestamp().getTime()), tz);
+                                Millisecond day = new Millisecond(
+                                    new java.util.Date(date.toTimestamp().getTime()), tz);
                                 addOrUpdate(table, series, row, col, day);
                             }
                         } else if (klass == K.KTimespanVector.class) {
@@ -167,12 +180,15 @@ public class LineChart {
                     }
 
 
-                    if (series.getItemCount() > 0)
+                    if (series.getItemCount() > 0) {
                         tsc.addSeries(series);
+                    }
                 }
 
                 ds = tsc;
-            } else if ((klass == K.KDoubleVector.class) || (klass == K.KFloatVector.class) || (klass == K.KShortVector.class) || (klass == K.KIntVector.class) || (klass == K.KLongVector.class)) {
+            } else if ((klass == K.KDoubleVector.class) || (klass == K.KFloatVector.class) ||
+                (klass == K.KShortVector.class) || (klass == K.KIntVector.class) ||
+                (klass == K.KLongVector.class)) {
                 XYSeriesCollection xysc = new XYSeriesCollection();
 
                 for (int col = 1; col < table.getColumnCount(); col++) {
@@ -190,8 +206,9 @@ public class LineChart {
                         System.err.println("Error adding to series");
                     }
 
-                    if (series.getItemCount() > 0)
+                    if (series.getItemCount() > 0) {
                         xysc.addSeries(series);
+                    }
                 }
 
                 ds = xysc;
@@ -201,32 +218,35 @@ public class LineChart {
         if (ds != null) {
             boolean legend = false;
 
-            if (ds.getSeriesCount() > 1)
+            if (ds.getSeriesCount() > 1) {
                 legend = true;
+            }
 
-            if (ds instanceof XYSeriesCollection)
+            if (ds instanceof XYSeriesCollection) {
                 return ChartFactory.createXYLineChart("",
-                        "",
-                        "",
-                        ds,
-                        PlotOrientation.VERTICAL,
-                        legend,
-                        true,
-                        true);
-            else if (ds instanceof TimeSeriesCollection)
+                    "",
+                    "",
+                    ds,
+                    PlotOrientation.VERTICAL,
+                    legend,
+                    true,
+                    true);
+            } else if (ds instanceof TimeSeriesCollection) {
                 return ChartFactory.createTimeSeriesChart("",
-                        "",
-                        "",
-                        ds,
-                        legend,
-                        true,
-                        true);
+                    "",
+                    "",
+                    ds,
+                    legend,
+                    true,
+                    true);
+            }
         }
 
         return null;
     }
 
-    private static void addOrUpdate(KTableModel table, TimeSeries series, int row, int col, RegularTimePeriod timePeriod) {
+    private static void addOrUpdate(KTableModel table, TimeSeries series, int row, int col,
+                                    RegularTimePeriod timePeriod) {
         Object o = table.getValueAt(row, col);
         if (o instanceof K.KBase) {
             if (!((K.KBase) o).isNull()) {

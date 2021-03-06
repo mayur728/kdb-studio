@@ -1,38 +1,57 @@
 package studio.kdb;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import java.awt.Color;
+import java.awt.DisplayMode;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.Rectangle;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.swing.tree.TreeNode;
 import studio.core.Credentials;
 import studio.core.DefaultAuthenticationMechanism;
 import studio.ui.ServerList;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.text.NumberFormat;
-import java.text.DecimalFormat;
-import java.awt.*;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import javax.swing.tree.TreeNode;
-
 public class Config {
-    private final static String PATH = System.getProperties().getProperty("user.home") + "/.studioforkdb/";
-    private final static String FILENAME = PATH + "studio.properties";
-    private final static String VERSION = "1.2";
-    private final static String OLD_VERSION = "1.1";
+    private static final String PATH =
+        System.getProperties().getProperty("user.home") + "/.studioforkdb/";
+    private static final String FILENAME = PATH + "studio.properties";
+    private static final String VERSION = "1.2";
+    private static final String OLD_VERSION = "1.1";
 
     private Properties p = new Properties();
     private final Map<String, Server> servers = new HashMap<>();
     private Collection<String> serverNames;
     private ServerTreeNode serverTree;
 
-    private final static Config instance = new Config();
+    private static final Config instance = new Config();
 
     private Config() {
         init();
@@ -42,9 +61,13 @@ public class Config {
         String r = p.getProperty("lineEnding", "");
         if (r.length() == 0) {
             String ls = System.getProperty("line.separator");
-            if (ls.equals("\n")) r = "LF";
-            else if (ls.equals("\r\n")) r = "CRLF";
-            else throw new RuntimeException("unknown line separator setting");
+            if (ls.equals("\n")) {
+                r = "LF";
+            } else if (ls.equals("\r\n")) {
+                r = "CRLF";
+            } else {
+                throw new RuntimeException("unknown line separator setting");
+            }
         }
         return r;
     }
@@ -59,12 +82,12 @@ public class Config {
     }
 
     public int getFontSize() {
-        return Integer.parseInt(p.getProperty("font.size","14"));
+        return Integer.parseInt(p.getProperty("font.size", "14"));
     }
 
     public Font getFont() {
         String name = getFontName();
-        int  size = getFontSize();
+        int size = getFontSize();
 
         Font f = new Font(name, Font.PLAIN, size);
         setFont(f);
@@ -129,25 +152,34 @@ public class Config {
             //A user upgrading from such old directory would suddenly "lose" their config.
             String oldpath = null;
             try {
-                Process process = Runtime.getRuntime().exec("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders\" /v Desktop");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                Process process = Runtime.getRuntime().exec(
+                    "reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders\" /v Desktop");
+                BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (line.contains("Desktop") && line.contains("REG_SZ")) {
                         //    Desktop    REG_SZ    \\path\to\Desktop
                         String[] tokens = line.split("[ \t]");
-                        int tc=0;
-                        for (int i=0; i<tokens.length; ++i) {
-                            if (tokens[i].length() > 0) ++tc;
-                            if (tc==3) oldpath = tokens[i];
+                        int tc = 0;
+                        for (int i = 0; i < tokens.length; ++i) {
+                            if (tokens[i].length() > 0) {
+                                ++tc;
+                            }
+                            if (tc == 3) {
+                                oldpath = tokens[i];
+                            }
                         }
                     }
                 }
             } catch (IOException e) {
                 //ignore
             }
-            System.out.println("Old path: "+oldpath);
-            if (oldpath != null) file = Paths.get(oldpath.substring(0,oldpath.lastIndexOf('\\'))+"\\.studioforkdb\\studio.properties");
+            System.out.println("Old path: " + oldpath);
+            if (oldpath != null) {
+                file = Paths.get(oldpath.substring(0, oldpath.lastIndexOf('\\')) +
+                    "\\.studioforkdb\\studio.properties");
+            }
         }
         if (Files.exists(file)) {
             try {
@@ -171,18 +203,19 @@ public class Config {
             out.close();
         } catch (IOException e) {
             System.err.println("Can't save configuration to " + FILENAME);
-            e.printStackTrace(System.err);  //To change body of catch statement use Options | File Templates.
+            e.printStackTrace(
+                System.err);  //To change body of catch statement use Options | File Templates.
         }
     }
 
     public Object serverTreeToObj(ServerTreeNode root) {
         //converts the server tree to an object that can be saved into JSON
-        LinkedHashMap<String,Object> result = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         result.put("name", root.getName());
-        if(root.isFolder()) {
+        if (root.isFolder()) {
             ArrayList<Object> children = new ArrayList<>();
             result.put("children", children);
-            for (Enumeration<TreeNode> e = root.children(); e.hasMoreElements();) {
+            for (Enumeration<TreeNode> e = root.children(); e.hasMoreElements(); ) {
                 children.add(serverTreeToObj((ServerTreeNode) e.nextElement()));
             }
         }
@@ -192,10 +225,10 @@ public class Config {
     public void exportServerListToJSON(File f) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        Map<String,Object> cfg = new LinkedHashMap<>();
-        ArrayList<Map<String,Object>> svs = new ArrayList<>();
+        Map<String, Object> cfg = new LinkedHashMap<>();
+        ArrayList<Map<String, Object>> svs = new ArrayList<>();
         for (Server s : servers.values()) {
-            LinkedHashMap<String,Object> ps = new LinkedHashMap<>();
+            LinkedHashMap<String, Object> ps = new LinkedHashMap<>();
             svs.add(ps);
             ps.put("name", s.getName());
             ps.put("host", s.getHost());
@@ -211,17 +244,18 @@ public class Config {
             color.add(bgc.getBlue());
             ps.put("color", color);
         }
-        cfg.put("servers",svs);
+        cfg.put("servers", svs);
         cfg.put("serverTree", serverTreeToObj(serverTree));
         try {
             FileWriter sw = new FileWriter(f);
             objectMapper.writeValue(sw, cfg);
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace(System.err);
         }
     }
 
-    private void importServerTreeFromJSON(HashMap<String, Server> serverMap, boolean isRoot, JsonNode jn, ServerTreeNode tn) {
+    private void importServerTreeFromJSON(HashMap<String, Server> serverMap, boolean isRoot,
+                                          JsonNode jn, ServerTreeNode tn) {
         if (jn.has("children")) {   //is a folder
             ServerTreeNode ntn = tn;
             if (!isRoot) {
@@ -231,10 +265,11 @@ public class Config {
                     ntn = new ServerTreeNode(folderName);
                     tn.add(ntn);
                 }
-            };
+            }
+            ;
             JsonNode children = jn.get("children");
             if (children.isArray()) {
-                for (JsonNode child : (Iterable<JsonNode>) ()->children.elements()) {
+                for (JsonNode child : (Iterable<JsonNode>) () -> children.elements()) {
                     importServerTreeFromJSON(serverMap, false, child, ntn);
                 }
             }
@@ -260,21 +295,31 @@ public class Config {
         ArrayList<Integer> noName = new ArrayList<>();
         try {
             JsonNode root = objectMapper.readTree(f);
-            if (!root.isObject()) return "JSON root node is not an object";
-            if (!root.has("servers")) return "JSON root node doesn't have a \"servers\" property";
-            if (!root.has("serverTree")) return "JSON root node doesn't have a \"serverTree\" property";
+            if (!root.isObject()) {
+                return "JSON root node is not an object";
+            }
+            if (!root.has("servers")) {
+                return "JSON root node doesn't have a \"servers\" property";
+            }
+            if (!root.has("serverTree")) {
+                return "JSON root node doesn't have a \"serverTree\" property";
+            }
             JsonNode serversNode = root.get("servers");
             JsonNode serverTreeNode = root.get("serverTree");
-            if (!serversNode.isArray()) return "\"servers\" node is not an array";
+            if (!serversNode.isArray()) {
+                return "\"servers\" node is not an array";
+            }
             HashSet<String> existingServers = new HashSet<>();
-            for (Server s : servers.values()) existingServers.add(s.getName());
+            for (Server s : servers.values()) {
+                existingServers.add(s.getName());
+            }
             HashMap<String, Server> serverMap = new HashMap<>();
-            int i=0;
-            for (JsonNode serverNode : (Iterable<JsonNode>) ()->serversNode.elements()) {
+            int i = 0;
+            for (JsonNode serverNode : (Iterable<JsonNode>) () -> serversNode.elements()) {
                 if (!serverNode.isObject()) {
-                    sb.append("Non-object found inside \"servers\" array at index "+i+"\n");
+                    sb.append("Non-object found inside \"servers\" array at index " + i + "\n");
                 } else if (!serverNode.has("name")) {
-                    sb.append("Server at index "+i+" has no name\n");
+                    sb.append("Server at index " + i + " has no name\n");
                 } else {
                     String sname = serverNode.get("name").asText();
                     if (sname.length() == 0) {
@@ -284,16 +329,30 @@ public class Config {
                     } else {
                         Server s = new Server();
                         s.setName(sname);
-                        if (serverNode.has("host")) s.setHost(serverNode.get("host").asText(""));
-                        if (serverNode.has("port")) s.setPort(serverNode.get("port").asInt(0));
-                        if (serverNode.has("username")) s.setUsername(serverNode.get("username").asText(""));
-                        if (serverNode.has("password")) s.setPassword(serverNode.get("password").asText(""));
-                        if (serverNode.has("useTls")) s.setUseTLS(serverNode.get("useTls").asBoolean(false));
-                        if (serverNode.has("authMethod")) s.setAuthenticationMechanism(serverNode.get("authMethod").asText(""));
+                        if (serverNode.has("host")) {
+                            s.setHost(serverNode.get("host").asText(""));
+                        }
+                        if (serverNode.has("port")) {
+                            s.setPort(serverNode.get("port").asInt(0));
+                        }
+                        if (serverNode.has("username")) {
+                            s.setUsername(serverNode.get("username").asText(""));
+                        }
+                        if (serverNode.has("password")) {
+                            s.setPassword(serverNode.get("password").asText(""));
+                        }
+                        if (serverNode.has("useTls")) {
+                            s.setUseTLS(serverNode.get("useTls").asBoolean(false));
+                        }
+                        if (serverNode.has("authMethod")) {
+                            s.setAuthenticationMechanism(serverNode.get("authMethod").asText(""));
+                        }
                         if (serverNode.has("color")) {
                             JsonNode color = serverNode.get("color");
                             if (color.isArray() && color.size() >= 3) {
-                                s.setBackgroundColor(new Color(color.get(0).asInt(255),color.get(1).asInt(255),color.get(2).asInt(255)));
+                                s.setBackgroundColor(
+                                    new Color(color.get(0).asInt(255), color.get(1).asInt(255),
+                                        color.get(2).asInt(255)));
                             }
                         }
                         serverMap.put(sname, s);
@@ -304,9 +363,14 @@ public class Config {
             if (serverTreeNode.isObject()) {
                 importServerTreeFromJSON(serverMap, true, serverTreeNode, serverTree);
             }
-            if (0<noName.size()) sb.append("The servers at the following indices have no names: "+noName);
-            if (0<alreadyExist.size()) sb.append("The following servers already exist and were not imported: "+alreadyExist);
-        } catch(IOException e) {
+            if (0 < noName.size()) {
+                sb.append("The servers at the following indices have no names: " + noName);
+            }
+            if (0 < alreadyExist.size()) {
+                sb.append(
+                    "The following servers already exist and were not imported: " + alreadyExist);
+            }
+        } catch (IOException e) {
             return e.toString();
         }
         int i = 0;
@@ -320,7 +384,9 @@ public class Config {
     // "".split(",") return {""}; we need to get zero length array
     private String[] split(String str) {
         str = str.trim();
-        if (str.length() == 0) return new String[0];
+        if (str.length() == 0) {
+            return new String[0];
+        }
         return str.split(",");
     }
 
@@ -334,7 +400,9 @@ public class Config {
     }
 
     public void setLRUServer(Server s) {
-        if (s == null) return; // May be it should be an exception ?
+        if (s == null) {
+            return; // May be it should be an exception ?
+        }
 
         p.put("lruServer", s.getFullName());
         save();
@@ -342,7 +410,7 @@ public class Config {
 
 
     public void saveQKeywords(String[] keywords) {
-        p.put("qkeywords", String.join(",",keywords));
+        p.put("qkeywords", String.join(",", keywords));
         save();
     }
 
@@ -379,8 +447,12 @@ public class Config {
     // If user and password are not found, defaults form default AuthenticationMechanism are used
     public Server getServerByConnectionString(String connectionString) {
         connectionString = connectionString.trim();
-        if (connectionString.startsWith("`")) connectionString = connectionString.substring(1);
-        if (connectionString.startsWith(":")) connectionString = connectionString.substring(1);
+        if (connectionString.startsWith("`")) {
+            connectionString = connectionString.substring(1);
+        }
+        if (connectionString.startsWith(":")) {
+            connectionString = connectionString.substring(1);
+        }
 
         String[] nodes = connectionString.split(":");
         if (nodes.length < 2) {
@@ -398,13 +470,15 @@ public class Config {
             password = credentials.getPassword();
         } else {
             user = nodes[2];
-            password = nodes.length > 3 ? Stream.of(nodes).skip(3).collect(Collectors.joining(":")) : "";
+            password =
+                nodes.length > 3 ? Stream.of(nodes).skip(3).collect(Collectors.joining(":")) : "";
         }
 
         Color bgColor = Config.getInstance().getDefaultBackgroundColor();
 
-        for (Server s: getServers()) {
-            if (s.getHost().equals(host) && s.getPort() == port && s.getUsername().equals(user) && s.getPassword().equals(password)) {
+        for (Server s : getServers()) {
+            if (s.getHost().equals(host) && s.getPort() == port && s.getUsername().equals(user) &&
+                s.getPassword().equals(password)) {
                 return s;
             }
         }
@@ -426,7 +500,10 @@ public class Config {
 
     public String getDefaultAuthMechanism() {
         String result = p.getProperty("auth", null);
-        if (result == null) result = System.getenv().getOrDefault("KDB_STUDIO_AUTH_METHOD", DefaultAuthenticationMechanism.NAME);
+        if (result == null) {
+            result = System.getenv()
+                .getOrDefault("KDB_STUDIO_AUTH_METHOD", DefaultAuthenticationMechanism.NAME);
+        }
         return result;
     }
 
@@ -436,7 +513,7 @@ public class Config {
     }
 
     public boolean isShowServerComboBox() {
-        return Boolean.parseBoolean(p.getProperty("showServerComboBox","true"));
+        return Boolean.parseBoolean(p.getProperty("showServerComboBox", "true"));
     }
 
     public boolean isShowConsoleView() {
@@ -454,7 +531,7 @@ public class Config {
     }
 
     public int getResultTabsCount() {
-        return Integer.parseInt(p.getProperty("resultTabsCount","6"));
+        return Integer.parseInt(p.getProperty("resultTabsCount", "6"));
     }
 
     public void setResultTabsCount(int value) {
@@ -463,10 +540,10 @@ public class Config {
     }
 
     public void setServerListBounds(Rectangle rectangle) {
-        p.setProperty("serverList.x", "" + (int)rectangle.getX());
-        p.setProperty("serverList.y", "" + (int)rectangle.getY());
-        p.setProperty("serverList.width", "" + (int)rectangle.getWidth());
-        p.setProperty("serverList.height", "" + (int)rectangle.getHeight());
+        p.setProperty("serverList.x", "" + (int) rectangle.getX());
+        p.setProperty("serverList.y", "" + (int) rectangle.getY());
+        p.setProperty("serverList.width", "" + (int) rectangle.getWidth());
+        p.setProperty("serverList.height", "" + (int) rectangle.getHeight());
         save();
     }
 
@@ -478,11 +555,11 @@ public class Config {
 
         if (strX != null && strY != null && strWidth != null && strHeight != null) {
             return new Rectangle(Integer.parseInt(strX), Integer.parseInt(strY),
-                                Integer.parseInt(strWidth), Integer.parseInt(strHeight));
+                Integer.parseInt(strWidth), Integer.parseInt(strHeight));
         }
 
         DisplayMode displayMode = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                            .getDefaultScreenDevice().getDisplayMode();
+            .getDefaultScreenDevice().getDisplayMode();
 
         int width = displayMode.getWidth();
         int height = displayMode.getHeight();
@@ -491,7 +568,7 @@ public class Config {
         int h = Math.min(height / 2, ServerList.DEFAULT_HEIGHT);
         int x = (width - w) / 2;
         int y = (height - h) / 2;
-        return new Rectangle(x,y,w,h);
+        return new Rectangle(x, y, w, h);
     }
 
     public Collection<String> getServerNames() {
@@ -516,9 +593,12 @@ public class Config {
         String username = p.getProperty("server." + key + ".user", "");
         String password = p.getProperty("server." + key + ".password", "");
         String backgroundColor = p.getProperty("server." + key + ".backgroundColor", "FFFFFF");
-        String authenticationMechanism = p.getProperty("server." + key + ".authenticationMechanism", null);
-        if (authenticationMechanism == null)
-            authenticationMechanism = System.getenv().getOrDefault("KDB_STUDIO_AUTH_METHOD", DefaultAuthenticationMechanism.NAME);
+        String authenticationMechanism =
+            p.getProperty("server." + key + ".authenticationMechanism", null);
+        if (authenticationMechanism == null) {
+            authenticationMechanism = System.getenv()
+                .getOrDefault("KDB_STUDIO_AUTH_METHOD", DefaultAuthenticationMechanism.NAME);
+        }
         boolean useTLS = Boolean.parseBoolean(p.getProperty("server." + key + ".useTLS", "false"));
         Color c = new Color(Integer.parseInt(backgroundColor, 16));
         return new Server("", host, port, username, password, c, authenticationMechanism, useTLS);
@@ -531,7 +611,7 @@ public class Config {
     private void convertFromOldVerion() {
         try {
             System.out.println("Found old config. Converting...");
-            String[] names = p.getProperty("Servers","").split(",");
+            String[] names = p.getProperty("Servers", "").split(",");
             List<Server> list = new ArrayList<>();
             for (String name : names) {
                 Server server = initServerFromKey(name);
@@ -551,7 +631,7 @@ public class Config {
     }
 
     private void initServers() {
-        if (p.getProperty("version","").equals(OLD_VERSION)) {
+        if (p.getProperty("version", "").equals(OLD_VERSION)) {
             convertFromOldVerion();
         }
         serverNames = new ArrayList<>();
@@ -596,14 +676,16 @@ public class Config {
         p.setProperty("server." + number + ".port", "" + server.getPort());
         p.setProperty("server." + number + ".user", "" + server.getUsername());
         p.setProperty("server." + number + ".password", "" + server.getPassword());
-        p.setProperty("server." + number + ".backgroundColor", "" + Integer.toHexString(server.getBackgroundColor().getRGB()).substring(2));
-        p.setProperty("server." + number + ".authenticationMechanism", server.getAuthenticationMechanism());
+        p.setProperty("server." + number + ".backgroundColor",
+            "" + Integer.toHexString(server.getBackgroundColor().getRGB()).substring(2));
+        p.setProperty("server." + number + ".authenticationMechanism",
+            server.getAuthenticationMechanism());
         p.setProperty("server." + number + ".useTLS", "" + server.getUseTLS());
     }
 
     private int saveServerTree(String keyPrefix, ServerTreeNode node, int number) {
         int count = node.getChildCount();
-        for(int index = 0; index<count; index++) {
+        for (int index = 0; index < count; index++) {
             String key = keyPrefix + index;
             ServerTreeNode child = node.getChild(index);
             if (child.isFolder()) {
@@ -646,7 +728,8 @@ public class Config {
         String name = server.getName();
         String fullName = server.getFullName();
         if (serverNames.contains(fullName)) {
-            throw new IllegalArgumentException("Server with full name " + fullName + " already exist");
+            throw new IllegalArgumentException(
+                "Server with full name " + fullName + " already exist");
         }
         if (name.trim().length() == 0) {
             throw new IllegalArgumentException("Server name can't be empty");
@@ -698,20 +781,23 @@ public class Config {
             purgeAll();
             this.serverTree = serverTree;
 
-            for(Enumeration e = serverTree.depthFirstEnumeration(); e.hasMoreElements();) {
+            for (Enumeration e = serverTree.depthFirstEnumeration(); e.hasMoreElements(); ) {
                 ServerTreeNode node = (ServerTreeNode) e.nextElement();
-                if (node.isRoot()) continue;
+                if (node.isRoot()) {
+                    continue;
+                }
 
                 if (node.isFolder()) {
                     String folder = node.getFolder();
-                    if (folder.trim().length()==0) {
+                    if (folder.trim().length() == 0) {
                         throw new IllegalArgumentException("Can't add folder with empty name");
                     }
                     if (folder.contains("/")) {
                         throw new IllegalArgumentException("Folder can't contain /");
                     }
-                    if ( ((ServerTreeNode)node.getParent()).getChild(node.getFolder())!= node ) {
-                        throw new IllegalArgumentException("Duplicate folder is found: " + node.fullPath());
+                    if (((ServerTreeNode) node.getParent()).getChild(node.getFolder()) != node) {
+                        throw new IllegalArgumentException(
+                            "Duplicate folder is found: " + node.fullPath());
                     }
                 } else {
                     Server server = node.getServer();
