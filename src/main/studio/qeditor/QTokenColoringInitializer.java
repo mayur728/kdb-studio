@@ -1,6 +1,5 @@
 package studio.qeditor;
 
-import studio.kdb.Config;
 import java.awt.Color;
 import java.awt.Font;
 import org.netbeans.editor.Coloring;
@@ -9,86 +8,101 @@ import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContextPath;
+import studio.kdb.Config;
 
-class QTokenColoringInitializer extends SettingsUtil.TokenColoringInitializer
-{
-    Font boldFont=SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
-    Font italicFont=SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
-    Settings.Evaluator boldSubst=new SettingsUtil.FontStylePrintColoringEvaluator(Font.BOLD);
-    Settings.Evaluator italicSubst=new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
-    Settings.Evaluator lightGraySubst=new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
-    private Coloring CHARVECTOR_Coloring;
-    private Coloring EOL_COMMENT_Coloring;
-    private Coloring IDENTIFIER_Coloring;
-    private Coloring OPERATOR_Coloring;
-    private Coloring BOOLEAN_Coloring;
-    private Coloring BYTE_Coloring;
-    private Coloring SHORT_Coloring;
-    private Coloring LONG_Coloring;
-    private Coloring REAL_Coloring;
-    private Coloring INTEGER_Coloring;
-    private Coloring FLOAT_Coloring;
-    private Coloring TIMESTAMP_Coloring;
-    private Coloring TIMESPAN_Coloring;
-    private Coloring DATETIME_Coloring;
-    private Coloring DATE_Coloring;
-    private Coloring MONTH_Coloring;
-    private Coloring MINUTE_Coloring;
-    private Coloring SECOND_Coloring;
-    private Coloring TIME_Coloring;
-    private Coloring SYMBOL_Coloring;
-    private Coloring KEYWORD_Coloring;
-    private Coloring COMMAND_Coloring;
-    private Coloring SYSTEM_Coloring;
-    private Coloring WHITESPACE_Coloring;
-    private Coloring DEFAULT_Coloring;
-    
-    private Coloring buildColoring(String name, Font font, Color defaultColor)
-    {
+class QTokenColoringInitializer extends SettingsUtil.TokenColoringInitializer {
+    Font boldFont = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
+    Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
+    Settings.Evaluator boldSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.BOLD);
+    Settings.Evaluator italicSubst = new SettingsUtil.FontStylePrintColoringEvaluator(Font.ITALIC);
+    Settings.Evaluator lightGraySubst =
+        new SettingsUtil.ForeColorPrintColoringEvaluator(Color.lightGray);
+    private final Coloring CHARVECTOR_Coloring;
+    private final Coloring EOL_COMMENT_Coloring;
+    private final Coloring IDENTIFIER_Coloring;
+    private final Coloring OPERATOR_Coloring;
+    private final Coloring BOOLEAN_Coloring;
+    private final Coloring BYTE_Coloring;
+    private final Coloring SHORT_Coloring;
+    private final Coloring LONG_Coloring;
+    private final Coloring REAL_Coloring;
+    private final Coloring INTEGER_Coloring;
+    private final Coloring FLOAT_Coloring;
+    private final Coloring TIMESTAMP_Coloring;
+    private final Coloring TIMESPAN_Coloring;
+    private final Coloring DATETIME_Coloring;
+    private final Coloring DATE_Coloring;
+    private final Coloring MONTH_Coloring;
+    private final Coloring MINUTE_Coloring;
+    private final Coloring SECOND_Coloring;
+    private final Coloring TIME_Coloring;
+    private final Coloring SYMBOL_Coloring;
+    private final Coloring KEYWORD_Coloring;
+    private final Coloring COMMAND_Coloring;
+    private final Coloring SYSTEM_Coloring;
+    private final Coloring WHITESPACE_Coloring;
+    private final Coloring DEFAULT_Coloring;
+
+    private Coloring buildColoring(String name, Font font, Color defaultColor) {
         return new Coloring(font,
-                            Coloring.FONT_MODE_APPLY_STYLE,
-                            Config.getInstance().getColorForToken(name, defaultColor),
-                            null);
+            Coloring.FONT_MODE_APPLY_STYLE,
+            Config.getInstance().getColorForToken(name, defaultColor),
+            null);
     }
 
-    public QTokenColoringInitializer()
-    {
-        super(QTokenContext.context);
-        CHARVECTOR_Coloring=buildColoring("CHARVECTOR", SettingsDefaults.defaultFont,new Color(0,200,20));
-        EOL_COMMENT_Coloring=buildColoring("EOLCOMMENT", italicFont, Color.GRAY);
-        IDENTIFIER_Coloring=buildColoring("IDENTIFIER", SettingsDefaults.defaultFont,new Color(180,160,0));
-        OPERATOR_Coloring=buildColoring("OPERATOR", SettingsDefaults.defaultFont,Color.BLACK);
-        BOOLEAN_Coloring=buildColoring("BOOLEAN", SettingsDefaults.defaultFont,new Color(51,204,255));
-        BYTE_Coloring=buildColoring("BYTE",SettingsDefaults.defaultFont,new Color(51,104,255));
-        SHORT_Coloring=buildColoring("SHORT",SettingsDefaults.defaultFont,new Color(51,104,255));
-        LONG_Coloring=buildColoring("LONG",SettingsDefaults.defaultFont,new Color(51,104,255));
-        REAL_Coloring=buildColoring("REAL",SettingsDefaults.defaultFont,new Color(51,104,255));
-        INTEGER_Coloring=buildColoring("INTEGER",SettingsDefaults.defaultFont,new Color(51,104,255));
-        FLOAT_Coloring=buildColoring("FLOAT",SettingsDefaults.defaultFont,new Color(51,104,255));
-        TIMESTAMP_Coloring=buildColoring("TIMESTAMP",SettingsDefaults.defaultFont,new Color(184,138,0));
-        TIMESPAN_Coloring=buildColoring("TIMESPAN",SettingsDefaults.defaultFont,new Color(184,138,0));
-        DATETIME_Coloring=buildColoring("DATETIME",SettingsDefaults.defaultFont,new Color(184,138,0));
-        DATE_Coloring=buildColoring("DATE",SettingsDefaults.defaultFont,new Color(184,138,0));
-        MONTH_Coloring=buildColoring("MONTH",SettingsDefaults.defaultFont,new Color(184,138,0));
-        MINUTE_Coloring=buildColoring("MINUTE",SettingsDefaults.defaultFont,new Color(184,138,0));
-        SECOND_Coloring=buildColoring("SECOND",SettingsDefaults.defaultFont,new Color(184,138,0));
-        TIME_Coloring=buildColoring("TIME",SettingsDefaults.defaultFont,new Color(184,138,0));
-        SYMBOL_Coloring=buildColoring("SYMBOL",SettingsDefaults.defaultFont,new Color(179,0,134));
-        KEYWORD_Coloring=buildColoring("KEYWORD", boldFont,new Color(0,0,255));
-        COMMAND_Coloring=buildColoring("COMMAND", SettingsDefaults.defaultFont,new Color(240,180,0));
-        SYSTEM_Coloring=buildColoring("SYSTEM", SettingsDefaults.defaultFont,new Color(240,180,0));
-        WHITESPACE_Coloring=buildColoring("WHITESPACE", SettingsDefaults.defaultFont,Color.black);
-        DEFAULT_Coloring=buildColoring("DEFAULT", SettingsDefaults.defaultFont,Color.black);
+    public QTokenColoringInitializer() {
+        super(QTokenContext.CONTEXT);
+        CHARVECTOR_Coloring =
+            buildColoring("CHARVECTOR", SettingsDefaults.defaultFont, new Color(0, 200, 20));
+        EOL_COMMENT_Coloring = buildColoring("EOLCOMMENT", italicFont, Color.GRAY);
+        IDENTIFIER_Coloring =
+            buildColoring("IDENTIFIER", SettingsDefaults.defaultFont, new Color(180, 160, 0));
+        OPERATOR_Coloring = buildColoring("OPERATOR", SettingsDefaults.defaultFont, Color.BLACK);
+        BOOLEAN_Coloring =
+            buildColoring("BOOLEAN", SettingsDefaults.defaultFont, new Color(51, 204, 255));
+        BYTE_Coloring =
+            buildColoring("BYTE", SettingsDefaults.defaultFont, new Color(51, 104, 255));
+        SHORT_Coloring =
+            buildColoring("SHORT", SettingsDefaults.defaultFont, new Color(51, 104, 255));
+        LONG_Coloring =
+            buildColoring("LONG", SettingsDefaults.defaultFont, new Color(51, 104, 255));
+        REAL_Coloring =
+            buildColoring("REAL", SettingsDefaults.defaultFont, new Color(51, 104, 255));
+        INTEGER_Coloring =
+            buildColoring("INTEGER", SettingsDefaults.defaultFont, new Color(51, 104, 255));
+        FLOAT_Coloring =
+            buildColoring("FLOAT", SettingsDefaults.defaultFont, new Color(51, 104, 255));
+        TIMESTAMP_Coloring =
+            buildColoring("TIMESTAMP", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        TIMESPAN_Coloring =
+            buildColoring("TIMESPAN", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        DATETIME_Coloring =
+            buildColoring("DATETIME", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        DATE_Coloring = buildColoring("DATE", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        MONTH_Coloring =
+            buildColoring("MONTH", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        MINUTE_Coloring =
+            buildColoring("MINUTE", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        SECOND_Coloring =
+            buildColoring("SECOND", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        TIME_Coloring = buildColoring("TIME", SettingsDefaults.defaultFont, new Color(184, 138, 0));
+        SYMBOL_Coloring =
+            buildColoring("SYMBOL", SettingsDefaults.defaultFont, new Color(179, 0, 134));
+        KEYWORD_Coloring = buildColoring("KEYWORD", boldFont, new Color(0, 0, 255));
+        COMMAND_Coloring =
+            buildColoring("COMMAND", SettingsDefaults.defaultFont, new Color(240, 180, 0));
+        SYSTEM_Coloring =
+            buildColoring("SYSTEM", SettingsDefaults.defaultFont, new Color(240, 180, 0));
+        WHITESPACE_Coloring =
+            buildColoring("WHITESPACE", SettingsDefaults.defaultFont, Color.black);
+        DEFAULT_Coloring = buildColoring("DEFAULT", SettingsDefaults.defaultFont, Color.black);
     }
 
     public Object getTokenColoring(TokenContextPath tokenContextPath,
                                    TokenCategory tokenIDOrCategory,
-                                   boolean printingSet)
-    {
-        if(!printingSet)
-        {
-            switch(tokenIDOrCategory.getNumericID())
-            {
+                                   boolean printingSet) {
+        if (!printingSet) {
+            switch (tokenIDOrCategory.getNumericID()) {
                 case QTokenContext.CHARVECTOR_ID:
                     return CHARVECTOR_Coloring;
                 case QTokenContext.EOL_COMMENT_ID:
@@ -130,7 +144,7 @@ class QTokenColoringInitializer extends SettingsUtil.TokenColoringInitializer
                 case QTokenContext.SYMBOL_ID:
                     return SYMBOL_Coloring;
                 case QTokenContext.UNKNOWN_ID:
-                    return new Coloring(boldFont,Coloring.FONT_MODE_APPLY_STYLE,Color.red,null);
+                    return new Coloring(boldFont, Coloring.FONT_MODE_APPLY_STYLE, Color.red, null);
                 case QTokenContext.KEYWORD_ID:
                     return KEYWORD_Coloring;
                 case QTokenContext.COMMAND_ID:
@@ -142,11 +156,8 @@ class QTokenColoringInitializer extends SettingsUtil.TokenColoringInitializer
                 default:
                     return DEFAULT_Coloring;
             }
-        }
-        else
-        { // printing set
-            switch(tokenIDOrCategory.getNumericID())
-            {
+        } else { // printing set
+            switch (tokenIDOrCategory.getNumericID()) {
                 default:
                     return SettingsUtil.defaultPrintColoringEvaluator;
             }

@@ -1,51 +1,57 @@
 package studio.utils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 public class ClassLoaderUtil {
-    static protected String classToPath(String name) {
+    protected static String classToPath(String name) {
         Properties properties = System.getProperties();
         String fileSeparator = properties.getProperty("file.separator");
         char fsc = fileSeparator.charAt(0);
-        String path = name.replace('.',fsc);
+        String path = name.replace('.', fsc);
         path += ".class";
         return path;
     }
 
-    static protected byte[] readFile(String filename) throws IOException {
+    protected static byte[] readFile(String filename) throws IOException {
         File file = new File(filename);
         long len = file.length();
-        byte data[] = new byte[(int) len];
+        byte[] data = new byte[(int) len];
         FileInputStream fin = new FileInputStream(file);
         int r = fin.read(data);
-        if (r != len)
+        if (r != len) {
             throw new IOException("Only read " + r + " of " + len + " for " + file);
+        }
         fin.close();
         return data;
     }
 
-    static protected byte[] getClassBytes(String name) throws IOException {
+    protected static byte[] getClassBytes(String name) throws IOException {
         String path = classToPath(name);
         return readFile(path);
     }
 
-    static protected void copyFile(OutputStream out,InputStream in)
+    protected static void copyFile(OutputStream out, InputStream in)
         throws IOException {
-        byte buffer[] = new byte[4096];
+        byte[] buffer = new byte[4096];
 
         while (true) {
             int r = in.read(buffer);
-            if (r <= 0)
+            if (r <= 0) {
                 break;
-            out.write(buffer,0,r);
+            }
+            out.write(buffer, 0, r);
         }
     }
 
-    static protected void copyFile(OutputStream out,String infile)
+    protected static void copyFile(OutputStream out, String infile)
         throws IOException {
         FileInputStream fin = new FileInputStream(infile);
-        copyFile(out,fin);
+        copyFile(out, fin);
         fin.close();
     }
 }

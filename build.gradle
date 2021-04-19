@@ -1,22 +1,22 @@
+plugins {
+    id 'checkstyle'
+}
 apply plugin: 'idea'
 //and standard one
 apply plugin: 'java'
 apply plugin: 'application'
+
+checkstyle {
+    toolVersion = '8.41';
+}
+
+checkstyleMain.exclude('**/org/netbeans/editor/**')
 
 repositories {
     mavenCentral()
 }
 
 logger.lifecycle('Java version '+JavaVersion.current())
-
-dependencies {
-    compile group: 'org.netbeans.api', name: 'org-openide-awt', version: 'RELEASE113'
-    compile group: 'org.jfree', name: 'jfreechart', version: '1.0.14'
-    compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
-    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.2'
-    testCompile group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
-}
 
 sourceSets {
     main {
@@ -33,6 +33,27 @@ sourceSets {
     test {
         java.srcDirs += ['src/test']
     }
+
+    intTest {
+        java.srcDirs += ['src/test-integration']
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+dependencies {
+    compile group: 'org.netbeans.api', name: 'org-openide-awt', version: 'RELEASE113'
+    compile group: 'org.jfree', name: 'jfreechart', version: '1.0.14'
+    compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
+    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.2'
+    testCompile group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
+    intTestCompile group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
+}
+
+configurations {
+    intTestImplementation.extendsFrom implementation
+    intTestRunimeOnly.extendsFrom runtimeOnly
 }
 
 test {
@@ -41,6 +62,14 @@ test {
         junitXml.enabled = true
         html.enabled = true
     }
+}
+
+task integrationTest(type: Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
 }
 
 application {

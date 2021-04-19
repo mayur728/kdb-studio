@@ -1,16 +1,28 @@
 package studio.ui;
 
-import studio.kdb.Lm;
-import studio.utils.BrowserLaunch;
-
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import studio.kdb.Lm;
+import studio.utils.BrowserLaunch;
 
 public class HelpDialog extends JDialog {
     public HelpDialog(JFrame parent) {
@@ -18,22 +30,26 @@ public class HelpDialog extends JDialog {
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd");
         f.setTimeZone(TimeZone.getTimeZone("GMT"));
         final JEditorPane jep = new JEditorPane("text/html",
-                "<html><head><title>Studio for kdb+</title></head><body><h1>Studio for kdb+</h1>"
-                        + "<br>Version: " + Lm.getVersionString()
-                        + "<br>Build date: " + f.format(Lm.buildDate)
-                        + "<br>JVM Version: " + System.getProperty("java.version")
-                        + "<br>License: <a href=\"http://github.com/CharlesSkelton/studio/blob/master/license.md\">Apache 2</a>"
-                        + "<br>N.B. Some components have their own license terms, see this project on github for details."
-                        + "<br>Source available from <a href=\"http://github.com/CharlesSkelton/studio\">Github</a>"
-                        + "<br>Contributions and corrections welcome."
-                        + "</body></html>");
+            "<html><head><title>Studio for kdb+</title></head><body><h1>Studio for kdb+</h1>"
+                + "<br>Version: " + Lm.getVersionString()
+                + "<br>Build date: " + f.format(Lm.buildDate)
+                + "<br>JVM Version: " + System.getProperty("java.version")
+                +
+                "<br>License: <a href=\"http://github.com/CharlesSkelton/studio/blob/master/license.md\">Apache 2</a>"
+                +
+                "<br>N.B. Some components have their own license terms, see this project on github for details."
+                +
+                "<br>Source available from <a href=\"http://github.com/CharlesSkelton/studio\">Github</a>"
+                + "<br>Contributions and corrections welcome."
+                + "</body></html>");
         jep.setEditable(false);
         jep.setOpaque(true);
         jep.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent hle) {
-                if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType()))
+                if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
                     BrowserLaunch.openURL(hle.getURL().toString());
+                }
             }
         });
         getContentPane().add(jep);

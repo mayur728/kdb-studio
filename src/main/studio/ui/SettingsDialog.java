@@ -1,16 +1,32 @@
 package studio.ui;
 
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
+import java.awt.Component;
+import java.awt.GraphicsEnvironment;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.text.NumberFormatter;
 import studio.core.AuthenticationManager;
 import studio.core.Credentials;
 import studio.kdb.Config;
-
-import javax.swing.*;
-import javax.swing.text.NumberFormatter;
-import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
-
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 public class SettingsDialog extends EscapeDialog {
     private JComboBox comboBoxAuthMechanism;
@@ -27,7 +43,7 @@ public class SettingsDialog extends EscapeDialog {
     private JButton btnOk;
     private JButton btnCancel;
 
-    private final static int FIELD_SIZE = 150;
+    private static final int FIELD_SIZE = 150;
 
     public SettingsDialog(JFrame owner) {
         super(owner, "Settings");
@@ -55,7 +71,7 @@ public class SettingsDialog extends EscapeDialog {
     }
 
     public String getLookAndFeelClassName() {
-        return ((CustomiszedLookAndFeelInfo)comboBoxLookAndFeel.getSelectedItem()).getClassName();
+        return ((CustomiszedLookAndFeelInfo) comboBoxLookAndFeel.getSelectedItem()).getClassName();
     }
 
     public int getResultTabsCount() {
@@ -63,7 +79,8 @@ public class SettingsDialog extends EscapeDialog {
     }
 
     private void refreshCredentials() {
-        Credentials credentials = Config.getInstance().getDefaultCredentials(getDefaultAuthenticationMechanism());
+        Credentials credentials =
+            Config.getInstance().getDefaultCredentials(getDefaultAuthenticationMechanism());
 
         txtUser.setText(credentials.getUsername());
         txtPassword.setText(credentials.getPassword());
@@ -76,13 +93,17 @@ public class SettingsDialog extends EscapeDialog {
     }
 
     public int getFontSize() {
-        return (Integer)spnFontSize.getValue();
+        return (Integer) spnFontSize.getValue();
     }
 
     public String getLineEnding() {
-        if (rbLineEndingCRLF.isSelected()) return "CRLF";
-        else if (rbLineEndingLF.isSelected()) return "LF";
-        else return "";
+        if (rbLineEndingCRLF.isSelected()) {
+            return "CRLF";
+        } else if (rbLineEndingLF.isSelected()) {
+            return "LF";
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -96,15 +117,18 @@ public class SettingsDialog extends EscapeDialog {
 
         txtUser = new JTextField();
         txtPassword = new JPasswordField();
-        comboBoxAuthMechanism = new JComboBox(AuthenticationManager.getInstance().getAuthenticationMechanisms());
-        comboBoxAuthMechanism.getModel().setSelectedItem(Config.getInstance().getDefaultAuthMechanism());
+        comboBoxAuthMechanism =
+            new JComboBox(AuthenticationManager.getInstance().getAuthenticationMechanisms());
+        comboBoxAuthMechanism.getModel()
+            .setSelectedItem(Config.getInstance().getDefaultAuthMechanism());
         comboBoxAuthMechanism.addItemListener(e -> refreshCredentials());
 
         JLabel lblLookAndFeel = new JLabel("Look and Feel:");
 
         LookAndFeels lookAndFeels = new LookAndFeels();
         comboBoxLookAndFeel = new JComboBox(lookAndFeels.getLookAndFeels());
-        CustomiszedLookAndFeelInfo lf = lookAndFeels.getLookAndFeel(Config.getInstance().getLookAndFeel());
+        CustomiszedLookAndFeelInfo lf =
+            lookAndFeels.getLookAndFeel(Config.getInstance().getLookAndFeel());
         if (lf == null) {
             lf = lookAndFeels.getLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
         }
@@ -124,7 +148,8 @@ public class SettingsDialog extends EscapeDialog {
         JLabel lblPassword = new JLabel("  Password:");
 
         JLabel lblFontSize = new JLabel("Font:");
-        spnFontSize = new JSpinner(new SpinnerNumberModel(Config.getInstance().getFontSize(), 8, 72, 1));
+        spnFontSize =
+            new JSpinner(new SpinnerNumberModel(Config.getInstance().getFontSize(), 8, 72, 1));
 
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         cbFontName = new JComboBox(ge.getAvailableFontFamilyNames());
@@ -137,8 +162,11 @@ public class SettingsDialog extends EscapeDialog {
         group.add(rbLineEndingCRLF);
         group.add(rbLineEndingLF);
         String lineEnding = Config.getInstance().getLineEnding();
-        if (lineEnding.equals("CRLF")) rbLineEndingCRLF.setSelected(true);
-        else if (lineEnding.equals("LF")) rbLineEndingLF.setSelected(true);
+        if (lineEnding.equals("CRLF")) {
+            rbLineEndingCRLF.setSelected(true);
+        } else if (lineEnding.equals("LF")) {
+            rbLineEndingLF.setSelected(true);
+        }
 
         Component glue = Box.createGlue();
         Component glue1 = Box.createGlue();
@@ -149,8 +177,8 @@ public class SettingsDialog extends EscapeDialog {
         btnOk = new JButton("OK");
         btnCancel = new JButton("Cancel");
 
-        btnOk.addActionListener(e->accept());
-        btnCancel.addActionListener(e->cancel());
+        btnOk.addActionListener(e -> accept());
+        btnCancel.addActionListener(e -> cancel());
 
         refreshCredentials();
 
@@ -160,94 +188,95 @@ public class SettingsDialog extends EscapeDialog {
         layout.setAutoCreateContainerGaps(true);
 
         layout.setHorizontalGroup(
-                layout.createParallelGroup()
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(lblLookAndFeel)
-                            .addComponent(comboBoxLookAndFeel)
-                            .addComponent(glue2))
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(lblResultTabsCount)
-                            .addComponent(txtTabsCount))
-                    .addGroup(
-                            layout.createSequentialGroup()
-                            .addComponent(chBoxShowConsoleView)
-                            .addComponent(glue3))
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(chBoxShowServerCombo))
-                            .addComponent(glue4)
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(lblAuthMechanism)
-                            .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-                            .addComponent(lblUser)
-                            .addComponent(txtUser, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                            .addComponent(lblPassword)
-                            .addComponent(txtPassword, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
-                    .addComponent(glue)
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(lblFontSize)
-                            .addComponent(spnFontSize, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                            .addComponent(cbFontName, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(lblLineEnding)
-                            .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
-                            .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
-                    .addGroup(
-                        layout.createSequentialGroup()
-                            .addComponent(glue1)
-                            .addComponent(btnOk)
-                            .addComponent(btnCancel))
+            layout.createParallelGroup()
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(lblLookAndFeel)
+                        .addComponent(comboBoxLookAndFeel)
+                        .addComponent(glue2))
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(lblResultTabsCount)
+                        .addComponent(txtTabsCount))
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(chBoxShowConsoleView)
+                        .addComponent(glue3))
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(chBoxShowServerCombo))
+                .addComponent(glue4)
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(lblAuthMechanism)
+                        .addComponent(comboBoxAuthMechanism, PREFERRED_SIZE, PREFERRED_SIZE,
+                            PREFERRED_SIZE)
+                        .addComponent(lblUser)
+                        .addComponent(txtUser, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                        .addComponent(lblPassword)
+                        .addComponent(txtPassword, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                .addComponent(glue)
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(lblFontSize)
+                        .addComponent(spnFontSize, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                        .addComponent(cbFontName, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(lblLineEnding)
+                        .addComponent(rbLineEndingCRLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE)
+                        .addComponent(rbLineEndingLF, FIELD_SIZE, FIELD_SIZE, FIELD_SIZE))
+                .addGroup(
+                    layout.createSequentialGroup()
+                        .addComponent(glue1)
+                        .addComponent(btnOk)
+                        .addComponent(btnCancel))
         );
 
 
         layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblLookAndFeel)
-                            .addComponent(comboBoxLookAndFeel)
-                            .addComponent(glue2))
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblResultTabsCount)
-                            .addComponent(txtTabsCount))
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(chBoxShowConsoleView)
-                            .addComponent(glue3))
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(chBoxShowServerCombo)
-                            .addComponent(glue4))
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblAuthMechanism)
-                            .addComponent(comboBoxAuthMechanism)
-                            .addComponent(lblUser)
-                            .addComponent(txtUser)
-                            .addComponent(lblPassword)
-                            .addComponent(txtPassword))
-                    .addComponent(glue)
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblFontSize)
-                            .addComponent(spnFontSize)
-                            .addComponent(cbFontName))
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblLineEnding)
-                            .addComponent(rbLineEndingCRLF)
-                            .addComponent(rbLineEndingLF))
-                    .addGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(glue1)
-                            .addComponent(btnOk)
-                            .addComponent(btnCancel))
+            layout.createSequentialGroup()
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblLookAndFeel)
+                        .addComponent(comboBoxLookAndFeel)
+                        .addComponent(glue2))
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblResultTabsCount)
+                        .addComponent(txtTabsCount))
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(chBoxShowConsoleView)
+                        .addComponent(glue3))
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(chBoxShowServerCombo)
+                        .addComponent(glue4))
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblAuthMechanism)
+                        .addComponent(comboBoxAuthMechanism)
+                        .addComponent(lblUser)
+                        .addComponent(txtUser)
+                        .addComponent(lblPassword)
+                        .addComponent(txtPassword))
+                .addComponent(glue)
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblFontSize)
+                        .addComponent(spnFontSize)
+                        .addComponent(cbFontName))
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblLineEnding)
+                        .addComponent(rbLineEndingCRLF)
+                        .addComponent(rbLineEndingLF))
+                .addGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(glue1)
+                        .addComponent(btnOk)
+                        .addComponent(btnCancel))
         );
         layout.linkSize(SwingConstants.HORIZONTAL, txtUser, txtPassword, txtTabsCount);
         layout.linkSize(SwingConstants.HORIZONTAL, btnOk, btnCancel);
@@ -259,13 +288,15 @@ public class SettingsDialog extends EscapeDialog {
 
         public LookAndFeels() {
             mapLookAndFeels = new HashMap<>();
-            for (UIManager.LookAndFeelInfo lf: UIManager.getInstalledLookAndFeels()) {
+            for (UIManager.LookAndFeelInfo lf : UIManager.getInstalledLookAndFeels()) {
                 mapLookAndFeels.put(lf.getClassName(), new CustomiszedLookAndFeelInfo(lf));
             }
         }
+
         public CustomiszedLookAndFeelInfo[] getLookAndFeels() {
             return mapLookAndFeels.values().toArray(new CustomiszedLookAndFeelInfo[0]);
         }
+
         public CustomiszedLookAndFeelInfo getLookAndFeel(String className) {
             return mapLookAndFeels.get(className);
         }

@@ -1,40 +1,42 @@
 package studio.ui;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 
 public class TabPanel extends JPanel {
-    Icon _icon;
-    String _title;
-    JComponent _component;
+    Icon icon;
+    String title;
+    JComponent component;
 
-    public TabPanel(String title,Icon icon,JComponent component) {
-        _title = title;
-        _icon = icon;
-        _component = component;
+    public TabPanel(String title, Icon icon, JComponent component) {
+        this.title = title;
+        this.icon = icon;
+        this.component = component;
     }
 
     public Icon getIcon() {
-        return _icon;
+        return icon;
     }
 
     public void setIcon(Icon icon) {
-        _icon = icon;
+        this.icon = icon;
     }
 
     public String getTitle() {
-        return _title;
+        return title;
     }
 
     public void setTitle(String title) {
-        _title = title;
+        this.title = title;
     }
 
     public JComponent getComponent() {
-        return _component;
+        return component;
     }
 
     public void setComponent(JComponent component) {
-        _component = component;
+        this.component = component;
     }
 }
 

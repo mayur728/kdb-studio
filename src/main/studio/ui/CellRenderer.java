@@ -1,20 +1,22 @@
 package studio.ui;
 
-import studio.kdb.K;
-import studio.kdb.KTableModel;
-import studio.kdb.LimitedWriter;
 import java.awt.Color;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import javax.swing.*;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import studio.kdb.K;
+import studio.kdb.KTableModel;
+import studio.kdb.LimitedWriter;
 
 class CellRenderer extends DefaultTableCellRenderer {
-    private static Color keyColor = new Color(220,255,220);
-    private static Color altColor = new Color(220,220,255);
-    private static Color nullColor = new Color(255,150,150);
+    private static Color keyColor = new Color(220, 255, 220);
+    private static Color altColor = new Color(220, 220, 255);
+    private static Color nullColor = new Color(255, 150, 150);
     private static Color selColor = UIManager.getColor("Table.selectionBackground");
     private Color fgColor;
     private JTable table = null;
@@ -24,21 +26,22 @@ class CellRenderer extends DefaultTableCellRenderer {
         setOpaque(true);
         int height = getPreferredSize().height;
 
-    //    label.setFont(table.getTableHeader().getFont());
-    //    label.setBackground(table.getTableHeader().getBackground());
-    //    label.setForeground(table.getTableHeader().getForeground());
-    // label.setBounds(1,1,1,1);
+        //    label.setFont(table.getTableHeader().getFont());
+        //    label.setBackground(table.getTableHeader().getBackground());
+        //    label.setForeground(table.getTableHeader().getForeground());
+        // label.setBounds(1,1,1,1);
     }
 
     public CellRenderer(JTable t) {
         super();
         table = t;
         table.addPropertyChangeListener(new PropertyChangeListener() {
-                                        public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-                                            if ("zoom".equals(propertyChangeEvent.getPropertyName()))
-                                                setFont(table.getFont());
-                                        }
-                                    });
+            public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+                if ("zoom".equals(propertyChangeEvent.getPropertyName())) {
+                    setFont(table.getFont());
+                }
+            }
+        });
 
         initLabel(t);
         setFont(UIManager.getFont("Table.font"));
@@ -60,19 +63,16 @@ class CellRenderer extends DefaultTableCellRenderer {
             LimitedWriter w = new LimitedWriter(256);
 
             try {
-                kb.toString(w,kb instanceof K.KBaseVector);
-            }
-            catch (IOException e) {
+                kb.toString(w, kb instanceof K.KBaseVector);
+            } catch (IOException e) {
                 e.printStackTrace();
-            }
-            catch (LimitedWriter.LimitException ex) {
+            } catch (LimitedWriter.LimitException ex) {
             }
             ;
 
             setText(w.toString());
             setForeground(kb.isNull() ? nullColor : fgColor);
-        }
-        else {
+        } else {
             // setText(value.toString());
             // setForeground(UIManager.getColor("Table.foreground"));
         }
@@ -80,14 +80,14 @@ class CellRenderer extends DefaultTableCellRenderer {
         if (!isSelected) {
             KTableModel ktm = (KTableModel) table.getModel();
             column = table.convertColumnIndexToModel(column);
-            if (ktm.isKey(column))
+            if (ktm.isKey(column)) {
                 setBackground(keyColor);
-            else if (row % 2 == 0)
+            } else if (row % 2 == 0) {
                 setBackground(altColor);
-            else
+            } else {
                 setBackground(UIManager.getColor("Table.background"));
-        }
-        else {
+            }
+        } else {
             setForeground(UIManager.getColor("Table.selectionForeground"));
             setBackground(selColor);
         }

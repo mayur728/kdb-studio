@@ -11,7 +11,7 @@ public class BlankIcon implements Icon {
         this.i = i;
     }
 
-    public void paintIcon(Component component,Graphics g,int i,int i0) {
+    public void paintIcon(Component component, Graphics g, int i, int i0) {
     }
 
     public int getIconWidth() {
