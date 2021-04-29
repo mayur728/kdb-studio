@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -777,7 +778,8 @@ public class K {
     }
 
     public static class KDate extends KBase {
-        private static final DateFormat DEFAULT_DATE_FORMAT = DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault());
+        private static final DateFormat DEFAULT_DATE_FORMAT =
+            DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault());
 
         public String getDataType() {
             return "Date";
@@ -795,14 +797,15 @@ public class K {
         }
 
         public String toString(boolean showType) {
-            if (isNull())
-                return showType ? "0Nd" :"0N";
-            else if (date == Integer.MAX_VALUE)
+            if (isNull()) {
+                return showType ? "0Nd" : "0N";
+            } else if (date == Integer.MAX_VALUE) {
                 return showType ? "0Wd" : "0W";
-            else if (date == -Integer.MAX_VALUE)
+            } else if (date == -Integer.MAX_VALUE) {
                 return showType ? "-0Wd" : "-0W";
-            else
+            } else {
                 return sd("yyyy.MM.dd", toDate());
+            }
         }
 
         public void toString(LimitedWriter w, boolean showType) throws IOException {
@@ -814,14 +817,15 @@ public class K {
         }
 
         public String toExcelDate() {
-            if (isNull())
+            if (isNull()) {
                 return "0N";
-            else if (date == Integer.MAX_VALUE)
+            } else if (date == Integer.MAX_VALUE) {
                 return "0W";
-            else if (date == -Integer.MAX_VALUE)
+            } else if (date == -Integer.MAX_VALUE) {
                 return "-0W";
-            else
+            } else {
                 return DEFAULT_DATE_FORMAT.format(toDate());
+            }
 
         }
     }
@@ -874,9 +878,9 @@ public class K {
                 return showType ? "0Nt" : "0N";
             } else if (time == Integer.MAX_VALUE) {
                 return showType ? "0Wt" : "0W";
-            } else if(time ==-Integer.MAX_VALUE){
+            } else if (time == -Integer.MAX_VALUE) {
                 return showType ? "-0Wt" : "-0W";
-            }  else {
+            } else {
                 return sd("HH:mm:ss.SSS", new Time(time));
             }
         }
@@ -1092,7 +1096,7 @@ public class K {
             int m = i + 24000, y = m / 12;
             m %= 12;
             Calendar cal = Calendar.getInstance();
-            cal.set(y, m, 01);
+            cal.set(y, m, 1);
             return cal.getTime();
         }
 
@@ -1238,7 +1242,7 @@ public class K {
         return i2Formatter.format(i);
     }
 
-    public abstract static  class KBaseVector extends KBase {
+    public abstract static class KBaseVector extends KBase {
         protected Object array;
         private int length;
 
