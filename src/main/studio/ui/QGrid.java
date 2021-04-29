@@ -278,7 +278,7 @@ public class QGrid extends JPanel {
                                 sb.append(b.toString(false));
                             }
                         }
-                        if (symColumn)
+                        if (symColumn) {
                             sb.append("\"");
                         }
                         if (col < numcols - 1) {
