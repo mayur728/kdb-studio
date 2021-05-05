@@ -2247,6 +2247,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
 
     public static StudioPanel init(String[] args) {
         try {
+            Locale.setDefault(new Locale("en", "US"));    //without this, decimals may be displayed with commas rather than dots
             studio.ui.I18n.setLocale(Locale.getDefault());
             String filename = null;
 
