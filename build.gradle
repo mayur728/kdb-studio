@@ -42,13 +42,13 @@ sourceSets {
 }
 
 dependencies {
-    compile group: 'org.netbeans.api', name: 'org-openide-awt', version: 'RELEASE113'
-    compile group: 'org.jfree', name: 'jfreechart', version: '1.0.14'
-    compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
-    compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.2'
-    testCompile group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
-    intTestCompile group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
+    implementation group: 'org.netbeans.api', name: 'org-openide-awt', version: 'RELEASE113'
+    implementation group: 'org.jfree', name: 'jfreechart', version: '1.0.14'
+    implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.2'
+    testImplementation group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
+    intTestImplementation group: 'org.assertj', name: 'assertj-swing-junit', version:'3.9.2'
 }
 
 configurations {
