@@ -26,8 +26,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,6 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -187,7 +186,8 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
     private static int myScriptNumber;
     private final JFrame frame;
     public static java.util.List windowList = Collections.synchronizedList(new LinkedList());
-    private final int menuShortcutKeyMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+    private final int menuShortcutKeyMask =
+        java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     private static final int MAX_SERVERS_TO_CLONE = 20;
 
@@ -198,7 +198,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         }
         String title = s.replace('\\', '/');
         frame.setTitle(title + (getModified() ? " (not saved) " : "") +
-            (server != null ? " @" + server.toString() : "") + " Studio for kdb+ " +
+            (server != null ? " @" + server : "") + " Studio for kdb+ " +
             Lm.getVersionString());
     }
 
@@ -246,7 +246,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         initActions();
         refreshActionState();
 
-        Document doc = null;
+        Document doc;
         if (textArea == null) {
             textArea = new JEditorPane("text/q", "");
             textArea.setName("qEditor");
@@ -259,7 +259,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         "Copy the selected text to the clipboard");
                     copyAction.putValue(Action.SMALL_ICON, Util.COPY_ICON);
                     copyAction.putValue(Action.NAME, I18n.getString("Copy"));
-                    copyAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_C));
+                    copyAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
                     copyAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_C, menuShortcutKeyMask));
                 } else if (actions[i] instanceof BaseKit.CutAction) {
@@ -267,7 +267,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                     cutAction.putValue(Action.SHORT_DESCRIPTION, "Cut the selected text");
                     cutAction.putValue(Action.SMALL_ICON, Util.CUT_ICON);
                     cutAction.putValue(Action.NAME, I18n.getString("Cut"));
-                    cutAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
+                    cutAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
                     cutAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_X, menuShortcutKeyMask));
                 } else if (actions[i] instanceof BaseKit.PasteAction) {
@@ -275,7 +275,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                     pasteAction.putValue(Action.SHORT_DESCRIPTION, "Paste text from the clipboard");
                     pasteAction.putValue(Action.SMALL_ICON, Util.PASTE_ICON);
                     pasteAction.putValue(Action.NAME, I18n.getString("Paste"));
-                    pasteAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
+                    pasteAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
                     pasteAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_V, menuShortcutKeyMask));
                 } else if (actions[i] instanceof ExtKit.FindAction) {
@@ -283,7 +283,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                     findAction.putValue(Action.SHORT_DESCRIPTION, "Find text in the document");
                     findAction.putValue(Action.SMALL_ICON, Util.FIND_ICON);
                     findAction.putValue(Action.NAME, I18n.getString("Find"));
-                    findAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+                    findAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
                     findAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_F, menuShortcutKeyMask));
                 } else if (actions[i] instanceof ExtKit.ReplaceAction) {
@@ -292,7 +292,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         .putValue(Action.SHORT_DESCRIPTION, "Replace text in the document");
                     replaceAction.putValue(Action.SMALL_ICON, Util.REPLACE_ICON);
                     replaceAction.putValue(Action.NAME, I18n.getString("Replace"));
-                    replaceAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+                    replaceAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
                     replaceAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask));
                 } else if (actions[i] instanceof BaseKit.SelectAllAction) {
@@ -301,7 +301,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         .putValue(Action.SHORT_DESCRIPTION, "Select all text in the document");
                     selectAllAction.putValue(Action.SMALL_ICON, null);
                     selectAllAction.putValue(Action.NAME, I18n.getString("SelectAll"));
-                    selectAllAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_A));
+                    selectAllAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
                     selectAllAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_A, menuShortcutKeyMask));
                 } else if (actions[i] instanceof ActionFactory.UndoAction) {
@@ -310,7 +310,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         .putValue(Action.SHORT_DESCRIPTION, "Undo the last change to the document");
                     undoAction.putValue(Action.SMALL_ICON, Util.UNDO_ICON);
                     undoAction.putValue(Action.NAME, I18n.getString("Undo"));
-                    undoAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_U));
+                    undoAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
                     undoAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuShortcutKeyMask));
                 } else if (actions[i] instanceof ActionFactory.RedoAction) {
@@ -319,7 +319,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                         .putValue(Action.SHORT_DESCRIPTION, "Redo the last change to the document");
                     redoAction.putValue(Action.SMALL_ICON, Util.REDO_ICON);
                     redoAction.putValue(Action.NAME, I18n.getString("Redo"));
-                    redoAction.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+                    redoAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
                     redoAction.putValue(Action.ACCELERATOR_KEY,
                         KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuShortcutKeyMask));
                 }
@@ -472,69 +472,64 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         pm.setMillisToPopup(100);
         pm.setProgress(0);
 
-        Runnable runner = new Runnable() {
-            public void run() {
-                if (filename != null) {
-                    String lineSeparator = System.getProperty("line.separator");
+        Runnable runner = () -> {
+            if (filename != null) {
+                String lineSeparator = System.getProperty("line.separator");
 
-                    BufferedWriter fw;
+                BufferedWriter fw;
 
-                    try {
-                        fw = new BufferedWriter(new FileWriter(filename));
+                try {
+                    fw = new BufferedWriter(new FileWriter(filename));
 
+                    for (int col = 0; col < model.getColumnCount(); col++) {
+                        if (col > 0) {
+                            fw.write(delimiter);
+                        }
+
+                        fw.write(model.getColumnName(col));
+                    }
+                    fw.write(lineSeparator);
+
+                    int maxRow = model.getRowCount();
+                    int lastProgress = 0;
+
+                    for (int r = 1; r <= maxRow; r++) {
                         for (int col = 0; col < model.getColumnCount(); col++) {
                             if (col > 0) {
                                 fw.write(delimiter);
                             }
 
-                            fw.write(model.getColumnName(col));
+                            K.KBase o = (K.KBase) model.getValueAt(r - 1, col);
+                            if (!o.isNull()) {
+                                fw.write(o.toString(false));
+                            }
                         }
                         fw.write(lineSeparator);
 
-                        int maxRow = model.getRowCount();
-                        int lastProgress = 0;
+                        boolean cancelled = pm.isCanceled();
 
-                        for (int r = 1; r <= maxRow; r++) {
-                            for (int col = 0; col < model.getColumnCount(); col++) {
-                                if (col > 0) {
-                                    fw.write(delimiter);
-                                }
+                        if (cancelled) {
+                            break;
+                        } else {
+                            final int progress = (100 * r) / maxRow;
+                            if (progress > lastProgress) {
+                                final String note1 = "" + progress + "% complete";
+                                SwingUtilities.invokeLater(() -> {
+                                    pm.setProgress(progress);
+                                    pm.setNote(note1);
+                                });
 
-                                K.KBase o = (K.KBase) model.getValueAt(r - 1, col);
-                                if (!o.isNull()) {
-                                    fw.write(o.toString(false));
-                                }
-                            }
-                            fw.write(lineSeparator);
-
-                            boolean cancelled = pm.isCanceled();
-
-                            if (cancelled) {
-                                break;
-                            } else {
-                                final int progress = (100 * r) / maxRow;
-                                if (progress > lastProgress) {
-                                    final String note = "" + progress + "% complete";
-                                    SwingUtilities.invokeLater(new Runnable() {
-
-                                        public void run() {
-                                            pm.setProgress(progress);
-                                            pm.setNote(note);
-                                        }
-                                    });
-
-                                    Thread.yield();
-                                }
+                                Thread.yield();
                             }
                         }
-
-                        fw.close();
-                    } catch (Exception ex) {
-                        StudioOptionPane.showMessageDialog(frame, ex.getMessage(), "Error",
-                            JOptionPane.ERROR_MESSAGE, Util.ERROR_ICON);
-                    } finally {
-                        pm.close();
                     }
+
+                    fw.close();
+                } catch (Exception ex) {
+                    StudioOptionPane.showMessageDialog(frame, ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE, Util.ERROR_ICON);
+                } finally {
+                    pm.close();
                 }
             }
         };
@@ -560,76 +555,70 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         pm.setMillisToPopup(100);
         pm.setProgress(0);
 
-        Runnable runner = new Runnable() {
-            public void run() {
-                if (filename != null) {
-                    String lineSeparator = System.getProperty("line.separator");
-                    ;
+        Runnable runner = () -> {
+            if (filename != null) {
+                String lineSeparator = System.getProperty("line.separator");
 
-                    BufferedWriter fw = null;
+                BufferedWriter fw = null;
 
-                    try {
-                        fw = new BufferedWriter(new FileWriter(filename));
+                try {
+                    fw = new BufferedWriter(new FileWriter(filename));
 
-                        fw.write("<R>");
+                    fw.write("<R>");
 
-                        int maxRow = model.getRowCount();
-                        int lastProgress = 0;
+                    int maxRow = model.getRowCount();
+                    int lastProgress = 0;
 
+                    fw.write(lineSeparator);
+
+                    String[] columns = new String[model.getColumnCount()];
+                    for (int col = 0; col < model.getColumnCount(); col++) {
+                        columns[col] = model.getColumnName(col);
+                    }
+
+                    for (int r = 1; r <= maxRow; r++) {
+                        fw.write("<r>");
+                        for (int col = 0; col < columns.length; col++) {
+                            fw.write("<" + columns[col] + ">");
+
+                            K.KBase o = (K.KBase) model.getValueAt(r - 1, col);
+                            if (!o.isNull()) {
+                                fw.write(o.toString(false));
+                            }
+
+                            fw.write("</" + columns[col] + ">");
+                        }
+                        fw.write("</r>");
                         fw.write(lineSeparator);
 
-                        String[] columns = new String[model.getColumnCount()];
-                        for (int col = 0; col < model.getColumnCount(); col++) {
-                            columns[col] = model.getColumnName(col);
-                        }
+                        boolean cancelled = pm.isCanceled();
 
-                        for (int r = 1; r <= maxRow; r++) {
-                            fw.write("<r>");
-                            for (int col = 0; col < columns.length; col++) {
-                                fw.write("<" + columns[col] + ">");
+                        if (cancelled) {
+                            break;
+                        } else {
+                            final int progress = (100 * r) / maxRow;
+                            if (progress > lastProgress) {
+                                final String note1 = "" + progress + "% complete";
+                                SwingUtilities.invokeLater(() -> {
+                                    pm.setProgress(progress);
+                                    pm.setNote(note1);
+                                });
 
-                                K.KBase o = (K.KBase) model.getValueAt(r - 1, col);
-                                if (!o.isNull()) {
-                                    fw.write(o.toString(false));
-                                }
-
-                                fw.write("</" + columns[col] + ">");
-                            }
-                            fw.write("</r>");
-                            fw.write(lineSeparator);
-
-                            boolean cancelled = pm.isCanceled();
-
-                            if (cancelled) {
-                                break;
-                            } else {
-                                final int progress = (100 * r) / maxRow;
-                                if (progress > lastProgress) {
-                                    final String note = "" + progress + "% complete";
-                                    SwingUtilities.invokeLater(new Runnable() {
-
-                                        public void run() {
-                                            pm.setProgress(progress);
-                                            pm.setNote(note);
-                                        }
-                                    });
-
-                                    Thread.yield();
-                                }
+                                Thread.yield();
                             }
                         }
-                        fw.write("</R>");
-
-                        fw.close();
-                    } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    } catch (IOException ex) {
-                        ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    } catch (Exception ex) {
-                        ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    } finally {
-                        pm.close();
                     }
+                    fw.write("</R>");
+
+                    fw.close();
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
+                } catch (IOException ex) {
+                    ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
+                } catch (Exception ex) {
+                    ex.printStackTrace();  //To change body of catch statement use Options | File Templates.
+                } finally {
+                    pm.close();
                 }
             }
         };
@@ -898,15 +887,15 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
     }
 
     public static String getContents(File aFile) {
-        StringBuffer contents = new StringBuffer();
+        StringBuilder contents = new StringBuilder();
 
         try {
             InputStreamReader isr = new InputStreamReader(new FileInputStream(aFile),
-                "UTF-8");
+                StandardCharsets.UTF_8);
             BufferedReader input = new BufferedReader(isr);
             try {
 
-                String line = null;
+                String line;
                 while ((line = input.readLine()) != null) {
                     contents.append(line);
                     contents.append(System.getProperty("line.separator"));
@@ -1028,7 +1017,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             }
 
             textArea.write(new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(filename), "UTF-8")));
+                new OutputStreamWriter(new FileOutputStream(filename), StandardCharsets.UTF_8)));
             textArea.getDocument().putProperty("filename", filename);
             windowListMonitor.fireMyEvent(new WindowListChangedEvent(this));
             setModified(false);
@@ -1138,7 +1127,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         newFileAction = new UserAction(I18n.getString("New"),
             Util.NEW_DOCUMENT_ICON,
             "Create a blank script",
-            new Integer(KeyEvent.VK_N),
+            KeyEvent.VK_N,
             null) {
             public void actionPerformed(ActionEvent e) {
                 //   PrintUtilities.printComponent(textArea);
@@ -1149,7 +1138,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         arrangeAllAction = new UserAction(I18n.getString("ArrangeAll"),
             Util.ARRANGE_WINDOWS_ICON,
             "Arrange all windows on screen",
-            new Integer(KeyEvent.VK_A),
+            KeyEvent.VK_A,
             null) {
             public void actionPerformed(ActionEvent e) {
                 arrangeAll();
@@ -1159,7 +1148,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         minMaxDividerAction = new UserAction(I18n.getString("MaximizeEditorPane"),
             Util.MAXIMIZE_EDITOR_ICON,
             "Maximize editor pane",
-            new Integer(KeyEvent.VK_M),
+            KeyEvent.VK_M,
             KeyStroke.getKeyStroke(KeyEvent.VK_M, menuShortcutKeyMask)) {
             public void actionPerformed(ActionEvent e) {
                 minMaxDivider();
@@ -1169,7 +1158,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         toggleDividerOrientationAction = new UserAction(I18n.getString("ToggleDividerOrientation"),
             Util.DIVIDER_ORIENTATION_ICON,
             "Toggle the window divider's orientation",
-            new Integer(KeyEvent.VK_C),
+            KeyEvent.VK_C,
             null) {
             public void actionPerformed(ActionEvent e) {
                 toggleDividerOrientation();
@@ -1179,7 +1168,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         closeFileAction = new UserAction(I18n.getString("Close"),
             Util.CLOSE_ONE_ICON,
             "Close current document",
-            new Integer(KeyEvent.VK_C),
+            KeyEvent.VK_C,
             null) {
             public void actionPerformed(ActionEvent e) {
                 quitWindow();
@@ -1192,7 +1181,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         openFileAction = new UserAction(I18n.getString("Open"),
             Util.OPEN_ICON,
             "Open a script",
-            new Integer(KeyEvent.VK_O),
+            KeyEvent.VK_O,
             KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMask)) {
             public void actionPerformed(ActionEvent e) {
                 openFile();
@@ -1202,7 +1191,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         openFileInNewWindowAction = new UserAction(I18n.getString("NewWindow"),
             Util.NEW_WINDOW_ICON,
             "Open a new window",
-            new Integer(KeyEvent.VK_N),
+            KeyEvent.VK_N,
             KeyStroke.getKeyStroke(KeyEvent.VK_N, menuShortcutKeyMask)) {
             public void actionPerformed(ActionEvent e) {
                 new StudioPanel(server, null);
@@ -1212,7 +1201,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         serverListAction = new UserAction(I18n.getString("ServerList"),
             Util.SERVER_TREE_ICON,
             "Show sever list",
-            new Integer(KeyEvent.VK_L),
+            KeyEvent.VK_L,
             KeyStroke.getKeyStroke(KeyEvent.VK_L, menuShortcutKeyMask | Event.SHIFT_MASK)) {
             public void actionPerformed(ActionEvent e) {
                 if (serverList == null) {
@@ -1255,7 +1244,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         editServerAction = new UserAction(I18n.getString("Edit"),
             Util.SERVER_EDIT_ICON,
             "Edit the server details",
-            new Integer(KeyEvent.VK_E),
+            KeyEvent.VK_E,
             null) {
             public void actionPerformed(ActionEvent e) {
                 Server s = new Server(server);
@@ -1285,7 +1274,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         addServerAction = new UserAction(I18n.getString("Add"),
             Util.ADD_SERVER_ICON,
             "Configure a new server",
-            new Integer(KeyEvent.VK_A),
+            KeyEvent.VK_A,
             null) {
             public void actionPerformed(ActionEvent e) {
                 AddServerForm f = new AddServerForm(frame);
@@ -1305,7 +1294,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         removeServerAction = new UserAction(I18n.getString("Remove"),
             Util.DELETE_SERVER_ICON,
             "Remove this server",
-            new Integer(KeyEvent.VK_R),
+            KeyEvent.VK_R,
             null) {
             public void actionPerformed(ActionEvent e) {
                 int choice = StudioOptionPane.showOptionDialog(frame,
@@ -1337,7 +1326,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         saveFileAction = new UserAction(I18n.getString("Save"),
             Util.SAVE_ICON,
             "Save the script",
-            new Integer(KeyEvent.VK_S),
+            KeyEvent.VK_S,
             KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask)) {
             public void actionPerformed(ActionEvent e) {
                 String filename = (String) textArea.getDocument().getProperty("filename");
@@ -1348,7 +1337,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         saveAsFileAction = new UserAction(I18n.getString("SaveAs"),
             Util.SAVE_AS_ICON,
             "Save script as",
-            new Integer(KeyEvent.VK_A),
+            KeyEvent.VK_A,
             null) {
             public void actionPerformed(ActionEvent e) {
                 saveAsFile();
@@ -1358,7 +1347,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         exportAction = new UserAction(I18n.getString("Export"),
             Util.EXPORT_ICON,
             "Export result set",
-            new Integer(KeyEvent.VK_E),
+            KeyEvent.VK_E,
             null) {
             public void actionPerformed(ActionEvent e) {
                 export();
@@ -1368,7 +1357,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         chartAction = new UserAction(I18n.getString("Chart"),
             Util.CHART_ICON,
             "Chart current data set",
-            new Integer(KeyEvent.VK_E),
+            KeyEvent.VK_E,
             null) {
             public void actionPerformed(ActionEvent e) {
                 new LineChart((KTableModel) table.getModel());
@@ -1380,7 +1369,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         stopAction = new UserAction(I18n.getString("Stop"),
             Util.STOP_ICON,
             "Stop the query",
-            new Integer(KeyEvent.VK_S),
+            KeyEvent.VK_S,
             null) {
             public void actionPerformed(ActionEvent e) {
                 if (worker != null) {
@@ -1395,7 +1384,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         openInExcel = new UserAction(I18n.getString("OpenInExcel"),
             Util.EXCEL_ICON,
             "Open in Excel",
-            new Integer(KeyEvent.VK_O),
+            KeyEvent.VK_O,
             null) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1412,7 +1401,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         executeAction = new UserAction(I18n.getString("Execute"),
             Util.EXECUTE_ICON,
             "Execute the full or highlighted text as a query",
-            new Integer(KeyEvent.VK_E),
+            KeyEvent.VK_E,
             KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask)) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1424,7 +1413,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         executeCurrentLineAction = new UserAction(I18n.getString("ExecuteCurrentLine"),
             Util.EXECUTE_LINE_ICON,
             "Execute the current line as a query",
-            new Integer(KeyEvent.VK_ENTER),
+            KeyEvent.VK_ENTER,
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMask)) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1436,7 +1425,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         refreshAction = new UserAction(I18n.getString("Refresh"),
             Util.REFRESH_ICON,
             "Refresh the result set",
-            new Integer(KeyEvent.VK_R),
+            KeyEvent.VK_R,
             KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuShortcutKeyMask | Event.SHIFT_MASK)) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1447,7 +1436,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         aboutAction = new UserAction(I18n.getString("About"),
             Util.ABOUT_ICON,
             "About Studio for kdb+",
-            new Integer(KeyEvent.VK_E),
+            KeyEvent.VK_E,
             null) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1458,7 +1447,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         exitAction = new UserAction(I18n.getString("Exit"),
             Util.CLOSE_ALL_ICON,
             "Close all windows",
-            new Integer(KeyEvent.VK_X),
+            KeyEvent.VK_X,
             null) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1471,7 +1460,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         settingsAction = new UserAction("Settings",
             Util.SETTINGS_ICON,
             "Settings",
-            new Integer(KeyEvent.VK_S),
+            KeyEvent.VK_S,
             null) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1482,7 +1471,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         codeKxComAction = new UserAction("code.kx.com",
             Util.CODE_KX_COM_ICON,
             "Open code.kx.com",
-            new Integer(KeyEvent.VK_C),
+            KeyEvent.VK_C,
             null) {
 
             public void actionPerformed(ActionEvent e) {
@@ -1603,16 +1592,13 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
     private void rebuildMenuBar() {
         menubar = createMenuBar();
         SwingUtilities.invokeLater(
-            new Runnable() {
-
-                public void run() {
-                    if (frame != null) {
-                        frame.setJMenuBar(menubar);
-                        menubar.validate();
-                        menubar.repaint();
-                        frame.validate();
-                        frame.repaint();
-                    }
+            () -> {
+                if (frame != null) {
+                    frame.setJMenuBar(menubar);
+                    menubar.validate();
+                    menubar.repaint();
+                    frame.validate();
+                    frame.repaint();
                 }
             });
     }
@@ -1651,13 +1637,8 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                 JMenuItem item = new JMenuItem("" + (i + 1) + " " + filename);
                 item.setMnemonic(mnems[i]);
                 //item.setIcon(Util.BLANK_ICON);
-                item.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        loadMRUFile(filename,
-                            (String) textArea.getDocument().getProperty("filename"));
-                    }
-                });
+                item.addActionListener(e -> loadMRUFile(filename,
+                    (String) textArea.getDocument().getProperty("filename")));
                 menu.add(item);
             }
         }
@@ -1778,15 +1759,12 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
                 }
 
                 JMenuItem item = new JMenuItem("" + (i + 1) + " " + t);
-                item.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        if (o instanceof StudioPanel) {
-                            JFrame f = ((StudioPanel) o).frame;
-                            ensureDeiconified(f);
-                        } else {
-                            ensureDeiconified((JFrame) o);
-                        }
+                item.addActionListener(e -> {
+                    if (o instanceof StudioPanel) {
+                        JFrame f = ((StudioPanel) o).frame;
+                        ensureDeiconified(f);
+                    } else {
+                        ensureDeiconified((JFrame) o);
                     }
                 });
 
@@ -2071,12 +2049,9 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
 
         registerForMacOSXEvents();
 
-        windowListChangedEventListener = new WindowListChangedEventListener() {
-
-            public void windowListChangedEventOccurred(WindowListChangedEvent evt) {
-                rebuildMenuBar();
-                rebuildToolbar();
-            }
+        windowListChangedEventListener = evt -> {
+            rebuildMenuBar();
+            rebuildToolbar();
         };
 
         windowListMonitor.addEventListener(windowListChangedEventListener);
@@ -2163,20 +2138,18 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
 
         textArea.requestFocus();
         splitpane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY,
-            new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent pce) {
-                    String s =
-                        splitpane.getDividerLocation() >= splitpane.getMaximumDividerLocation() ?
-                            I18n.getString("MinimizeEditorPane") : splitpane.getDividerLocation() <=
-                            splitpane.getMinimumDividerLocation() ?
-                            I18n.getString("RestoreEditorPane") :
-                            I18n.getString("MaximizeEditorPane");
-                    minMaxDividerAction.putValue(Action.SHORT_DESCRIPTION, s);
-                    minMaxDividerAction.putValue(Action.NAME, s);
-                    if (splitpane.getDividerLocation() < splitpane.getMaximumDividerLocation() &&
-                        splitpane.getDividerLocation() > splitpane.getMinimumDividerLocation()) {
-                        dividerLastPosition = splitpane.getDividerLocation();
-                    }
+            pce -> {
+                String s =
+                    splitpane.getDividerLocation() >= splitpane.getMaximumDividerLocation() ?
+                        I18n.getString("MinimizeEditorPane") : splitpane.getDividerLocation() <=
+                        splitpane.getMinimumDividerLocation() ?
+                        I18n.getString("RestoreEditorPane") :
+                        I18n.getString("MaximizeEditorPane");
+                minMaxDividerAction.putValue(Action.SHORT_DESCRIPTION, s);
+                minMaxDividerAction.putValue(Action.NAME, s);
+                if (splitpane.getDividerLocation() < splitpane.getMaximumDividerLocation() &&
+                    splitpane.getDividerLocation() > splitpane.getMinimumDividerLocation()) {
+                    dividerLastPosition = splitpane.getDividerLocation();
                 }
             });
         dividerLastPosition = splitpane.getDividerLocation();
@@ -2185,9 +2158,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
     private JPopupMenu createJPopupMenu(int index) {
         JPopupMenu popup = new JPopupMenu();
         JMenuItem close = new JMenuItem("Close");
-        close.addActionListener(e -> {
-            tabbedPane.removeTabAt(index);
-        });
+        close.addActionListener(e -> tabbedPane.removeTabAt(index));
 
         JMenuItem closeOthers = new JMenuItem("Close others");
         closeOthers.addActionListener(e -> {
@@ -2382,7 +2353,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         return text;
     }
 
-    private void processK4Results(K.KBase r) throws c.K4Exception {
+    private void processK4Results(K.KBase r) {
         if (r != null) {
             short tabAdded = 0;
             exportAction.setEnabled(true);
@@ -2545,7 +2516,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
 
                             if ((message == null) || (message.length() == 0)) {
                                 message =
-                                    "No message with exception. Exception is " + ex.toString();
+                                    "No message with exception. Exception is " + ex;
                             }
 
                             StudioOptionPane.showMessageDialog(frame,
@@ -2649,10 +2620,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             return modified;
         }
 
-        private final Component comp;
-
         public MarkingDocumentListener(Component comp) {
-            this.comp = comp;
         }
 
         private void markChanged(DocumentEvent evt) {
