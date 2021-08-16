@@ -1194,7 +1194,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             KeyEvent.VK_N,
             KeyStroke.getKeyStroke(KeyEvent.VK_N, menuShortcutKeyMask)) {
             public void actionPerformed(ActionEvent e) {
-                new StudioPanel(server, null);
+                new StudioPanel(server, null, null);
             }
         };
 
@@ -2045,7 +2045,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         splitpane.setDividerLocation(0.5);
     }
 
-    public StudioPanel(Server server, String filename) {
+    public StudioPanel(Server server, String filename, String hostport) {
 
         registerForMacOSXEvents();
 
@@ -2061,10 +2061,17 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
         windowList.add(this);
 
         initDocument();
-        setServer(server);
+        if (hostport == null) {
+            setServer(server);
+        }
 
         menubar = createMenuBar();
         toolbar = createToolbar();
+
+        if (hostport != null) {
+            txtServer.setText(hostport);
+            selectConnectionString();
+        }
 
         tabbedPane = new JTabbedPane();
 
@@ -2221,14 +2228,25 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             Locale.setDefault(new Locale("en", "US"));    //without this, decimals may be displayed with commas rather than dots
             studio.ui.I18n.setLocale(Locale.getDefault());
             String filename = null;
+            String hostport = null;
 
             String[] mruFiles = Config.getInstance().getMRUFiles();
-            if (args.length > 0) {
-                File f = new File(args[0]);
-                if (f.exists()) {
-                    filename = args[0];
+            for (int i=0; i<args.length; ++i) {
+                if (args[i].startsWith("-")) {
+                    if (args[i].equals("-hostport")) {
+                        ++i;
+                        if (i<args.length) {
+                            hostport = args[i];
+                        }
+                    }
+                } else {
+                    File f = new File(args[i]);
+                    if (f.exists()) {
+                        filename = args[i];
+                    }
                 }
-            } else if (mruFiles.length > 0) {
+            }
+            if (filename == null && mruFiles.length > 0) {
                 File f = new File(mruFiles[0]);
                 if (f.exists()) {
                     filename = mruFiles[0];
@@ -2242,7 +2260,7 @@ public class StudioPanel extends JPanel implements Observer, WindowListener {
             if (Config.getInstance().getServerNames().contains(lruServer)) {
                 s = Config.getInstance().getServer(lruServer);
             }
-            return new StudioPanel(s, filename);
+            return new StudioPanel(s, filename, hostport);
         } catch (Exception e) {
             e.printStackTrace();
         }
