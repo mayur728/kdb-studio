@@ -48,25 +48,27 @@ class CellRenderer extends DefaultTableCellRenderer {
                                                    boolean hasFocus,
                                                    int row,
                                                    int column) {
-        K.KBase kb = (K.KBase) value;
-        String text = kb.toString(kb instanceof K.KBaseVector ? formatContextWithType : formatContextNoType);
-        text = Util.limitString(text, Config.getInstance().getMaxCharsInTableCell());
-        setText(text);
-        setForeground(kb.isNull() ? nullColor : fgColor);
+        if (value != null) {
+            K.KBase kb = (K.KBase) value;
+            String text = kb.toString(
+                kb instanceof K.KBaseVector ? formatContextWithType : formatContextNoType);
+            text = Util.limitString(text, Config.getInstance().getMaxCharsInTableCell());
+            setText(text);
+            setForeground(kb.isNull() ? nullColor : fgColor);
 
-        if (!isSelected) {
-            KTableModel ktm = (KTableModel) table.getModel();
-            column = table.convertColumnIndexToModel(column);
-            if (ktm.isKey(column))
-                setBackground(keyColor);
-            else if (row % 2 == 0)
-                setBackground(altColor);
-            else
-                setBackground(UIManager.getColor("Table.background"));
-        }
-        else {
-            setForeground(UIManager.getColor("Table.selectionForeground"));
-            setBackground(selColor);
+            if (!isSelected) {
+                KTableModel ktm = (KTableModel) table.getModel();
+                column = table.convertColumnIndexToModel(column);
+                if (ktm.isKey(column))
+                    setBackground(keyColor);
+                else if (row % 2 == 0)
+                    setBackground(altColor);
+                else
+                    setBackground(UIManager.getColor("Table.background"));
+            } else {
+                setForeground(UIManager.getColor("Table.selectionForeground"));
+                setBackground(selColor);
+            }
         }
         return this;
     }
