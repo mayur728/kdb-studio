@@ -1,13 +1,11 @@
 package studio.ui;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rtextarea.ConfigurableCaret;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import studio.kdb.Config;
 import studio.ui.rstextarea.RSTextAreaFactory;
 
 import javax.swing.*;
-import javax.xml.soap.Text;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
