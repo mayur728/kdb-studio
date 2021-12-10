@@ -48,10 +48,10 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs 'src'
+            srcDirs 'src/main'
         }
         resources {
-            srcDirs 'src','images'
+            srcDirs 'src/main','images'
             include 'log4j2.xml'
             include 'studio*.properties'
             include 'org/netbeans/editor/Bundle*.properties'
@@ -62,11 +62,11 @@ sourceSets {
     }
     test {
         java {
-            srcDirs 'test'
+            srcDirs 'main/test'
         }
         resources {
-            srcDirs 'test'
-            include 'syntax.csv'
+            srcDirs 'main/test'
+            include 'main/test/syntax.csv'
         }
     }
 }
@@ -86,7 +86,7 @@ def buildTime() {
 
 task getBuildHash {
     doLast {
-        file("src/build.txt").text = buildTime()
+        file("src/main/build.txt").text = buildTime()
     }
 }
 
@@ -94,7 +94,7 @@ task convertNotes (type: JavaExec) {
     mainClass = 'com.github.rjeschke.txtmark.Run'
     classpath = configurations.txtmark
     args 'notes.md'
-    standardOutput new FileOutputStream(new File(projectDir,"src/notes.html"))
+    standardOutput new FileOutputStream(new File(projectDir,"src/main/notes.html"))
 }
 
 processResources.dependsOn('getBuildHash', 'convertNotes')
