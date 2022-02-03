@@ -203,6 +203,7 @@ public class Studio {
     private static void init(String[] args) {
         log.info("Start Studio with args {}", Arrays.asList(args));
         registerForMacOSMenu();
+        initTaskbarIcon();
         FileWatcher.start();
 
         createPanel(args);

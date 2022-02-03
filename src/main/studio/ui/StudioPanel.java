@@ -512,45 +512,18 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private static boolean saveAsFile(EditorTab editor) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        chooser.setDialogTitle("Save script as");
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-        FileFilter ff =
-                new FileFilter() {
-                    public String getDescription() {
-                        return "q script";
-                    }
-
-                    public boolean accept(File file) {
-                        if (file.isDirectory() || file.getName().endsWith(".q"))
-                            return true;
-                        else
-                            return false;
-                    }
-                };
-
-        chooser.addChoosableFileFilter(ff);
-
-        chooser.setFileFilter(ff);
-
         String filename = editor.getFilename();
-        if (filename != null) {
-            File file = new File(filename);
-            File dir = new File(file.getPath());
-            chooser.setCurrentDirectory(dir);
-            chooser.setSelectedFile(file);
+        File file = chooseFile(editor.getPanel(), Config.SAVE_FILE_CHOOSER, JFileChooser.SAVE_DIALOG, "Save script as",
+                filename == null ? null : new File(filename),
+                new FileNameExtensionFilter("q script", "q"));
+
+        if (file == null) {
+            return false;
         }
 
-        StudioPanel activePanel = getActivePanel();
-        int option = chooser.showSaveDialog(activePanel);
-        if (option != JFileChooser.APPROVE_OPTION) return false;
-        File sf = chooser.getSelectedFile();
-        filename = sf.getAbsolutePath();
-
-        if (new File(filename).exists()) {
-            int choice = StudioOptionPane.showYesNoDialog(activePanel,
+        filename = file.getAbsolutePath();
+        if (file.exists()) {
+            int choice = StudioOptionPane.showYesNoDialog(editor.getPanel(),
                     filename + " already exists.\nOverwrite?",
                     "Overwrite?");
 
