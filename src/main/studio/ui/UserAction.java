@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 
 public abstract class UserAction extends AbstractAction {
     public UserAction(String text,
-                      ImageIcon icon,
+                      Icon icon,
                       String desc,
                       Integer mnemonic,
                       KeyStroke key) {
@@ -24,7 +24,7 @@ public abstract class UserAction extends AbstractAction {
         return (KeyStroke)getValue(ACCELERATOR_KEY);
     }
 
-    public static UserAction create(String text, ImageIcon icon,
+    public static UserAction create(String text, Icon icon,
                                String desc, int mnemonic,
                                KeyStroke key, ActionListener listener) {
         return new UserAction(text, icon, desc, mnemonic, key) {
@@ -39,7 +39,7 @@ public abstract class UserAction extends AbstractAction {
         putValue(SELECTED_KEY, value);
     }
 
-    public static UserAction create(String text, ImageIcon icon,
+    public static UserAction create(String text, Icon icon,
                              String desc, int mnemonic,
                              ActionListener listener) {
         return create(text, icon, desc, mnemonic, null, listener);

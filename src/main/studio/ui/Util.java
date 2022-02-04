@@ -12,7 +12,6 @@ public class Util {
     private final static String IMAGE_BASE = "/images/";
 
     public final static ImageIcon LOGO_ICON = getImage(IMAGE_BASE + "logo_32.png");
-    public final static ImageIcon BLANK_ICON = getImage(IMAGE_BASE + "blank.png");
     public final static ImageIcon QUESTION_ICON = getImage(IMAGE_BASE + "question_32.png");
     public final static ImageIcon INFORMATION_ICON = getImage(IMAGE_BASE + "information_32.png");
     public final static ImageIcon WARNING_ICON = getImage(IMAGE_BASE + "warning_32.png");
@@ -68,6 +67,8 @@ public class Util {
     public final static ImageIcon SEARCH_REGEX_SHADED_ICON = getImage("/searchRegex_shaded.png");
     public final static ImageIcon SEARCH_CASE_SENSITIVE_ICON = getImage("/searchCaseSensitive.png");
     public final static ImageIcon SEARCH_CASE_SENSITIVE_SHADED_ICON = getImage("/searchCaseSensitive_shaded.png");
+
+    public final static Icon BLANK_ICON = new BlankIcon(16, 16);
 
     public static boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
     public static boolean WINDOWS = (System.getProperty("os.name").toLowerCase().contains("win"));
