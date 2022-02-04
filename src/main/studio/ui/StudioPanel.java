@@ -512,45 +512,18 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private static boolean saveAsFile(EditorTab editor) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        chooser.setDialogTitle("Save script as");
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-        FileFilter ff =
-                new FileFilter() {
-                    public String getDescription() {
-                        return "q script";
-                    }
-
-                    public boolean accept(File file) {
-                        if (file.isDirectory() || file.getName().endsWith(".q"))
-                            return true;
-                        else
-                            return false;
-                    }
-                };
-
-        chooser.addChoosableFileFilter(ff);
-
-        chooser.setFileFilter(ff);
-
         String filename = editor.getFilename();
-        if (filename != null) {
-            File file = new File(filename);
-            File dir = new File(file.getPath());
-            chooser.setCurrentDirectory(dir);
-            chooser.setSelectedFile(file);
+        File file = chooseFile(editor.getPanel(), Config.SAVE_FILE_CHOOSER, JFileChooser.SAVE_DIALOG, "Save script as",
+                filename == null ? null : new File(filename),
+                new FileNameExtensionFilter("q script", "q"));
+
+        if (file == null) {
+            return false;
         }
 
-        StudioPanel activePanel = getActivePanel();
-        int option = chooser.showSaveDialog(activePanel);
-        if (option != JFileChooser.APPROVE_OPTION) return false;
-        File sf = chooser.getSelectedFile();
-        filename = sf.getAbsolutePath();
-
-        if (new File(filename).exists()) {
-            int choice = StudioOptionPane.showYesNoDialog(activePanel,
+        filename = file.getAbsolutePath();
+        if (file.exists()) {
+            int choice = StudioOptionPane.showYesNoDialog(editor.getPanel(),
                     filename + " already exists.\nOverwrite?",
                     "Overwrite?");
 
@@ -627,30 +600,30 @@ public class StudioPanel extends JPanel implements WindowListener {
         cleanAction = UserAction.create("Clean", Util.NEW_DOCUMENT_ICON, "Clean editor script", KeyEvent.VK_N,
                 null, e -> newFile());
 
-        arrangeAllAction = UserAction.create(I18n.getString("ArrangeAll"), Util.BLANK_ICON, "Arrange all windows on screen",
+        arrangeAllAction = UserAction.create(I18n.getString("ArrangeAll"), "Arrange all windows on screen",
                 KeyEvent.VK_A, null, e -> arrangeAll());
 
-        minMaxDividerAction = UserAction.create(I18n.getString("MaximizeEditorPane"), Util.BLANK_ICON, "Maximize editor pane",
+        minMaxDividerAction = UserAction.create(I18n.getString("MaximizeEditorPane"), "Maximize editor pane",
                 KeyEvent.VK_M, KeyStroke.getKeyStroke(KeyEvent.VK_M, menuShortcutKeyMask),
                 e -> minMaxDivider());
 
-        toggleDividerOrientationAction = UserAction.create(I18n.getString("ToggleDividerOrientation"), Util.BLANK_ICON,
+        toggleDividerOrientationAction = UserAction.create(I18n.getString("ToggleDividerOrientation"),
                 "Toggle the window divider's orientation", KeyEvent.VK_C, null, e -> toggleDividerOrientation());
 
-        closeTabAction = UserAction.create("Close Tab", Util.BLANK_ICON, "Close current tab", KeyEvent.VK_W,
+        closeTabAction = UserAction.create("Close Tab", "Close current tab", KeyEvent.VK_W,
                 KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask), e -> closeTab());
 
-        closeFileAction = UserAction.create("Close Window", Util.BLANK_ICON, "Close current window (close all tabs)",
+        closeFileAction = UserAction.create("Close Window", "Close current window (close all tabs)",
                 KeyEvent.VK_C, null, e -> closePanel());
 
         openFileAction = UserAction.create(I18n.getString("Open"), Util.FOLDER_ICON, "Open a script", KeyEvent.VK_O,
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMask), e -> openFile());
 
-        newWindowAction = UserAction.create(I18n.getString("NewWindow"), Util.BLANK_ICON, "Open a new window",
+        newWindowAction = UserAction.create(I18n.getString("NewWindow"), "Open a new window",
                 KeyEvent.VK_N, KeyStroke.getKeyStroke(KeyEvent.VK_N, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> new StudioPanel().addTab(editor.getServer(), null) );
 
-        newTabAction = UserAction.create("New Tab", Util.BLANK_ICON, "Open a new tab", KeyEvent.VK_T,
+        newTabAction = UserAction.create("New Tab", "Open a new tab", KeyEvent.VK_T,
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, menuShortcutKeyMask),
                 e -> addTab(editor.getServer(), null));
 
@@ -727,7 +700,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask),
                 e -> saveEditor(editor));
 
-        saveAllFilesAction = UserAction.create("Save All...", Util.BLANK_ICON, "Save all files",
+        saveAllFilesAction = UserAction.create("Save All...", "Save all files",
                 KeyEvent.VK_L, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> saveAll());
 
@@ -773,10 +746,10 @@ public class StudioPanel extends JPanel implements WindowListener {
         aboutAction = UserAction.create(I18n.getString("About"), Util.ABOUT_ICON, "About Studio for kdb+",
                 KeyEvent.VK_E, null, e -> about());
 
-        exitAction = UserAction.create(I18n.getString("Exit"), Util.BLANK_ICON, "Close this window",
+        exitAction = UserAction.create(I18n.getString("Exit"), "Close this window",
                 KeyEvent.VK_X, e -> quit());
 
-        settingsAction = UserAction.create("Settings", Util.BLANK_ICON, "Settings",
+        settingsAction = UserAction.create("Settings", "Settings",
                 KeyEvent.VK_S, null, e -> settings());
 
         codeKxComAction = UserAction.create("code.kx.com", Util.TEXT_ICON, "Open code.kx.com",
@@ -812,13 +785,13 @@ public class StudioPanel extends JPanel implements WindowListener {
         redoAction = UserAction.create(I18n.getString("Redo"), Util.REDO_ICON, "Redo the last change to the document",
                 KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_Y,menuShortcutKeyMask), editorRedoAction);
 
-        nextEditorTabAction = UserAction.create("Next tab", Util.BLANK_ICON,
+        nextEditorTabAction = UserAction.create("Next tab",
                 "Select next editor tab", KeyEvent.VK_N,
                     Util.MAC_OS_X ? KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, menuShortcutKeyMask | InputEvent.ALT_MASK ) :
                                     KeyStroke.getKeyStroke(KeyEvent.VK_TAB, menuShortcutKeyMask),
                 e -> selectNextTab(true));
 
-        prevEditorTabAction = UserAction.create("Previous tab", Util.BLANK_ICON,
+        prevEditorTabAction = UserAction.create("Previous tab",
                 "Select previous editor tab", KeyEvent.VK_P,
                 Util.MAC_OS_X ? KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, menuShortcutKeyMask | InputEvent.ALT_MASK ) :
                         KeyStroke.getKeyStroke(KeyEvent.VK_TAB, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
@@ -833,7 +806,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 } );
         }
 
-        wordWrapAction = UserAction.create("Word wrap", Util.BLANK_ICON, "Word wrap for all tabs",
+        wordWrapAction = UserAction.create("Word wrap", "Word wrap for all tabs",
                 KeyEvent.VK_W, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> toggleWordWrap());
     }
@@ -1792,7 +1765,6 @@ public class StudioPanel extends JPanel implements WindowListener {
     public static void queryExecutionComplete(EditorTab editor, QueryResult queryResult) {
         JTextComponent textArea = editor.getTextArea();
         textArea.setCursor(textCursor);
-
         Throwable error = queryResult.getError();
         if (queryResult.isComplete()) {
             long execTime = queryResult.getExecutionTime();
@@ -1802,7 +1774,25 @@ public class StudioPanel extends JPanel implements WindowListener {
         }
 
         StudioPanel panel = editor.getPanel();
-        if (error != null && ! (error instanceof c.K4Exception)) {
+        if (error == null || error instanceof c.K4AccessException) {
+            try {
+                if (queryResult.isComplete()) {
+                    JTabbedPane tabbedPane = panel.tabbedPane;
+                    TabPanel tab = new TabPanel(panel, queryResult);
+                    if (tabbedPane.getTabCount() >= CONFIG.getResultTabsCount()) {
+                        tabbedPane.remove(0);
+                    }
+                    tab.addInto(tabbedPane);
+                    tab.setToolTipText(editor.getServer().getConnectionString());
+                }
+                error = null;
+            } catch (Throwable exc) {
+                error = new RuntimeException("Error during result rendering", exc);
+                log.error("Error during result rendering", exc);
+            }
+        }
+
+        if (error != null) {
             String message = error.getMessage();
             if ((message == null) || (message.length() == 0))
                 message = "No message with exception. Exception is " + error;
@@ -1811,15 +1801,8 @@ public class StudioPanel extends JPanel implements WindowListener {
                             editor.getServer().getConnectionString() +
                             "\n\nError detail is\n\n" + message + "\n\n",
                     "Studio for kdb+");
-        } else if (queryResult.isComplete()) {
-            JTabbedPane tabbedPane = panel.tabbedPane;
-            TabPanel tab = new TabPanel(panel, queryResult);
-            if(tabbedPane.getTabCount()>= CONFIG.getResultTabsCount()) {
-                tabbedPane.remove(0);
-            }
-            tab.addInto(tabbedPane);
-            tab.setToolTipText(editor.getServer().getConnectionString());
         }
+
         panel.refreshActionState();
     }
 
