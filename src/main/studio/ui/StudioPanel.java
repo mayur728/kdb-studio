@@ -445,8 +445,8 @@ public class StudioPanel extends JPanel implements WindowListener {
                         "Warning");
         } catch (Exception e) {
             StudioOptionPane.showError(this,
-                    "Error",
-                    "An error occurred whilst writing the export file.\n Details are: " + e.getMessage());
+                    "An error occurred whilst writing the export file.\n Details are: " + e.getMessage(),
+                    "Error");
         }
     }
 
@@ -600,26 +600,37 @@ public class StudioPanel extends JPanel implements WindowListener {
         cleanAction = UserAction.create("Clean", Util.NEW_DOCUMENT_ICON, "Clean editor script", KeyEvent.VK_N,
                 null, e -> newFile());
 
-        arrangeAllAction = UserAction.create(I18n.getString("ArrangeAll"), "Arrange all windows on screen",
+        arrangeAllAction = UserAction.create(I18n.getString("ArrangeAll"),
+                Util.ARRANGE_WINDOWS_ICON,
+                "Arrange all windows on screen",
                 KeyEvent.VK_A, null, e -> arrangeAll());
 
-        minMaxDividerAction = UserAction.create(I18n.getString("MaximizeEditorPane"), "Maximize editor pane",
+        minMaxDividerAction = UserAction.create(I18n.getString("MaximizeEditorPane"),
+                Util.MAXIMIZE_EDITOR_ICON,
+                "Maximize editor pane",
                 KeyEvent.VK_M, KeyStroke.getKeyStroke(KeyEvent.VK_M, menuShortcutKeyMask),
                 e -> minMaxDivider());
 
         toggleDividerOrientationAction = UserAction.create(I18n.getString("ToggleDividerOrientation"),
+                Util.DIVIDER_ORIENTATION_ICON,
                 "Toggle the window divider's orientation", KeyEvent.VK_C, null, e -> toggleDividerOrientation());
 
-        closeTabAction = UserAction.create("Close Tab", "Close current tab", KeyEvent.VK_W,
+        closeTabAction = UserAction.create("Close Tab",
+                Util.CLOSE_ONE_ICON,
+                "Close current tab", KeyEvent.VK_W,
                 KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask), e -> closeTab());
 
-        closeFileAction = UserAction.create("Close Window", "Close current window (close all tabs)",
+        closeFileAction = UserAction.create("Close Window",
+                Util.CLOSE_ALL_ICON,
+                "Close current window (close all tabs)",
                 KeyEvent.VK_C, null, e -> closePanel());
 
-        openFileAction = UserAction.create(I18n.getString("Open"), Util.FOLDER_ICON, "Open a script", KeyEvent.VK_O,
+        openFileAction = UserAction.create(I18n.getString("Open"), Util.OPEN_ICON, "Open a script", KeyEvent.VK_O,
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMask), e -> openFile());
 
-        newWindowAction = UserAction.create(I18n.getString("NewWindow"), "Open a new window",
+        newWindowAction = UserAction.create(I18n.getString("NewWindow"),
+                Util.NEW_WINDOW_ICON,
+                "Open a new window",
                 KeyEvent.VK_N, KeyStroke.getKeyStroke(KeyEvent.VK_N, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> new StudioPanel().addTab(editor.getServer(), null) );
 
@@ -627,7 +638,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, menuShortcutKeyMask),
                 e -> addTab(editor.getServer(), null));
 
-        serverListAction = UserAction.create(I18n.getString("ServerList"), Util.TEXT_TREE_ICON, "Show server list",
+        serverListAction = UserAction.create(I18n.getString("ServerList"), Util.SERVER_TREE_ICON, "Show server list",
                 KeyEvent.VK_L, KeyStroke.getKeyStroke(KeyEvent.VK_L, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> showServerList(false));
 
@@ -638,7 +649,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         importFromQPadAction = UserAction.create("Import Servers from QPad...", null, "Import from Servers.cfg",
                 KeyEvent.VK_I, null, e -> QPadImport.doImport(this));
 
-        editServerAction = UserAction.create(I18n.getString("Edit"), Util.SERVER_INFORMATION_ICON, "Edit the server details",
+        editServerAction = UserAction.create(I18n.getString("Edit"), Util.SERVER_EDIT_ICON, "Edit the server details",
                 KeyEvent.VK_E, null, e -> {
                     Server s = new Server(editor.getServer());
 
@@ -696,7 +707,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 });
 
 
-        saveFileAction = UserAction.create(I18n.getString("Save"), Util.DISKS_ICON, "Save the script",
+        saveFileAction = UserAction.create(I18n.getString("Save"), Util.SAVE_ICON, "Save the script",
                 KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask),
                 e -> saveEditor(editor));
 
@@ -727,10 +738,10 @@ public class StudioPanel extends JPanel implements WindowListener {
                     }
                 });
 
-        executeAction = UserAction.create(I18n.getString("Execute"), Util.TABLE_SQL_RUN_ICON, "Execute the full or highlighted text as a query",
+        executeAction = UserAction.create(I18n.getString("Execute"), Util.EXECUTE_ICON, "Execute the full or highlighted text as a query",
                 KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask), e -> executeQuery());
 
-        executeCurrentLineAction = UserAction.create(I18n.getString("ExecuteCurrentLine"), Util.RUN_ICON, "Execute the current line as a query",
+        executeCurrentLineAction = UserAction.create(I18n.getString("ExecuteCurrentLine"), Util.EXECUTE_LINE_ICON, "Execute the current line as a query",
                 KeyEvent.VK_ENTER, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMask), e -> executeQueryCurrentLine());
 
         refreshAction = UserAction.create(I18n.getString("Refresh"), Util.REFRESH_ICON, "Refresh the result set",
@@ -749,10 +760,12 @@ public class StudioPanel extends JPanel implements WindowListener {
         exitAction = UserAction.create(I18n.getString("Exit"), "Close this window",
                 KeyEvent.VK_X, e -> quit());
 
-        settingsAction = UserAction.create("Settings", "Settings",
+        settingsAction = UserAction.create("Settings",
+                Util.SETTINGS_ICON,
+                "Settings",
                 KeyEvent.VK_S, null, e -> settings());
 
-        codeKxComAction = UserAction.create("code.kx.com", Util.TEXT_ICON, "Open code.kx.com",
+        codeKxComAction = UserAction.create("code.kx.com", Util.CODE_KX_COM_ICON, "Open code.kx.com",
                 KeyEvent.VK_C, null, e -> {
                     try {
                         BrowserLaunch.openURL("http://code.kx.com/q/");
@@ -1058,7 +1071,6 @@ public class StudioPanel extends JPanel implements WindowListener {
 
                 JMenuItem item = new JMenuItem("" + (i + 1) + " " + filename);
                 item.setMnemonic(mnems[i]);
-                item.setIcon(Util.BLANK_ICON);
                 item.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -1088,7 +1100,6 @@ public class StudioPanel extends JPanel implements WindowListener {
         menu.add(new JCheckBoxMenuItem(wordWrapAction));
 
         JMenu lineEndingSubMenu = new JMenu("Line Ending");
-        lineEndingSubMenu.setIcon(Util.BLANK_ICON);
         for (Action action: lineEndingActions) {
             lineEndingSubMenu.add(new JCheckBoxMenuItem(action));
         }
@@ -1113,7 +1124,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         Server[] servers = CONFIG.getServers();
         if (servers.length > 0) {
             JMenu subMenu = new JMenu(I18n.getString("Clone"));
-            subMenu.setIcon(Util.DATA_COPY_ICON);
+            subMenu.setIcon(Util.SERVER_CLONE_ICON);
 
             int count = MAX_SERVERS_TO_CLONE;
             for (int i = 0;i < servers.length;i++) {
@@ -1200,7 +1211,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 if (panel == this)
                     item.setIcon(Util.CHECK_ICON);
                 else
-                    item.setIcon(Util.BLANK_ICON);
+                    item.setIcon(null);
 
                 menu.add(item);
                 i++;
@@ -1554,7 +1565,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         frame.setLocation(((int) Math.max(0,(screenSize.width - frame.getWidth()) / 2.0)),
                 (int) (Math.max(0,(screenSize.height - frame.getHeight()) / 2.0)));
 
-        frame.setIconImage(Util.LOGO_ICON.getImage());
+        if (Util.LOGO_ICON != null)
+            frame.setIconImage(Util.LOGO_ICON.getImage());
 
         //     frame.pack();
         frame.setVisible(true);

@@ -49,7 +49,9 @@ public class ConnectionPool {
 
         if (c == null) {
             try {
-                Class<?> clazz = AuthenticationManager.getInstance().lookup(s.getAuthenticationMechanism());
+                String mech = s.getAuthenticationMechanism();
+                Class<?> clazz = AuthenticationManager.getInstance().lookup(mech);
+                if(clazz == null) throw new RuntimeException("Can't find authentication mechanism: "+mech);
                 IAuthenticationMechanism authenticationMechanism = (IAuthenticationMechanism) clazz.newInstance();
 
                 authenticationMechanism.setProperties(s.getAsProperties());
