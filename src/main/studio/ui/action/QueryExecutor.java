@@ -131,6 +131,7 @@ public class QueryExecutor implements ProgressCallback {
             long startTime = System.currentTimeMillis();
             try {
                 c = ConnectionPool.getInstance().leaseConnection(server);
+                if (c == null) throw new RuntimeException("Not connected to server");
                 K.KBase response = c.k(query, QueryExecutor.this);
                 result.setResult(response);
             } catch (Throwable e) {
