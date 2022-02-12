@@ -564,7 +564,7 @@ public class K {
     }
 
     public static class TernaryOperator extends Primitive {
-        private final static String[] ops = {"'", "/", "\\"};
+        private final static String[] ops = {"'", "/", "\\", "':", "/:", "\\:"};
 
         public String getDataType() {
             return "Ternary Operator";
