@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 public class EditorPane extends JPanel {
 
     private final RSyntaxTextArea textArea;
+    private final RTextScrollPane scrollPane;
     private final MinSizeLabel lblRowCol;
     private final MinSizeLabel lblInsStatus;
     private final JLabel lblStatus;
@@ -66,7 +67,7 @@ public class EditorPane extends JPanel {
 
         Font font = Config.getInstance().getFont(Config.FONT_EDITOR);
         textArea.setFont(font);
-        RTextScrollPane scrollPane = new RTextScrollPane(textArea);
+        scrollPane = new RTextScrollPane(textArea);
         scrollPane.getGutter().setLineNumberFont(font);
 
         searchPanel = new SearchPanel(this);
@@ -129,4 +130,10 @@ public class EditorPane extends JPanel {
                 )
         );
     }
+
+    public void setTextAreaFont(Font font) { //don't call this setFont, it leads to an error
+        textArea.setFont(font);
+        scrollPane.getGutter().setLineNumberFont(font);
+    }
+
 }

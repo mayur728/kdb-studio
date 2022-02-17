@@ -97,6 +97,9 @@ public class Config {
         public int getStyle() {
             return style;
         }
+        public static FontStyle getStyle(int fontStyle) {
+            return FontStyle.values()[fontStyle];
+        }
     }
 
     // The folder is also referenced in lon4j2.xml config
@@ -821,6 +824,11 @@ public class Config {
             FileChooserConfig config = (FileChooserConfig) defaultValue;
             configDefault(key + ".filename", ConfigType.STRING, config.getFilename());
             configDefault(key + ".prefSize", ConfigType.SIZE, config.getPreferredSize());
+        } else if (type == ConfigType.FONT) {
+            Font font = (Font) defaultValue;
+            configDefault(key + ".size", ConfigType.INT, font.getSize());
+            configDefault(key + ".name", ConfigType.STRING, font.getName());
+            configDefault(key + ".style", ConfigType.ENUM, FontStyle.getStyle(font.getStyle()));
         }
 
         return key;
@@ -1106,6 +1114,14 @@ public class Config {
         return new Font(name, style, size);
     }
 
+    public String getFontName() {
+        return p.getProperty("font.name", "Monospaced");
+    }
+
+    public int getFontSize() {
+        return Integer.parseInt(p.getProperty("font.size","14"));
+    }
+
     public Font getFont(String key) {
         return get(key, (Font) checkAndGetDefaultValue(key, ConfigType.FONT));
     }
@@ -1128,4 +1144,5 @@ public class Config {
         save();
         return true;
     }
+
 }

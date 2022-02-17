@@ -860,6 +860,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         boolean changedEditor = CONFIG.setBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING, dialog.isAnimateBracketMatching());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE, dialog.isHighlightCurrentLine());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_WORD_WRAP, dialog.isWordWrap());
+        Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
+        changedEditor |= CONFIG.setFont(Config.FONT_EDITOR, font);
 
         if (changedEditor) {
             refreshEditorsSettings();
@@ -876,7 +878,6 @@ public class StudioPanel extends JPanel implements WindowListener {
             StudioOptionPane.showMessage(activePanel.frame, "Look and Feel was changed. " +
                     "New L&F will take effect on the next start up.", "Look and Feel Setting Changed");
         }
-
         activePanel.rebuildToolbar();
     }
 
@@ -889,13 +890,16 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private static void refreshEditorsSettings() {
+        Font font = CONFIG.getFont(Config.FONT_EDITOR);
         for (StudioPanel panel: allPanels) {
             int count = panel.tabbedEditors.getTabCount();
             for (int index=0; index<count; index++) {
-                RSyntaxTextArea editor = panel.getEditor(index).getTextArea();
-                editor.setHighlightCurrentLine(CONFIG.getBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE));
-                editor.setAnimateBracketMatching(CONFIG.getBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING));
-                editor.setLineWrap(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
+                EditorTab editorTab = panel.getEditor(index);
+                RSyntaxTextArea textArea = editorTab.getTextArea();
+                textArea.setHighlightCurrentLine(CONFIG.getBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE));
+                textArea.setAnimateBracketMatching(CONFIG.getBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING));
+                textArea.setLineWrap(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
+                editorTab.setTextAreaFont(font);
             }
         }
     }
