@@ -1790,12 +1790,22 @@ public class StudioPanel extends JPanel implements WindowListener {
             try {
                 if (queryResult.isComplete()) {
                     JTabbedPane tabbedPane = panel.tabbedPane;
-                    TabPanel tab = new TabPanel(panel, queryResult);
-                    if (tabbedPane.getTabCount() >= CONFIG.getResultTabsCount()) {
-                        tabbedPane.remove(0);
+                    KTableModel model = KTableModel.getModel(queryResult.getResult());
+                    TabPanel modelTab = null;
+                    if (model != null) {
+                        modelTab = new TabPanel(panel, queryResult, model);
+                        modelTab.addInto(tabbedPane);
+                        modelTab.setToolTipText(editor.getServer().getConnectionString());
                     }
+                    TabPanel tab = new TabPanel(panel, queryResult, null);
                     tab.addInto(tabbedPane);
                     tab.setToolTipText(editor.getServer().getConnectionString());
+                    if (modelTab != null) {
+                        tabbedPane.setSelectedComponent(modelTab);
+                    }
+                    while (tabbedPane.getTabCount() > CONFIG.getResultTabsCount()) {
+                        tabbedPane.remove(0);
+                    }
                 }
                 error = null;
             } catch (Throwable exc) {

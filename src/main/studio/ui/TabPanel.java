@@ -22,11 +22,11 @@ public class TabPanel extends JPanel {
     private KFormatContext formatContext = new KFormatContext(KFormatContext.DEFAULT);
     private ResultType type;
 
-    public TabPanel(StudioPanel panel, QueryResult queryResult) {
+    public TabPanel(StudioPanel panel, QueryResult queryResult, KTableModel model) {
         this.panel = panel;
         this.queryResult = queryResult;
         this.result = queryResult.getResult();
-        initComponents();
+        initComponents(model);
     }
 
     public void setPanel(StudioPanel panel) {
@@ -52,10 +52,9 @@ public class TabPanel extends JPanel {
         panel.executeK4Query(new K.KList(new K.Function("{x set y}"), new K.KSymbol(varName), result));
     }
 
-    private void initComponents() {
+    private void initComponents(KTableModel model) {
         JComponent component;
         if (result != null) {
-            KTableModel model = KTableModel.getModel(result);
             if (model != null) {
                 grid = new QGrid(panel, model);
                 component = grid;
