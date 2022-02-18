@@ -590,7 +590,8 @@ public class c {
 
         if (b[0] == -128) {
             j = 1;
-            throw new K4Exception(rs().toString());
+            //showType=false because an error is NOT a symbol, this would cause confusion with novice users who can't tell the difference
+            throw new K4Exception(rs().toString(false));
         }
         return r();
     }

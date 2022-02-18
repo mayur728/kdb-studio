@@ -769,6 +769,10 @@ public class K {
             this.s = s;
         }
 
+        public String toString(boolean showType) {
+            return showType ? "`" + s : s;
+        }
+
         public boolean isNull() {
             return s.length() == 0;
         }
