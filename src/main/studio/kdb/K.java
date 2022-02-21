@@ -564,7 +564,7 @@ public class K {
     }
 
     public static class TernaryOperator extends Primitive {
-        private final static String[] ops = {"'", "/", "\\"};
+        private final static String[] ops = {"'", "/", "\\", "':", "/:", "\\:"};
 
         public String getDataType() {
             return "Ternary Operator";
@@ -1379,7 +1379,9 @@ public class K {
             } else if (value == -Integer.MAX_VALUE) {
                 builder.append("-0Wu");
             } else {
-                builder.append(i2(value / 60)).append(":").append(i2(value % 60));
+                int v = Math.abs(value);
+                builder.append(value<0 ? "-" : "")
+                        .append(i2(v / 60)).append(":").append(i2(v % 60));
             }
             return builder;
         }
@@ -1412,10 +1414,12 @@ public class K {
             } else if (value == -Integer.MAX_VALUE) {
                 builder.append("-0Wv");
             } else {
-                int s = value % 60;
-                int m = value / 60 % 60;
-                int h = value / 3600;
-                builder.append(i2(h)).append(":").append(i2(m)).append(":").append(i2(s));
+                int v = Math.abs(value);
+                int s = v % 60;
+                int m = v / 60 % 60;
+                int h = v / 3600;
+                builder.append(value<0 ? "-" : "")
+                        .append(i2(h)).append(":").append(i2(m)).append(":").append(i2(s));
             }
             return builder;
         }
