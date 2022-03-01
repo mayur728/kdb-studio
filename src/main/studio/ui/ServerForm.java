@@ -20,6 +20,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 public class ServerForm extends EscapeDialog {
     private Server s;
+    private String originalName;
 
     public ServerForm(Window frame, String title, Server server){
         super(frame, title);
@@ -27,6 +28,7 @@ public class ServerForm extends EscapeDialog {
 
         initComponents();
 
+        originalName = s.getName();
         logicalName.setText(s.getName());
         hostname.setText(s.getHost());
         username.setText(s.getUsername());
@@ -251,23 +253,32 @@ public class ServerForm extends EscapeDialog {
         username.setText(username.getText().trim());
         port.setText(port.getText().trim());
         password.setText(new String(password.getPassword()).trim());
-        
-        if(logicalName.getText().length() == 0)
+        String newName = logicalName.getText().trim();
+        if(newName.length() == 0)
         {
             StudioOptionPane.showError(this, "The server's name cannot be empty", "Studio for kdb+");
             logicalName.requestFocus();
             return;
-        }    
+        }
 
-        boolean clash=false;
-        if( clash)
+        boolean clash = false;
+        if (!originalName.equals(newName)) {
+            for (Server server : Config.getInstance().getServers()) {
+                if (newName.equals(server.getName())) {
+                    clash = true;
+                    break;
+                }
+            }
+        }
+
+        if(clash)
         {
             StudioOptionPane.showError(this, "A server already exists with that name.", "Studio for kdb+");
             logicalName.requestFocus();
             return;
         }
         else {
-            s.setName(logicalName.getText().trim());
+            s.setName(newName);
             s.setHost(hostname.getText().trim());
             s.setUsername(username.getText().trim());
             if(port.getText().length() == 0)
