@@ -189,7 +189,13 @@ public class Studio {
             Class taskbarClass = Class.forName("java.awt.Taskbar");
             Object taskbar = taskbarClass.getDeclaredMethod("getTaskbar").invoke(taskbarClass);
             taskbarClass.getDeclaredMethod("setIconImage", Image.class).invoke(taskbar, Util.LOGO_ICON.getImage());
-        } catch (Exception e) {
+        }catch (java.lang.reflect.InvocationTargetException e) {
+            if (e.getCause() instanceof java.lang.UnsupportedOperationException) {
+                //no need to report - always happens on Windows
+            } else {
+                log.error("Failed to set Taskbar icon", e);
+            }
+        }catch (Exception e) {
             log.error("Failed to set Taskbar icon", e);
         }
     }
