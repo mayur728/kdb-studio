@@ -94,7 +94,7 @@ public class Chart implements ComponentListener {
         regularTimePeriodConverters.put(K.KMinuteVector.class, v -> new Minute(((K.Minute)v).toDate()));
     }
 
-    private static StandardChartTheme currentTheme = new StandardChartTheme("JFree");
+    private static final StandardChartTheme currentTheme = new StandardChartTheme("JFree");
     static {
         currentTheme.setXYBarPainter(new StandardXYBarPainter());
     }
@@ -110,7 +110,7 @@ public class Chart implements ComponentListener {
         yIndex = new ArrayList<>();
         for (int index = 0; index<table.getColumnCount(); index++) {
             names.add(table.getColumnName(index));
-            Class clazz = table.getColumnClass(index);
+            Class<?> clazz = table.getColumnClass(index);
             if (domainKClass.contains(clazz)) xIndex.add(index);
             if (rangeKClass.contains(clazz)) yIndex.add(index);
         }
@@ -125,7 +125,7 @@ public class Chart implements ComponentListener {
         pnlConfig = new ChartConfigPanel(this, names, xIndex, yIndex);
         contentPane.add(pnlConfig, BorderLayout.EAST);
 
-        createPlot();
+        createPlot(false);
 
         configUpdateTimer = new Timer(CONFIG_UPDATE_DELAY, e -> saveFrameBounds());
 
@@ -197,13 +197,13 @@ public class Chart implements ComponentListener {
         updateFrameBounds();
     }
 
-    void createPlot() {
+    void createPlot(boolean showLegend) {
         if (chartPanel !=null ) {
             contentPane.remove(chartPanel);
             chartPanel = null;
         }
 
-        JFreeChart chart = createChart();
+        JFreeChart chart = createChart(showLegend);
         if (chart != null) {
             chart.addChangeListener(e -> updateTitle(chart) );
             chartPanel = new ChartPanel(chart);
@@ -217,7 +217,7 @@ public class Chart implements ComponentListener {
         contentPane.repaint();
     }
 
-    private JFreeChart createChart() {
+    private JFreeChart createChart(boolean showLegend) {
         NumberAxis yAxis = new NumberAxis("");
         yAxis.setAutoRangeIncludesZero(false);
 
@@ -270,7 +270,7 @@ public class Chart implements ComponentListener {
         if (xAxis == null) return null;
 
         JFreeChart chart = new JFreeChart("", JFreeChart.DEFAULT_TITLE_FONT,
-                plot, false);
+                plot, showLegend);
         currentTheme.apply(chart);
         return chart;
     }
