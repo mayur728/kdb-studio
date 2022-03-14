@@ -89,6 +89,8 @@ public class RSTextAreaFactory {
         textArea.setEditable(editable);
         textArea.setLineWrap(Config.getInstance().getBoolean(Config.RSTA_WORD_WRAP));
         textArea.setAnimateBracketMatching(Config.getInstance().getBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING));
+        textArea.setTabSize(Config.getInstance().getInt(Config.RSTA_INDENT_SIZE));
+        textArea.setTabsEmulated(!Config.getInstance().getBoolean(Config.RSTA_INDENT_USE_TAB));
         //Never highlight current line if not editable
         textArea.setHighlightCurrentLine(editable && Config.getInstance().getBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE));
         if (! editable) {
