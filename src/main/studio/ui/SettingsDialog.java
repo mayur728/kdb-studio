@@ -37,6 +37,8 @@ public class SettingsDialog extends EscapeDialog {
     private JFormattedTextField txtEmulateDoubleClickTimeout;
     private JComboBox<Config.ExecAllOption> comboBoxExecAll;
     private JComboBox<LineEnding> comboBoxLineEnding;
+    private JComboBox cbFontName;
+    private JSpinner spnFontSize;
     private JButton btnOk;
     private JButton btnCancel;
 
@@ -136,6 +138,14 @@ public class SettingsDialog extends EscapeDialog {
         btnOk.requestFocusInWindow();
     }
 
+    public String getFontName() {
+        return cbFontName.getSelectedItem().toString();
+    }
+
+    public int getFontSize() {
+        return (Integer)spnFontSize.getValue();
+    }
+
     private void initComponents() {
         txtUser = new JTextField(12);
         txtPassword = new JPasswordField(12);
@@ -219,6 +229,13 @@ public class SettingsDialog extends EscapeDialog {
         comboBoxLineEnding = new JComboBox<>(LineEnding.values());
         comboBoxLineEnding.setSelectedItem(Config.getInstance().getEnum(Config.DEFAULT_LINE_ENDING));
 
+        JLabel lblFontSize = new JLabel("Font:");
+        spnFontSize = new JSpinner(new SpinnerNumberModel(Config.getInstance().getFontSize(), 8, 72, 1));
+
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        cbFontName = new JComboBox(ge.getAvailableFontFamilyNames());
+        cbFontName.getModel().setSelectedItem(Config.getInstance().getFontName());
+
         JLabel lblAuthMechanism = new JLabel("Authentication:");
         JLabel lblUser = new JLabel("  User:");
         JLabel lblPassword = new JLabel("  Password:");
@@ -246,6 +263,7 @@ public class SettingsDialog extends EscapeDialog {
                         .addLineAndGlue(chBoxRTSAAnimateBracketMatching, chBoxRTSAHighlightCurrentLine, chBoxRTSAWordWrap)
                         .addLineAndGlue(lblDefaultLineEnding, comboBoxLineEnding)
                         .addLineAndGlue(lblExecAll, comboBoxExecAll)
+                        .addLine(lblFontSize, spnFontSize, cbFontName)
         );
 
         JPanel pnlResult = new JPanel();

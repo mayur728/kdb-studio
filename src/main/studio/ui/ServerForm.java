@@ -20,6 +20,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 public class ServerForm extends EscapeDialog {
     private Server s;
+    private String originalName;
 
     public ServerForm(Window frame, String title, Server server){
         super(frame, title);
@@ -27,12 +28,13 @@ public class ServerForm extends EscapeDialog {
 
         initComponents();
 
+        originalName = s.getName();
         logicalName.setText(s.getName());
         hostname.setText(s.getHost());
         username.setText(s.getUsername());
         port.setText(""+s.getPort());
         password.setText(s.getPassword());
-        jCheckBox2.setSelected(s.getUseTLS());
+        useTls.setSelected(s.getUseTLS());
         DefaultComboBoxModel dcbm= (DefaultComboBoxModel)authenticationMechanism.getModel();
         String [] am;
         am = AuthenticationManager.getInstance().getAuthenticationMechanisms();
@@ -52,7 +54,7 @@ public class ServerForm extends EscapeDialog {
         logicalName.setToolTipText("The logical name for the server");
         hostname.setToolTipText("The hostname or ip address for the server");
         port.setToolTipText("The port for the server");
-        jCheckBox2.setToolTipText("Use TLS for a secure connection");
+        useTls.setToolTipText("Use TLS for a secure connection");
         username.setToolTipText("The username used to connect to the server");
         password.setToolTipText("The password used to connect to the server");
         authenticationMechanism.setToolTipText("The authentication mechanism to use");
@@ -94,14 +96,14 @@ public class ServerForm extends EscapeDialog {
     jSeparator1 = new javax.swing.JSeparator();
     jSeparator2 = new javax.swing.JSeparator();
     password = new javax.swing.JPasswordField();
-    jLabel1 = new javax.swing.JLabel();
+    colorLabel = new javax.swing.JLabel();
     jSeparator3 = new javax.swing.JSeparator();
     EditColorButton = new javax.swing.JButton();
     SampleTextOnBackgroundTextField = new javax.swing.JTextField();
     authenticationMechanism = new javax.swing.JComboBox();
-    passwordLabel1 = new javax.swing.JLabel();
-    jCheckBox2 = new javax.swing.JCheckBox();
-    jLabel2 = new javax.swing.JLabel();
+    authMethodLabel = new javax.swing.JLabel();
+    useTls = new javax.swing.JCheckBox();
+    tlsLabel = new javax.swing.JLabel();
 
     logicalNameLabel.setText("Name");
 
@@ -127,7 +129,7 @@ public class ServerForm extends EscapeDialog {
       }
     });
 
-    jLabel1.setText("Color");
+    colorLabel.setText("Color");
 
     EditColorButton.setText("Edit Color");
     EditColorButton.addActionListener(new java.awt.event.ActionListener() {
@@ -143,9 +145,9 @@ public class ServerForm extends EscapeDialog {
       }
     });
 
-    passwordLabel1.setText("Auth. Method");
+    authMethodLabel.setText("Auth. Method");
 
-    jLabel2.setText("Use TLS");
+    tlsLabel.setText("Use TLS");
 
     GroupLayout layout = new GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
@@ -157,11 +159,11 @@ public class ServerForm extends EscapeDialog {
           .addComponent(logicalNameLabel)
           .addComponent(hostnameLabel)
           .addComponent(portLabel)
-          .addComponent(jLabel2)
+          .addComponent(tlsLabel)
           .addComponent(usernameLabel)
           .addComponent(passwordLabel)
-          .addComponent(passwordLabel1)
-          .addComponent(jLabel1))
+          .addComponent(authMethodLabel)
+          .addComponent(colorLabel))
         .addPreferredGap(RELATED, 21, Short.MAX_VALUE)
         .addGroup(layout.createParallelGroup(LEADING)
           .addGroup(layout.createSequentialGroup()
@@ -177,7 +179,7 @@ public class ServerForm extends EscapeDialog {
               .addComponent(authenticationMechanism, 0, 418, Short.MAX_VALUE)
               .addComponent(password, DEFAULT_SIZE, 418, Short.MAX_VALUE)
               .addComponent(username, DEFAULT_SIZE, 418, Short.MAX_VALUE)
-              .addComponent(jCheckBox2)
+              .addComponent(useTls)
               .addComponent(port, DEFAULT_SIZE, 418, Short.MAX_VALUE)
               .addComponent(hostname, DEFAULT_SIZE, 418, Short.MAX_VALUE)
               .addComponent(logicalName, DEFAULT_SIZE, 418, Short.MAX_VALUE))
@@ -214,8 +216,8 @@ public class ServerForm extends EscapeDialog {
           .addComponent(port, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
         .addPreferredGap(RELATED)
         .addGroup(layout.createParallelGroup(LEADING)
-          .addComponent(jLabel2, TRAILING)
-          .addComponent(jCheckBox2, TRAILING))
+          .addComponent(tlsLabel, TRAILING)
+          .addComponent(useTls, TRAILING))
         .addPreferredGap(RELATED)
         .addComponent(jSeparator2, PREFERRED_SIZE, 10, PREFERRED_SIZE)
         .addPreferredGap(RELATED)
@@ -229,12 +231,12 @@ public class ServerForm extends EscapeDialog {
         .addPreferredGap(RELATED)
         .addGroup(layout.createParallelGroup(BASELINE)
           .addComponent(authenticationMechanism, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-          .addComponent(passwordLabel1))
+          .addComponent(authMethodLabel))
         .addPreferredGap(RELATED)
         .addComponent(jSeparator3, PREFERRED_SIZE, 10, PREFERRED_SIZE)
         .addPreferredGap(RELATED)
         .addGroup(layout.createParallelGroup(BASELINE)
-          .addComponent(jLabel1)
+          .addComponent(colorLabel)
           .addComponent(SampleTextOnBackgroundTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
         .addPreferredGap(RELATED)
         .addGroup(layout.createParallelGroup(BASELINE)
@@ -251,23 +253,32 @@ public class ServerForm extends EscapeDialog {
         username.setText(username.getText().trim());
         port.setText(port.getText().trim());
         password.setText(new String(password.getPassword()).trim());
-        
-        if(logicalName.getText().length() == 0)
+        String newName = logicalName.getText().trim();
+        if(newName.length() == 0)
         {
             StudioOptionPane.showError(this, "The server's name cannot be empty", "Studio for kdb+");
             logicalName.requestFocus();
             return;
-        }    
+        }
 
-        boolean clash=false;
-        if( clash)
+        boolean clash = false;
+        if (!originalName.equals(newName)) {
+            for (Server server : Config.getInstance().getServers()) {
+                if (newName.equals(server.getName())) {
+                    clash = true;
+                    break;
+                }
+            }
+        }
+
+        if(clash)
         {
             StudioOptionPane.showError(this, "A server already exists with that name.", "Studio for kdb+");
             logicalName.requestFocus();
             return;
         }
         else {
-            s.setName(logicalName.getText().trim());
+            s.setName(newName);
             s.setHost(hostname.getText().trim());
             s.setUsername(username.getText().trim());
             if(port.getText().length() == 0)
@@ -276,7 +287,7 @@ public class ServerForm extends EscapeDialog {
                 s.setPort(Integer.parseInt(port.getText()));
 
             s.setPassword(new String(password.getPassword()).trim()); 
-            s.setUseTLS(jCheckBox2.isSelected());
+            s.setUseTLS(useTls.isSelected());
             DefaultComboBoxModel dcbm= (DefaultComboBoxModel)authenticationMechanism.getModel();
             s.setAuthenticationMechanism((String)dcbm.getSelectedItem());
         }
@@ -322,9 +333,9 @@ private void SampleTextOnBackgroundTextFieldActionPerformed(java.awt.event.Actio
   private javax.swing.JButton cancelButton;
   private javax.swing.JTextField hostname;
   private javax.swing.JLabel hostnameLabel;
-  private javax.swing.JCheckBox jCheckBox2;
-  private javax.swing.JLabel jLabel1;
-  private javax.swing.JLabel jLabel2;
+  private javax.swing.JCheckBox useTls;
+  private javax.swing.JLabel colorLabel;
+  private javax.swing.JLabel tlsLabel;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
   private javax.swing.JSeparator jSeparator3;
@@ -333,7 +344,7 @@ private void SampleTextOnBackgroundTextFieldActionPerformed(java.awt.event.Actio
   private javax.swing.JButton okButton;
   private javax.swing.JPasswordField password;
   private javax.swing.JLabel passwordLabel;
-  private javax.swing.JLabel passwordLabel1;
+  private javax.swing.JLabel authMethodLabel;
   private javax.swing.JTextField port;
   private javax.swing.JLabel portLabel;
   private javax.swing.JTextField username;

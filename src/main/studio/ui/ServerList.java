@@ -5,20 +5,24 @@ import org.apache.logging.log4j.Logger;
 import studio.kdb.Config;
 import studio.kdb.Server;
 import studio.kdb.ServerTreeNode;
+import studio.ui.action.JSONServerList;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.function.*;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.List;
@@ -27,6 +31,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
 
     private static final Logger log = LogManager.getLogger();
 
+    private StudioPanel studioPanel;
     private JPanel contentPane;
     private JTabbedPane tabbedPane;
     private JList<String> serverHistoryList;
@@ -35,6 +40,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
     private DefaultTreeModel treeModel;
     private JTextField filter;
     private JToggleButton tglBtnBoxTree;
+    private JMenuBar menubar;
 
     private boolean ignoreExpansionListener = false;
     private java.util.Set<TreePath> expandedPath = new HashSet<>();
@@ -43,15 +49,18 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
     private Server selectedServer;
     private Server activeServer;
     private ServerTreeNode serverTree, root;
+    private ServerTreeNode pickedUpNode = null;
 
     private JPopupMenu popupMenu;
     private UserAction selectAction, removeAction,
                         insertFolderAction, insertServerAction,
                         addServerBeforeAction, addServerAfterAction,
-                        addFolderBeforeAction, addFolderAfterAction;
+                        addFolderBeforeAction, addFolderAfterAction,
+                        pickUpAction, dropIntoAction, dropAboveAction, dropBelowAction,
+                        importFromJSONAction, exportToJSONAction;
 
     public static final int DEFAULT_WIDTH = 300;
-    public static final int DEFAULT_HEIGHT = 400;
+    public static final int DEFAULT_HEIGHT = 410;
 
     private static final String JTABBED_TREE_LABEL = "Servers - tree";
     private static final String JTABBED_LIST_LABEL = "Servers - list";
@@ -59,8 +68,9 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
     private static final int menuShortcutKeyMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     private final KeyStroke TREE_VIEW_KEYSTROKE = KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask);
 
-    public ServerList(JFrame parent) {
+    public ServerList(JFrame parent, StudioPanel studioPanel) {
         super(parent, "Server List");
+        this.studioPanel = studioPanel;
         initComponents();
     }
 
@@ -346,6 +356,14 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
 
         initActions();
         initPopupMenu();
+
+        JMenuBar menubar = new JMenuBar();
+        JMenu menu = new JMenu(I18n.getString("File"));
+        menu.setMnemonic(KeyEvent.VK_F);
+        menu.add(new JMenuItem(importFromJSONAction));
+        menu.add(new JMenuItem(exportToJSONAction));
+        menubar.add(menu);
+        setJMenuBar(menubar);
     }
 
     private void initActions() {
@@ -365,6 +383,20 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
                 KeyEvent.VK_B, e -> addNode(true, AddNodeLocation.BEFORE));
         addFolderAfterAction = UserAction.create("Add Folder After", "Add Folder after selected node",
                 KeyEvent.VK_A, e -> addNode(true, AddNodeLocation.AFTER));
+
+        pickUpAction = UserAction.create("Pick up", "Pick up node for move",
+                KeyEvent.VK_P, e -> pickUpNode());
+        dropIntoAction = UserAction.create("Drop Into", "Move node into the folder",
+                KeyEvent.VK_D, e -> dropNode(AddNodeLocation.INSERT));
+        dropAboveAction = UserAction.create("Drop Above", "Move node above selected node",
+                KeyEvent.VK_O, e -> dropNode(AddNodeLocation.BEFORE));
+        dropBelowAction = UserAction.create("Drop Below", "Move node below selected node",
+                KeyEvent.VK_L, e -> dropNode(AddNodeLocation.AFTER));
+
+        importFromJSONAction = UserAction.create("Import from JSON...", "Import server list from JSON",
+                KeyEvent.VK_I, e -> JSONServerList.importFromJSON(this, studioPanel));
+        exportToJSONAction = UserAction.create("Export to JSON...", "Export server list to JSON",
+                KeyEvent.VK_E, e -> JSONServerList.exportToJSON(this));
 
         UserAction toggleAction = UserAction.create("toggle", e-> toggleTreeListView());
         UserAction focusTreeAction = UserAction.create("focus tree", e-> tree.requestFocusInWindow());
@@ -407,13 +439,19 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
             addServerBeforeAction.setEnabled(false);
             addServerAfterAction.setEnabled(false);
             removeAction.setEnabled(false);
+            pickUpAction.setEnabled(false);
+            dropIntoAction.setEnabled(false);
+            dropAboveAction.setEnabled(false);
+            dropBelowAction.setEnabled(false);
         } else {
             boolean isFolder = ((ServerTreeNode) path.getLastPathComponent()).isFolder();
-
+            boolean canDrop = pickedUpNode != null;
             selectAction.setEnabled(!isFolder);
             insertServerAction.setEnabled(isFolder);
             insertFolderAction.setEnabled(isFolder);
-
+            dropIntoAction.setEnabled(isFolder && canDrop);
+            dropAboveAction.setEnabled(canDrop);
+            dropBelowAction.setEnabled(canDrop);
             addFolderBeforeAction.setEnabled(!empty);
             addFolderAfterAction.setEnabled(!empty);
             addServerBeforeAction.setEnabled(!empty);
@@ -437,6 +475,11 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
         popupMenu.add(addServerAfterAction);
         popupMenu.add(new JSeparator());
         popupMenu.add(removeAction);
+        popupMenu.add(new JSeparator());
+        popupMenu.add(pickUpAction);
+        popupMenu.add(dropIntoAction);
+        popupMenu.add(dropAboveAction);
+        popupMenu.add(dropBelowAction);
     }
 
     private void removeNode() {
@@ -460,9 +503,42 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
         TreePath treePath = new TreePath(path);
         tree.scrollPathToVisible(treePath);
         tree.setSelectionPath(treePath);
+        if (node == pickedUpNode) pickedUpNode = null;
     }
 
     private enum AddNodeLocation {INSERT, BEFORE, AFTER};
+
+    private void addExistingNode(ServerTreeNode target, ServerTreeNode newNode, AddNodeLocation location) {
+        ServerTreeNode parent = location == AddNodeLocation.INSERT ? target : (ServerTreeNode)target.getParent();
+        int index;
+        if (location == AddNodeLocation.INSERT) {
+            index = target.getChildCount();
+        } else {
+            index = parent.getIndex(target);
+            if (location == AddNodeLocation.AFTER) index++;
+            int prevIndex = parent.getIndex(newNode);
+            if (prevIndex > -1 && prevIndex < index) index--;    //remove + insert into same folder
+        }
+
+        parent.insert(newNode, index);
+        try {
+            Config.getInstance().setServerTree(serverTree);
+        } catch (IllegalArgumentException exception) {
+            serverTree = Config.getInstance().getServerTree();
+            System.err.println("Error adding new node: " + exception);
+            exception.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(this, "Error adding new node:\n" + exception.toString(), "Error", JOptionPane.ERROR_MESSAGE);
+
+        }
+        refreshServers();
+
+        ServerTreeNode selNode = root.findPath(newNode.getPath());
+        if (selNode != null) {
+            TreePath treePath = new TreePath(selNode.getPath());
+            tree.scrollPathToVisible(treePath);
+            tree.setSelectionPath(treePath);
+        }
+    }
 
     private void addNode(boolean folder, AddNodeLocation location) {
         ServerTreeNode selNode  = (ServerTreeNode) tree.getLastSelectedPathComponent();
@@ -488,31 +564,32 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
             server.setFolder(parent);
             newNode = new ServerTreeNode(server);
         }
+        addExistingNode(node, newNode, location);
+    }
 
-        int index;
-        if (location == AddNodeLocation.INSERT) {
-            index = node.getChildCount();
-        } else {
-            index = parent.getIndex(node);
-            if (location == AddNodeLocation.AFTER) index++;
-        }
+    private void pickUpNode() {
+        pickedUpNode = (ServerTreeNode) tree.getLastSelectedPathComponent();
+    }
 
-        parent.insert(newNode, index);
-        try {
-            Config.getInstance().setServerTree(serverTree);
-        } catch (IllegalArgumentException exception) {
-            serverTree = Config.getInstance().getServerTree();
-            log.error("Error adding new node", exception);
-            StudioOptionPane.showError(this, "Error adding new node:\n" + exception, "Error");
+    private void dropNode(AddNodeLocation location) {
+        if (pickedUpNode == null) return;
+        ServerTreeNode selNode  = (ServerTreeNode) tree.getLastSelectedPathComponent();
+        if (selNode == pickedUpNode) {
+            JOptionPane.showMessageDialog(this,"Cannot move a node relative to itself.","Error",JOptionPane.ERROR_MESSAGE,Util.ERROR_ICON);
+            return;
         }
-        refreshServers();
-
-        selNode = root.findPath(newNode.getPath());
-        if (selNode != null) {
-            TreePath treePath = new TreePath(selNode.getPath());
-            tree.scrollPathToVisible(treePath);
-            tree.setSelectionPath(treePath);
+        if (pickedUpNode.isFolder()) {
+            ServerTreeNode dropTarget = location == AddNodeLocation.INSERT ? selNode : (ServerTreeNode) selNode.getParent();
+            while (dropTarget != root) {
+                if (dropTarget == pickedUpNode) {
+                    JOptionPane.showMessageDialog(this,"Cannot move a folder into itself.","Error",JOptionPane.ERROR_MESSAGE,Util.ERROR_ICON);
+                    return;
+                }
+                dropTarget = (ServerTreeNode) dropTarget.getParent();
+            }
         }
+        addExistingNode(selNode, pickedUpNode, location);
+        studioPanel.updateServerComboBox();
     }
 
 }

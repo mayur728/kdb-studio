@@ -10,6 +10,7 @@ import studio.utils.FileReaderWriter;
 import studio.utils.FileWatcher;
 import studio.utils.LineEnding;
 
+import java.awt.Font;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -263,5 +264,9 @@ public class EditorTab implements FileWatcher.Listener {
             log.error("Can't reload {} with error {}", filename, e.getMessage());
             editorPane.setTemporaryStatus("Reload of " + filename + " failed");
         }
+    }
+
+    public void setTextAreaFont(Font font) { //don't call this setFont, it leads to an error
+        editorPane.setTextAreaFont(font);
     }
 }

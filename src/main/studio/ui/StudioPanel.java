@@ -9,6 +9,7 @@ import studio.core.AuthenticationManager;
 import studio.core.Credentials;
 import studio.core.Studio;
 import studio.kdb.*;
+import studio.ui.action.JSONServerList;
 import studio.ui.action.QPadImport;
 import studio.ui.action.QueryResult;
 import studio.ui.action.WorkspaceSaver;
@@ -23,7 +24,6 @@ import javax.swing.FocusManager;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.table.TableModel;
@@ -116,6 +116,8 @@ public class StudioPanel extends JPanel implements WindowListener {
     private UserAction toggleDividerOrientationAction;
     private UserAction minMaxDividerAction;
     private UserAction importFromQPadAction;
+    private UserAction importFromJSONAction;
+    private UserAction exportToJSONAction;
     private UserAction editServerAction;
     private UserAction addServerAction;
     private UserAction removeServerAction;
@@ -125,8 +127,6 @@ public class StudioPanel extends JPanel implements WindowListener {
     private UserAction[] lineEndingActions;
     private UserAction wordWrapAction;
     private JFrame frame;
-
-    private static Map<String, JFileChooser> fileChooserMap = new HashMap<>();
 
     private static List<StudioPanel> allPanels = new ArrayList<>();
 
@@ -231,65 +231,6 @@ public class StudioPanel extends JPanel implements WindowListener {
             refreshAction.setEnabled(true);
             tab.refreshActionState(queryRunning);
         }
-    }
-
-    private static File chooseFile(Component parent, String fileChooserType, int dialogType, String title, File defaultFile, FileFilter... filters) {
-        JFileChooser fileChooser = fileChooserMap.get(fileChooserType);
-        FileChooserConfig config = CONFIG.getFileChooserConfig(fileChooserType);
-        if (fileChooser == null) {
-            fileChooser = new JFileChooser();
-            fileChooserMap.put(fileChooserType, fileChooser);
-
-            if (title != null) fileChooser.setDialogTitle(title);
-            fileChooser.setDialogType(dialogType);
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            for (FileFilter ff: filters) {
-                fileChooser.addChoosableFileFilter(ff);
-            }
-            if (filters.length == 1) fileChooser.setFileFilter(filters[0]);
-
-            if (defaultFile == null && ! config.getFilename().equals("")) {
-                defaultFile = new File(config.getFilename());
-            }
-
-        }
-
-        if (defaultFile != null) {
-            fileChooser.setCurrentDirectory(defaultFile.getParentFile());
-            fileChooser.setSelectedFile(defaultFile);
-            fileChooser.ensureFileIsVisible(defaultFile);
-        }
-
-        Dimension preferredSize = config.getPreferredSize();
-        if (preferredSize.width > 0 && preferredSize.height > 0) {
-            fileChooser.setPreferredSize(preferredSize);
-        }
-
-        int option;
-        if (dialogType == JFileChooser.OPEN_DIALOG) option = fileChooser.showOpenDialog(parent);
-        else option = fileChooser.showSaveDialog(parent);
-
-        File selectedFile = fileChooser.getSelectedFile();
-        String filename = "";
-        if (selectedFile != null) {
-            filename = selectedFile.getAbsolutePath();
-        }
-
-        if (dialogType == JFileChooser.SAVE_DIALOG && option == JFileChooser.APPROVE_OPTION) {
-            FileFilter ff = fileChooser.getFileFilter();
-            if (ff instanceof FileNameExtensionFilter) {
-                String ext = "." + ((FileNameExtensionFilter) ff).getExtensions()[0];
-                if (!filename.endsWith(ext)) {
-                    filename = filename + ext;
-                    selectedFile = new File(filename);
-                }
-            }
-        }
-
-        config = new FileChooserConfig(filename, fileChooser.getSize());
-        CONFIG.setFileChooserConfig(fileChooserType, config);
-
-        return option == JFileChooser.APPROVE_OPTION ? selectedFile : null;
     }
 
     private void exportAsExcel(final String filename) {
@@ -419,7 +360,7 @@ public class StudioPanel extends JPanel implements WindowListener {
     private void export() {
         if (getSelectedTable() == null) return;
 
-        File file = chooseFile(this, Config.EXPORT_FILE_CHOOSER, JFileChooser.SAVE_DIALOG, "Export result set as",
+        File file = StudioFileChooser.chooseFile(this, Config.EXPORT_FILE_CHOOSER, JFileChooser.SAVE_DIALOG, "Export result set as",
                 null,
                 new FileNameExtensionFilter("csv (Comma delimited)", "csv"),
                 new FileNameExtensionFilter("txt (Tab delimited)", "txt"),
@@ -458,7 +399,7 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private void openFile() {
-        File file = chooseFile(this, Config.OPEN_FILE_CHOOSER, JFileChooser.OPEN_DIALOG, null, null,
+        File file = StudioFileChooser.chooseFile(this, Config.OPEN_FILE_CHOOSER, JFileChooser.OPEN_DIALOG, null, null,
                 new FileNameExtensionFilter("q script", "q"));
 
         if (file == null) return;
@@ -513,7 +454,7 @@ public class StudioPanel extends JPanel implements WindowListener {
 
     private static boolean saveAsFile(EditorTab editor) {
         String filename = editor.getFilename();
-        File file = chooseFile(editor.getPanel(), Config.SAVE_FILE_CHOOSER, JFileChooser.SAVE_DIALOG, "Save script as",
+        File file = StudioFileChooser.chooseFile(editor.getPanel(), Config.SAVE_FILE_CHOOSER, JFileChooser.SAVE_DIALOG, "Save script as",
                 filename == null ? null : new File(filename),
                 new FileNameExtensionFilter("q script", "q"));
 
@@ -597,6 +538,8 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private void initActions() {
+        StudioPanel thePanel = this;
+
         cleanAction = UserAction.create("Clean", Util.NEW_DOCUMENT_ICON, "Clean editor script", KeyEvent.VK_N,
                 null, e -> newFile());
 
@@ -648,6 +591,10 @@ public class StudioPanel extends JPanel implements WindowListener {
 
         importFromQPadAction = UserAction.create("Import Servers from QPad...", null, "Import from Servers.cfg",
                 KeyEvent.VK_I, null, e -> QPadImport.doImport(this));
+        importFromJSONAction = UserAction.create("Import Servers from JSON...", "Import server list from JSON",
+                KeyEvent.VK_J, e -> JSONServerList.importFromJSON(this, this));
+        exportToJSONAction = UserAction.create("Export Servers to JSON...", "Export server list to JSON",
+                KeyEvent.VK_X, e -> JSONServerList.exportToJSON(this));
 
         editServerAction = UserAction.create(I18n.getString("Edit"), Util.SERVER_EDIT_ICON, "Edit the server details",
                 KeyEvent.VK_E, null, e -> {
@@ -860,6 +807,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         boolean changedEditor = CONFIG.setBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING, dialog.isAnimateBracketMatching());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE, dialog.isHighlightCurrentLine());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_WORD_WRAP, dialog.isWordWrap());
+        Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
+        changedEditor |= CONFIG.setFont(Config.FONT_EDITOR, font);
 
         if (changedEditor) {
             refreshEditorsSettings();
@@ -876,7 +825,6 @@ public class StudioPanel extends JPanel implements WindowListener {
             StudioOptionPane.showMessage(activePanel.frame, "Look and Feel was changed. " +
                     "New L&F will take effect on the next start up.", "Look and Feel Setting Changed");
         }
-
         activePanel.rebuildToolbar();
     }
 
@@ -889,13 +837,16 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private static void refreshEditorsSettings() {
+        Font font = CONFIG.getFont(Config.FONT_EDITOR);
         for (StudioPanel panel: allPanels) {
             int count = panel.tabbedEditors.getTabCount();
             for (int index=0; index<count; index++) {
-                RSyntaxTextArea editor = panel.getEditor(index).getTextArea();
-                editor.setHighlightCurrentLine(CONFIG.getBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE));
-                editor.setAnimateBracketMatching(CONFIG.getBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING));
-                editor.setLineWrap(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
+                EditorTab editorTab = panel.getEditor(index);
+                RSyntaxTextArea textArea = editorTab.getTextArea();
+                textArea.setHighlightCurrentLine(CONFIG.getBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE));
+                textArea.setAnimateBracketMatching(CONFIG.getBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING));
+                textArea.setLineWrap(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
+                editorTab.setTextAreaFont(font);
             }
         }
     }
@@ -1162,6 +1113,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         menu.add(new JMenuItem(serverListAction));
         menu.add(new JMenuItem(serverHistoryAction));
         menu.add(new JMenuItem(importFromQPadAction));
+        menu.add(new JMenuItem(importFromJSONAction));
+        menu.add(new JMenuItem(exportToJSONAction));
 
         menubar.add(menu);
 
@@ -1254,7 +1207,7 @@ public class StudioPanel extends JPanel implements WindowListener {
 
     private void showServerList(boolean selectHistory) {
         if (serverList == null) {
-            serverList = new ServerList(frame);
+            serverList = new ServerList(frame, this);
         }
         Rectangle bounds = Config.getInstance().getBounds(Config.SERVER_LIST_BOUNDS);
         serverList.setBounds(bounds);
@@ -1276,6 +1229,7 @@ public class StudioPanel extends JPanel implements WindowListener {
 
 
     private void selectServerName() {
+        if (comboServer.getSelectedItem() == null) return;
         String selection = comboServer.getSelectedItem().toString();
         if(! CONFIG.getServerNames().contains(selection)) return;
 
@@ -1332,6 +1286,11 @@ public class StudioPanel extends JPanel implements WindowListener {
         toolbar.add(txtServer);
         toolbar.add(serverListAction);
         toolbar.addSeparator();
+    }
+
+    public void updateServerComboBox() {
+        comboServer.removeAllItems();
+        for (String name : Config.getInstance().getServerNames()) comboServer.addItem(name);
     }
 
     private void rebuildToolbar() {
@@ -1790,12 +1749,22 @@ public class StudioPanel extends JPanel implements WindowListener {
             try {
                 if (queryResult.isComplete()) {
                     JTabbedPane tabbedPane = panel.tabbedPane;
-                    TabPanel tab = new TabPanel(panel, queryResult);
-                    if (tabbedPane.getTabCount() >= CONFIG.getResultTabsCount()) {
-                        tabbedPane.remove(0);
+                    KTableModel model = KTableModel.getModel(queryResult.getResult());
+                    TabPanel modelTab = null;
+                    if (model != null) {
+                        modelTab = new TabPanel(panel, queryResult, model);
+                        modelTab.addInto(tabbedPane);
+                        modelTab.setToolTipText(editor.getServer().getConnectionString());
                     }
+                    TabPanel tab = new TabPanel(panel, queryResult, null);
                     tab.addInto(tabbedPane);
                     tab.setToolTipText(editor.getServer().getConnectionString());
+                    if (modelTab != null) {
+                        tabbedPane.setSelectedComponent(modelTab);
+                    }
+                    while (tabbedPane.getTabCount() > CONFIG.getResultTabsCount()) {
+                        tabbedPane.remove(0);
+                    }
                 }
                 error = null;
             } catch (Throwable exc) {
