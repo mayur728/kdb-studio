@@ -27,8 +27,10 @@ public class SettingsDialog extends EscapeDialog {
     private JCheckBox chBoxRTSAAnimateBracketMatching;
     private JCheckBox chBoxRTSAHighlightCurrentLine;
     private JCheckBox chBoxRTSAWordWrap;
+    private JCheckBox chBoxRTSAIndentUseTab;
     private JComboBox<CustomiszedLookAndFeelInfo> comboBoxLookAndFeel;
     private JFormattedTextField txtTabsCount;
+    private JFormattedTextField txtRTSAIndentSize;
     private JFormattedTextField txtMaxCharsInResult;
     private JFormattedTextField txtMaxCharsInTableCell;
     private JFormattedTextField txtCellRightPadding;
@@ -109,6 +111,14 @@ public class SettingsDialog extends EscapeDialog {
         return chBoxRTSAHighlightCurrentLine.isSelected();
     }
 
+    public int getRTSAIndentSize() {
+        return (Integer) txtRTSAIndentSize.getValue();
+    }
+
+    public boolean isRTSAIndentUseTab() {
+        return chBoxRTSAIndentUseTab.isSelected();
+    }
+
     public boolean isWordWrap() {
         return chBoxRTSAWordWrap.isSelected();
     }
@@ -172,9 +182,18 @@ public class SettingsDialog extends EscapeDialog {
         chBoxRTSAWordWrap = new JCheckBox("Word wrap");
         chBoxRTSAWordWrap.setSelected(Config.getInstance().getBoolean(Config.RSTA_WORD_WRAP));
 
+        JLabel lblRTSAIndentSize = new JLabel("Indentation size:");
+        NumberFormatter formatter = new NumberFormatter();
+        formatter.setMinimum(1);
+        txtRTSAIndentSize = new JFormattedTextField(formatter);
+        txtRTSAIndentSize.setValue(Config.getInstance().getInt(Config.RSTA_INDENT_SIZE));
+
+        chBoxRTSAIndentUseTab = new JCheckBox("Use tab characters for indenting");
+        chBoxRTSAIndentUseTab.setSelected(Config.getInstance().getBoolean(Config.RSTA_INDENT_USE_TAB));
+
         comboBoxLookAndFeel.setSelectedItem(lf);
         JLabel lblResultTabsCount = new JLabel("Result tabs count");
-        NumberFormatter formatter = new NumberFormatter();
+        formatter = new NumberFormatter();
         formatter.setMinimum(1);
         txtTabsCount = new JFormattedTextField(formatter);
         txtTabsCount.setValue(Config.getInstance().getResultTabsCount());
@@ -261,6 +280,7 @@ public class SettingsDialog extends EscapeDialog {
         layout.setStacks(
                 new GroupLayoutSimple.Stack()
                         .addLineAndGlue(chBoxRTSAAnimateBracketMatching, chBoxRTSAHighlightCurrentLine, chBoxRTSAWordWrap)
+                        .addLineAndGlue(lblRTSAIndentSize, txtRTSAIndentSize, chBoxRTSAIndentUseTab)
                         .addLineAndGlue(lblDefaultLineEnding, comboBoxLineEnding)
                         .addLineAndGlue(lblExecAll, comboBoxExecAll)
                         .addLine(lblFontSize, spnFontSize, cbFontName)

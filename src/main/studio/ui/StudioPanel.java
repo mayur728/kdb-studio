@@ -807,6 +807,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         boolean changedEditor = CONFIG.setBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING, dialog.isAnimateBracketMatching());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE, dialog.isHighlightCurrentLine());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_WORD_WRAP, dialog.isWordWrap());
+        changedEditor |= CONFIG.setInt(Config.RSTA_INDENT_SIZE, dialog.getRTSAIndentSize());
+        changedEditor |= CONFIG.setBoolean(Config.RSTA_INDENT_USE_TAB, dialog.isRTSAIndentUseTab());
         Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
         changedEditor |= CONFIG.setFont(Config.FONT_EDITOR, font);
 
@@ -846,6 +848,8 @@ public class StudioPanel extends JPanel implements WindowListener {
                 textArea.setHighlightCurrentLine(CONFIG.getBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE));
                 textArea.setAnimateBracketMatching(CONFIG.getBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING));
                 textArea.setLineWrap(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
+                textArea.setTabSize(CONFIG.getInt(Config.RSTA_INDENT_SIZE));
+                textArea.setTabsEmulated(!CONFIG.getBoolean(Config.RSTA_INDENT_USE_TAB));
                 editorTab.setTextAreaFont(font);
             }
         }
