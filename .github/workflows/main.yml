@@ -42,8 +42,8 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
+        automatic_release_tag: "latest-java8"
         prerelease: true
-        title: "Latest Build"
+        title: "Latest Build (Java 8)"
         files: |
           build/install/studio.zip
