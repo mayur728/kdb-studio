@@ -57,6 +57,7 @@ configurations {
 
 test {
     useJUnitPlatform()
+    systemProperty "user.home", System.getProperty("user.home")
 }
 
 task integrationTest(type: Test) {
@@ -67,6 +68,10 @@ task integrationTest(type: Test) {
     classpath = sourceSets.intTest.runtimeClasspath
     systemProperty "user.home", System.getProperty("user.home")
 }
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+compileIntTestJava.options.encoding = "UTF-8"
 
 dependencies {
     txtmark group: 'com.github.rjeschke', name: 'txtmark', version: '0.13'
