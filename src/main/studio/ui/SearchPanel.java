@@ -60,9 +60,9 @@ public class SearchPanel extends JPanel {
         Action findAction = UserAction.create("Find", e -> find(true));
         Action findBackAction = UserAction.create("Find Back", e -> find(false));
         Action markAllAction = UserAction.create("Mark All", e -> markAll());
-        Action replaceAction = UserAction.create("Replace", e -> replace());
-        Action replaceAllAction = UserAction.create("Replace All", e -> replaceAll());
-        Action closeAction = UserAction.create("Close", e -> close());
+        Action replaceAction = UserAction.create("Replace", "Replace", KeyEvent.VK_R, e -> replace());
+        Action replaceAllAction = UserAction.create("Replace All", "Replace All", KeyEvent.VK_A, e -> replaceAll());
+        Action closeAction = UserAction.create("Close", "Close", KeyEvent.VK_C, e -> close());
 
         JButton btnFind = new JButton(findAction);
         JButton btnFindBack = new JButton(findBackAction);
