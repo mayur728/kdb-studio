@@ -112,6 +112,7 @@ public class SearchPanel extends JPanel {
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible) {
+            txtFind.selectAll();
             txtFind.requestFocus();
         }
     }
@@ -139,7 +140,7 @@ public class SearchPanel extends JPanel {
             }
         }
 
-        int pos = textArea.getCaretPosition();
+        int pos = context.getSearchForward() ? textArea.getSelectionEnd() : textArea.getSelectionStart();
         textArea.setSelectionStart(pos);
         textArea.setSelectionEnd(pos);
         SearchResult result;
