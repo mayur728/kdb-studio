@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -73,10 +74,15 @@ public class SearchPanel extends JPanel {
 
         ActionMap am = txtFind.getActionMap();
         InputMap im = txtFind.getInputMap();
+        int shift = InputEvent.SHIFT_DOWN_MASK;
         am.put("findAction", findAction);
+        am.put("findBackAction", findBackAction);
         am.put("closeAction", closeAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0),"findAction");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),"closeAction");
+
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,0),"findAction");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,shift),"findBackAction");
 
         am = txtReplace.getActionMap();
         im = txtReplace.getInputMap();
@@ -172,7 +178,7 @@ public class SearchPanel extends JPanel {
         editorPane.setTemporaryStatus(status);
     }
 
-    private void find(boolean forward) {
+    public void find(boolean forward) {
         SearchContext context = buildSearchContext();
         context.setSearchForward(forward);
         doSearch(context, SearchAction.Find);

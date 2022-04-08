@@ -37,6 +37,8 @@ public class RSTextAreaFactory {
 
         actions.add(new FindReplaceAction(false));
         actions.add(new FindReplaceAction(true));
+        actions.add(new FindNextAction(true));
+        actions.add(new FindNextAction(false));
         actions.add(new HideSearchPanelAction());
 
         actionMap = new ActionMapUIResource();
@@ -71,6 +73,9 @@ public class RSTextAreaFactory {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F,      defaultModifier), FindReplaceAction.findAction);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R,      defaultModifier), FindReplaceAction.replaceAction);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,      0), HideSearchPanelAction.action);
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,   0),       FindNextAction.findNextAction);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,   shift),   FindNextAction.findPreviousAction);
 
         UIManager.put("RSyntaxTextAreaUI.inputMap", inputMap);
 
