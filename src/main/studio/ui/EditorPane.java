@@ -88,6 +88,10 @@ public class EditorPane extends JPanel {
         searchPanel.setVisible(true);
     }
 
+    public void findNext(boolean forward) {
+        searchPanel.find(forward);
+    }
+
     public RSyntaxTextArea getTextArea() {
         return textArea;
     }
