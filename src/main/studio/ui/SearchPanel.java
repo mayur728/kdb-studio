@@ -53,7 +53,9 @@ public class SearchPanel extends JPanel {
         tglCaseSensitive = getButton(Util.SEARCH_CASE_SENSITIVE_SHADED_ICON, Util.SEARCH_CASE_SENSITIVE_ICON, "Case sensitive");
 
         txtFind = new JTextField();
+        txtFind.setName("txtFind");
         txtReplace = new JTextField();
+        txtReplace.setName("txtReplace");
 
         JLabel lblFind = new JLabel("Find: ");
         lblReplace = new JLabel("Replace: " );
@@ -70,6 +72,7 @@ public class SearchPanel extends JPanel {
         JButton btnMarkAll = new JButton(markAllAction);
         btnReplace = new JButton(replaceAction);
         btnReplaceAll = new JButton(replaceAllAction);
+        btnReplaceAll.setName("btnReplaceAll");
         JButton btnClose = new JButton(closeAction);
 
         ActionMap am = txtFind.getActionMap();
