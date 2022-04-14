@@ -73,6 +73,7 @@ public class SearchPanel extends JPanel {
         JButton btnFindBack = new JButton(findBackAction);
         JButton btnMarkAll = new JButton(markAllAction);
         btnReplace = new JButton(replaceAction);
+        btnReplace.setName("btnReplace");
         btnReplaceAll = new JButton(replaceAllAction);
         btnReplaceAll.setName("btnReplaceAll");
         JButton btnClose = new JButton(closeAction);
@@ -150,8 +151,13 @@ public class SearchPanel extends JPanel {
                 return;
             }
         }
-
-        int pos = context.getSearchForward() ? textArea.getSelectionEnd() : textArea.getSelectionStart();
+        boolean searchFromSelStart;
+        if (context.getReplaceWith() != null) {
+            searchFromSelStart = context.getSearchForward();
+        } else {
+            searchFromSelStart = ! context.getSearchForward();
+        }
+        int pos = searchFromSelStart ? textArea.getSelectionStart() : textArea.getSelectionEnd();
         textArea.setSelectionStart(pos);
         textArea.setSelectionEnd(pos);
         SearchResult result;
