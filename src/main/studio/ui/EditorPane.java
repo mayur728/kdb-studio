@@ -18,6 +18,7 @@ public class EditorPane extends JPanel {
     private final MinSizeLabel lblRowCol;
     private final MinSizeLabel lblInsStatus;
     private final JLabel lblStatus;
+    private final Box boxStatus;
     private final Box statusBar;
 
     private final SearchPanel searchPanel;
@@ -54,7 +55,7 @@ public class EditorPane extends JPanel {
         lblInsStatus.setMinimumWidth("INS", "OVR");
         setBorder(lblInsStatus);
         lblStatus = new JLabel("Ready");
-        Box boxStatus = Box.createHorizontalBox();
+        boxStatus = Box.createHorizontalBox();
         boxStatus.add(lblStatus);
         boxStatus.add(Box.createHorizontalGlue());
         setBorder(boxStatus);
@@ -96,16 +97,35 @@ public class EditorPane extends JPanel {
         return textArea;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(String status, boolean isAlert) {
         lblStatus.setText(status);
+        if (isAlert) {
+            lblStatus.setForeground(Color.RED);
+            //old netbeans editor style was white text on red background
+            //lblStatus.setForeground(Color.WHITE);
+            //boxStatus.setOpaque(true);
+            //boxStatus.setBackground(Color.RED);
+        } else {
+            lblStatus.setForeground(null);
+            //boxStatus.setOpaque(false);
+            //boxStatus.setBackground(null);
+        }
     }
 
-    public void setTemporaryStatus(String status) {
+    public void setStatus(String status) {
+        setStatus(status, false);
+    }
+
+    public void setTemporaryStatus(String status, boolean isAlert) {
         if (!tempStatusTimer.isRunning()) {
             oldStatus = lblStatus.getText();
         }
-        setStatus(status);
+        setStatus(status, isAlert);
         tempStatusTimer.restart();
+    }
+
+    public void setTemporaryStatus(String status) {
+        setTemporaryStatus(status, false);
     }
 
     private void tempStatusTimerAction(ActionEvent event) {

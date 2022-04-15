@@ -4,8 +4,10 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
+import org.fife.ui.rsyntaxtextarea.DocumentRange;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import java.awt.event.KeyEvent;
@@ -144,7 +146,7 @@ public class SearchPanel extends JPanel {
             try {
                 Pattern.compile(context.getSearchFor());
             } catch (PatternSyntaxException e) {
-                editorPane.setTemporaryStatus("Error in regular expression: " + e.getMessage());
+                editorPane.setTemporaryStatus("Error in regular expression: " + e.getMessage(), true);
                 return;
             }
         }
@@ -163,22 +165,37 @@ public class SearchPanel extends JPanel {
                     result = SearchEngine.replaceAll(textArea, context);
                 }
             } catch (IndexOutOfBoundsException e) {
-                editorPane.setTemporaryStatus("Error during replacement: " + e.getMessage());
+                editorPane.setTemporaryStatus("Error during replacement: " + e.getMessage(), true);
                 return;
             }
         }
 
         String status;
+        boolean isAlert = false;
         if (! result.wasFound()) {
             status = "Nothing was found";
+            isAlert = true;
         } else if (result.getMarkedCount() > 0) {
             status = "Marked " + result.getMarkedCount() + " occurrence(s)";
         } else if (action == SearchAction.Find) {
-            status = "Selected the first occurrence";
+            DocumentRange range = result.getMatchRange();
+            int startOffset = range.getStartOffset();
+            try {
+                int line = textArea.getLineOfOffset(startOffset);
+                int charOffset = startOffset-textArea.getLineStartOffset(line);
+                status = String.format("Text found at %d:%d", 1+line, 1+charOffset);
+                if (context.getSearchForward() ? (startOffset < pos) : (startOffset > pos)) {
+                    status = status + ". Reached the end of the document, wrapping around.";
+                    isAlert = true;
+                }
+            } catch(BadLocationException e) {
+                status = e.getMessage();
+                isAlert = true;
+            }
         } else {
             status = "Replaced " + result.getCount() + " occurrence(s)";
         }
-        editorPane.setTemporaryStatus(status);
+        editorPane.setTemporaryStatus(status, isAlert);
     }
 
     public void find(boolean forward) {

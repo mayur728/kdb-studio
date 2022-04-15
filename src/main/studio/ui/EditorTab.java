@@ -216,7 +216,7 @@ public class EditorTab implements FileWatcher.Listener {
         }
         catch (IOException e) {
             log.error("Error during saving file " + filename, e);
-            editorPane.setTemporaryStatus("Error during saving file " + filename);
+            editorPane.setTemporaryStatus("Error during saving file " + filename, true);
         }
 
         return false;
@@ -262,7 +262,7 @@ public class EditorTab implements FileWatcher.Listener {
             editorPane.setTemporaryStatus("Reloaded: " + filename);
         } catch (IOException e) {
             log.error("Can't reload {} with error {}", filename, e.getMessage());
-            editorPane.setTemporaryStatus("Reload of " + filename + " failed");
+            editorPane.setTemporaryStatus("Reload of " + filename + " failed", true);
         }
     }
 
