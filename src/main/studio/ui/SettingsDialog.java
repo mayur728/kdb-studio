@@ -29,6 +29,7 @@ public class SettingsDialog extends EscapeDialog {
     private JCheckBox chBoxRTSAHighlightCurrentLine;
     private JCheckBox chBoxRTSAWordWrap;
     private JCheckBox chBoxRTSAIndentUseTab;
+    private JCheckBox chBoxRTSAUnindentCurlyBraces;
     private JComboBox<CustomiszedLookAndFeelInfo> comboBoxLookAndFeel;
     private JFormattedTextField txtTabsCount;
     private JFormattedTextField txtRTSAIndentSize;
@@ -124,6 +125,10 @@ public class SettingsDialog extends EscapeDialog {
         return chBoxRTSAIndentUseTab.isSelected();
     }
 
+    public boolean isRTSAUnindentCurlyBraces() {
+        return chBoxRTSAUnindentCurlyBraces.isSelected();
+    }
+
     public boolean isWordWrap() {
         return chBoxRTSAWordWrap.isSelected();
     }
@@ -195,6 +200,9 @@ public class SettingsDialog extends EscapeDialog {
 
         chBoxRTSAIndentUseTab = new JCheckBox("Use tab characters for indenting");
         chBoxRTSAIndentUseTab.setSelected(Config.getInstance().getBoolean(Config.RSTA_INDENT_USE_TAB));
+
+        chBoxRTSAUnindentCurlyBraces = new JCheckBox("Unindent curly braces");
+        chBoxRTSAUnindentCurlyBraces.setSelected(Config.getInstance().getBoolean(Config.RSTA_UNINDENT_CURLY_BRACES));
 
         comboBoxLookAndFeel.setSelectedItem(lf);
         JLabel lblResultTabsCount = new JLabel("Result tabs count");
@@ -288,7 +296,7 @@ public class SettingsDialog extends EscapeDialog {
         layout.setStacks(
                 new GroupLayoutSimple.Stack()
                         .addLineAndGlue(chBoxRTSAAnimateBracketMatching, chBoxRTSAHighlightCurrentLine, chBoxRTSAWordWrap)
-                        .addLineAndGlue(lblRTSAIndentSize, txtRTSAIndentSize, chBoxRTSAIndentUseTab)
+                        .addLineAndGlue(lblRTSAIndentSize, txtRTSAIndentSize, chBoxRTSAIndentUseTab, chBoxRTSAUnindentCurlyBraces)
                         .addLineAndGlue(lblDefaultLineEnding, comboBoxLineEnding)
                         .addLineAndGlue(lblExecAll, comboBoxExecAll)
                         .addLine(lblFontSize, spnFontSize, cbFontName)
