@@ -32,7 +32,7 @@ public class FileWatcher implements Runnable {
             return;
         }
         if (! Files.exists(path) ) {
-            log.warn("File " + path + " is not exist");
+            log.warn("File " + path + " does not exist");
         }
 
         Path folder = path.getParent();
@@ -53,7 +53,7 @@ public class FileWatcher implements Runnable {
 
         Path oldPath = listeners.get(listener);
         if (oldPath !=null) {
-            log.error("Ops... That's not expected. A listener found in FileWatcher.addListener for {}.", path);
+            log.error("Oops... That's not expected. A listener found in FileWatcher.addListener for {}.", path);
             removeListener(listener);
         }
         listeners.put(listener, path);
@@ -63,7 +63,7 @@ public class FileWatcher implements Runnable {
     public static synchronized void removeListener(Listener listener) {
         Path path = listeners.remove(listener);
         if (path == null) {
-            log.error("Ops... That's not expected. A listener not found in FileWatch.removeListener");
+            log.error("Oops... That's not expected. A listener not found in FileWatch.removeListener");
             return;
         }
 
@@ -79,7 +79,7 @@ public class FileWatcher implements Runnable {
         if (cancelWatch) {
             WatchKey watchKey = watchKeys.remove(folder);
             if (watchKey == null) {
-                log.error("Ops... That's not expected. There is no watchKey for folder {}", folder);
+                log.error("Oops... That's not expected. There is no watchKey for folder {}", folder);
             } else {
                 watchKey.cancel();
                 log.error("Stop watching folder {}", folder);
