@@ -1,7 +1,9 @@
 package studio.ui;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import javax.swing.JFrame;
@@ -127,7 +129,7 @@ class ExcelExporter {
                     }
                 }
 
-                FileOutputStream fileOut = new FileOutputStream(file);
+                OutputStream fileOut = Files.newOutputStream(file.toPath());
                 workbook.write(fileOut);
                 fileOut.close();
                 workbook.close();

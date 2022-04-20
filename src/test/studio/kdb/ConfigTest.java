@@ -8,6 +8,8 @@ import studio.utils.TableConnExtractor;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -144,7 +146,7 @@ public class ConfigTest {
     private Config getConfig(Properties properties) throws IOException {
         File newFile = File.createTempFile("studioforkdb", ".tmp");
         newFile.deleteOnExit();
-        OutputStream out = new FileOutputStream(newFile);
+        OutputStream out = Files.newOutputStream(newFile.toPath());
         properties.store(out, null);
         out.close();
 
@@ -153,7 +155,7 @@ public class ConfigTest {
     
     private Config copyConfig(Config config, Consumer<Properties> propsModification) throws IOException {
         Properties p = new Properties();
-        p.load(new FileInputStream(config.getFilename()));
+        p.load(Files.newInputStream(Paths.get(config.getFilename())));
         propsModification.accept(p);
         return getConfig(p);
     }
