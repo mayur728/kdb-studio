@@ -38,6 +38,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 
@@ -464,6 +465,14 @@ public class StudioPanel extends JPanel implements WindowListener {
         }
 
         filename = file.getAbsolutePath();
+        try {
+            Paths.get(filename);
+        } catch(Exception e) {
+            log.error("Failed save file " + filename, e);
+            StudioOptionPane.showError(editor.getPanel(), "Failed to save file "+filename + ".\n" + e.getMessage(),
+                    "Error in file save");
+            return false;
+        }
         if (file.exists()) {
             int choice = StudioOptionPane.showYesNoDialog(editor.getPanel(),
                     filename + " already exists.\nOverwrite?",
