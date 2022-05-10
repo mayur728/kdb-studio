@@ -1,5 +1,7 @@
 package studio.ui.rstextarea;
 
+import static studio.ui.rstextarea.DeleteNextWordAction.deleteNextWordAction;
+
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
 import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
@@ -27,6 +29,7 @@ public class RSTextAreaFactory {
     public static final String rstaCutAsStyledTextAction = "kdbStudio.rstaCutAsStyledTextAction";
     public static final String rstaCopyAsStyledTextAction = "kdbStudio.rstaCopyAsStyledTextAction";
 
+
     private static final ActionMap actionMap;
 
     static {
@@ -40,6 +43,7 @@ public class RSTextAreaFactory {
         actions.add(new FindNextAction(true));
         actions.add(new FindNextAction(false));
         actions.add(new HideSearchPanelAction());
+        actions.add(new DeleteNextWordAction());
 
         actionMap = new ActionMapUIResource();
         for (Action a : actions) {
@@ -76,6 +80,8 @@ public class RSTextAreaFactory {
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,   0),       FindNextAction.findNextAction);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,   shift),   FindNextAction.findPreviousAction);
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, defaultModifier), deleteNextWordAction);
 
         UIManager.put("RSyntaxTextAreaUI.inputMap", inputMap);
 
