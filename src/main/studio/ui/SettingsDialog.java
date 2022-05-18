@@ -24,6 +24,7 @@ public class SettingsDialog extends EscapeDialog {
     private JCheckBox chBoxShowServerCombo;
     private JCheckBox chBoxAutoSave;
     private JCheckBox chBoxSaveOnExit;
+    private JCheckBox chBoxFileWatcher;
     private JCheckBox chBoxRTSAAnimateBracketMatching;
     private JCheckBox chBoxRTSAHighlightCurrentLine;
     private JCheckBox chBoxRTSAWordWrap;
@@ -101,6 +102,10 @@ public class SettingsDialog extends EscapeDialog {
 
     public boolean isSaveOnExit() {
         return chBoxSaveOnExit.isSelected();
+    }
+
+    public boolean isFileWatcherEnabled() {
+        return chBoxFileWatcher.isSelected();
     }
 
     public boolean isAnimateBracketMatching() {
@@ -243,6 +248,8 @@ public class SettingsDialog extends EscapeDialog {
         chBoxAutoSave.setSelected(Config.getInstance().getBoolean(Config.AUTO_SAVE));
         chBoxSaveOnExit = new JCheckBox("Ask save file on exit");
         chBoxSaveOnExit.setSelected(Config.getInstance().getBoolean(Config.SAVE_ON_EXIT));
+        chBoxFileWatcher = new JCheckBox("File watcher (needs restart to take effect)");
+        chBoxFileWatcher.setSelected(Config.getInstance().getBoolean(Config.FILE_WATCHER_ENABLED));
 
         JLabel lblDefaultLineEnding = new JLabel ("Default line ending:");
         comboBoxLineEnding = new JComboBox<>(LineEnding.values());
@@ -272,6 +279,7 @@ public class SettingsDialog extends EscapeDialog {
                 new GroupLayoutSimple.Stack()
                         .addLineAndGlue(lblLookAndFeel, comboBoxLookAndFeel)
                         .addLineAndGlue(chBoxShowServerCombo, chBoxAutoSave, chBoxSaveOnExit)
+                        .addLineAndGlue(chBoxFileWatcher)
                         .addLine(lblAuthMechanism, comboBoxAuthMechanism, lblUser, txtUser, lblPassword, txtPassword)
         );
 

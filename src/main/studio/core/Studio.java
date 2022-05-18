@@ -202,7 +202,9 @@ public class Studio {
         log.info("Start Studio with args {}", Arrays.asList(args));
         registerForMacOSMenu();
         initTaskbarIcon();
-        FileWatcher.start();
+        if (Config.getInstance().getBoolean(Config.FILE_WATCHER_ENABLED)) {
+            FileWatcher.start();
+        }
 
         createPanel(args);
 

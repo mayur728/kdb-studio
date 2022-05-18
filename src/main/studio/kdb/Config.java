@@ -40,6 +40,7 @@ public class Config {
     //@TODO migrate all other keys under such approach
     public static final String AUTO_SAVE = configDefault("isAutoSave", ConfigType.BOOLEAN, false);
     public static final String SAVE_ON_EXIT = configDefault("isSaveOnExit", ConfigType.BOOLEAN, true);
+    public static final String FILE_WATCHER_ENABLED = configDefault("isFileWatcherEnabled", ConfigType.BOOLEAN, true);
     public static final String SERVER_LIST_BOUNDS = configDefault("serverList", ConfigType.BOUNDS, new Dimension(ServerList.DEFAULT_WIDTH, ServerList.DEFAULT_HEIGHT));
     public static final String CHART_BOUNDS = configDefault("chartBounds", ConfigType.BOUNDS, 0.5);
     public static final String CELL_RIGHT_PADDING = configDefault("cellRightPadding", ConfigType.DOUBLE, 0.5);
