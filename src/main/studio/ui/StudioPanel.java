@@ -38,6 +38,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
@@ -400,23 +401,33 @@ public class StudioPanel extends JPanel implements WindowListener {
         editor.init(Content.getEmpty());
     }
 
+    private void openOrSwitchToFile(String filename) {
+        if (!Files.exists(Paths.get(filename))) {
+            StudioOptionPane.showError(this, "File not found: " + filename, "Error");
+            return;
+        }
+        addToMruFiles(filename);
+        for (int i=0; i<tabbedEditors.getTabCount(); ++i) {
+            EditorTab tab = getEditor(i);
+            if (tab.getFilename().equals(filename)) {
+                tabbedEditors.setSelectedIndex(i);
+                return;
+            }
+        }
+        addTab(editor.getServer(), filename);
+    }
+
     private void openFile() {
         File file = StudioFileChooser.chooseFile(this, Config.OPEN_FILE_CHOOSER, JFileChooser.OPEN_DIALOG, null, null,
                 new FileNameExtensionFilter("q script", "q"));
 
         if (file == null) return;
         String filename = file.getAbsolutePath();
-        addToMruFiles(filename);
-        addTab(editor.getServer(), filename);
+        openOrSwitchToFile(filename);
     }
 
     public void loadMRUFile(String filename) {
-        if (!checkAndSaveTab(editor)) return;
-
-        if (!loadFile(filename)) return;
-        addToMruFiles(filename);
-        refreshTitle();
-        rebuildAll();
+        openOrSwitchToFile(filename);
     }
 
     public void addToMruFiles(String filename) {
