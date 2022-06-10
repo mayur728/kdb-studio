@@ -1463,6 +1463,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         lastQuery = null;
         refreshTitle();
         refreshActionState();
+        editor.getPane().getTextArea().requestFocus();  //without this, the search box would always get focus if visible
     }
 
     private void resultTabDragged(DragEvent event) {
@@ -1481,6 +1482,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         allPanels.add(this);
 
         tabbedEditors = new DraggableTabbedPane("Editor");
+        tabbedEditors.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F,menuShortcutKeyMask), editorFindAction);
         removeFocusChangeKeysForWindows(tabbedEditors);
         ClosableTabbedPane.makeCloseable(tabbedEditors, index -> {
             tabbedEditors.setSelectedIndex(index);
