@@ -57,12 +57,12 @@ public class StudioTest extends AssertJSwingJUnitTestCase {
         window.button("redo").click();
         tb.requireText("abc\ndef");
         tb.pressAndReleaseKey(KeyPressInfo.keyCode(KeyEvent.VK_R).modifiers(KeyEvent.CTRL_MASK));
-        window.textBox("txtFind").setText("a");
-        window.textBox("txtReplace").setText("aa"); //replacement text should contain the find text as a substring
+        window.comboBox("txtFind").enterText("a");
+        window.comboBox("txtReplace").enterText("aa"); //replacement text should contain the find text as a substring
         window.button("btnReplaceAll").click();     //this was an infinite loop with rsyntaxtextarea 3.1.3
         tb.requireText("aabc\ndef");
         tb.setText("aaa");
-        window.textBox("txtReplace").setText("c");
+        window.comboBox("txtReplace").enterText("c");
         window.button("btnReplace").click();
         window.button("btnReplace").click();
         tb.requireText("cca");  //should replace the second "a", not the third
