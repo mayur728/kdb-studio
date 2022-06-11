@@ -1,5 +1,7 @@
 package studio.utils;
 
+import studio.kdb.Config;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +29,9 @@ public class FileWatcher implements Runnable {
     private static final Map<Listener, Path> listeners = new HashMap<>();
 
     public static synchronized void addListener(Path path, Listener listener) {
+        if (!Config.getInstance().getBoolean(Config.FILE_WATCHER_ENABLED)) {
+            return;
+        }
         if (watchService == null) {
             log.warn("Failed to watch {} as watchService is not initialized", path);
             return;
