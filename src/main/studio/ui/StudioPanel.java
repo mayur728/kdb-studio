@@ -817,6 +817,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         CONFIG.setInt(Config.CELL_MAX_WIDTH, dialog.getCellMaxWidth());
         CONFIG.setExecAllOption(dialog.getExecAllOption());
         CONFIG.setBoolean(Config.SAVE_ON_EXIT, dialog.isSaveOnExit());
+        CONFIG.setBoolean(Config.FILE_WATCHER_ENABLED, dialog.isFileWatcherEnabled());
         CONFIG.setBoolean(Config.AUTO_SAVE, dialog.isAutoSave());
         CONFIG.setEnum(Config.DEFAULT_LINE_ENDING, dialog.getDefaultLineEnding());
 
