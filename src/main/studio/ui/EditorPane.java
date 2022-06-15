@@ -97,6 +97,10 @@ public class EditorPane extends JPanel {
         return textArea;
     }
 
+    public void setLineWrap(boolean value) {
+        textArea.setLineWrap(value);
+    }
+
     public void setStatus(String status, boolean isAlert) {
         lblStatus.setText(status);
         if (isAlert) {
