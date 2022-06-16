@@ -9,6 +9,8 @@ import studio.core.AuthenticationManager;
 import studio.core.Credentials;
 import studio.core.Studio;
 import studio.kdb.*;
+import studio.kdb.Config.ThemeEntry;
+import studio.qeditor.RSToken;
 import studio.ui.action.JSONServerList;
 import studio.ui.action.QPadImport;
 import studio.ui.action.QueryResult;
@@ -116,6 +118,7 @@ public class StudioPanel extends JPanel implements WindowListener {
     private UserAction aboutAction;
     private UserAction exitAction;
     private UserAction settingsAction;
+    private UserAction themeAction;
     private UserAction toggleDividerOrientationAction;
     private UserAction minMaxDividerAction;
     private UserAction importFromQPadAction;
@@ -733,6 +736,11 @@ public class StudioPanel extends JPanel implements WindowListener {
                 "Settings",
                 KeyEvent.VK_S, null, e -> settings());
 
+        themeAction = UserAction.create("Theme",
+                null,
+                "Theme",
+                0, null, e -> themeEditor());
+
         codeKxComAction = UserAction.create("code.kx.com", Util.CODE_KX_COM_ICON, "Open code.kx.com",
                 KeyEvent.VK_C, null, e -> {
                     try {
@@ -852,6 +860,23 @@ public class StudioPanel extends JPanel implements WindowListener {
         activePanel.rebuildToolbar();
     }
 
+    private static void themeEditor() {
+        StudioPanel activePanel = getActivePanel();
+        ThemeDialog dialog = new ThemeDialog(activePanel.frame);
+        dialog.alignAndShow();
+        if (dialog.getResult() == CANCELLED) return;
+        boolean changedEditor = false;
+        for (ThemeEntry entry : ThemeEntry.values()) {
+            String name = CONFIG.getThemeEntry(entry);
+            changedEditor |= CONFIG.setColor(name, dialog.getColor(name));
+        }
+
+        if (changedEditor) {
+            refreshEditorsSettings();
+        }
+
+    }
+
     private void toggleWordWrap() {
         boolean value = CONFIG.getBoolean(Config.RSTA_WORD_WRAP);
         CONFIG.setBoolean(Config.RSTA_WORD_WRAP, !value);
@@ -872,6 +897,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 textArea.setLineWrap(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
                 textArea.setTabSize(CONFIG.getInt(Config.RSTA_INDENT_SIZE));
                 textArea.setTabsEmulated(!CONFIG.getBoolean(Config.RSTA_INDENT_USE_TAB));
+                textArea.setSyntaxScheme(RSToken.getDefaulSyntaxScheme());
                 editorTab.setTextAreaFont(font);
             }
         }
@@ -1028,6 +1054,7 @@ public class StudioPanel extends JPanel implements WindowListener {
 
         if (!Studio.hasMacOSSystemMenu()) {
             menu.add(new JMenuItem(settingsAction));
+            menu.add(new JMenuItem(themeAction));
         }
         menu.addSeparator();
 //        menu.add(new JMenuItem(importAction));

@@ -33,6 +33,9 @@ public class Config {
     private static final Logger log = LogManager.getLogger();
 
     private enum ConfigType { STRING, INT, DOUBLE, BOOLEAN, FONT, BOUNDS, COLOR, ENUM, SIZE, FILE_CHOOSER}
+    public enum ThemeEntry { CHARVECTOR, EOLCOMMENT, IDENTIFIER, OPERATOR, BOOLEAN, BYTE, SHORT, LONG, REAL, INTEGER, FLOAT, TIMESTAMP, TIMESPAN, DATETIME, DATE, MONTH,
+        MINUTE, SECOND, TIME, SYMBOL, KEYWORD, COMMAND, SYSTEM, WHITESPACE, DEFAULT, BRACKET, ERROR, BACKGROUND
+    }
 
     private static final Map<String,? super Object> defaultValues = new HashMap();
     private static final Map<String, ConfigType> configTypes = new HashMap();
@@ -54,36 +57,7 @@ public class Config {
 
     public static final String DEFAULT_LINE_ENDING = configDefault("defaultLineEnding", ConfigType.ENUM, LineEnding.Unix);
 
-    public static final String COLOR_CHARVECTOR = configDefault("token.CHARVECTOR", ConfigType.COLOR, new Color(0,200,20));
-    public static final String COLOR_EOLCOMMENT = configDefault("token.EOLCOMMENT", ConfigType.COLOR,  Color.GRAY);
-    public static final String COLOR_IDENTIFIER = configDefault("token.IDENTIFIER", ConfigType.COLOR, new Color(180,160,0));
-    public static final String COLOR_OPERATOR = configDefault("token.OPERATOR", ConfigType.COLOR, Color.BLACK);
-    public static final String COLOR_BOOLEAN = configDefault("token.BOOLEAN", ConfigType.COLOR, new Color(51,204,255));
-    public static final String COLOR_BYTE = configDefault("token.BYTE", ConfigType.COLOR, new Color(51,104,255));
-    public static final String COLOR_SHORT = configDefault("token.SHORT", ConfigType.COLOR, new Color(51,104,255));
-    public static final String COLOR_LONG = configDefault("token.LONG", ConfigType.COLOR, new Color(51,104,255));
-    public static final String COLOR_REAL = configDefault("token.REAL", ConfigType.COLOR, new Color(51,104,255));
-    public static final String COLOR_INTEGER = configDefault("token.INTEGER", ConfigType.COLOR, new Color(51,104,255));
-    public static final String COLOR_FLOAT = configDefault("token.FLOAT", ConfigType.COLOR, new Color(51,104,255));
-    public static final String COLOR_TIMESTAMP = configDefault("token.TIMESTAMP", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_TIMESPAN = configDefault("token.TIMESPAN", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_DATETIME = configDefault("token.DATETIME", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_DATE = configDefault("token.DATE", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_MONTH = configDefault("token.MONTH", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_MINUTE = configDefault("token.MINUTE", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_SECOND = configDefault("token.SECOND", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_TIME = configDefault("token.TIME", ConfigType.COLOR, new Color(184,138,0));
-    public static final String COLOR_SYMBOL = configDefault("token.SYMBOL", ConfigType.COLOR, new Color(179,0,134));
-    public static final String COLOR_KEYWORD = configDefault("token.KEYWORD", ConfigType.COLOR, new Color(0,0,255));
-    public static final String COLOR_COMMAND = configDefault("token.COMMAND", ConfigType.COLOR, new Color(240,180,0));
-    public static final String COLOR_SYSTEM = configDefault("token.SYSTEM", ConfigType.COLOR, new Color(240,180,0));
-    public static final String COLOR_WHITESPACE = configDefault("token.WHITESPACE", ConfigType.COLOR, Color.BLACK);
-    public static final String COLOR_DEFAULT = configDefault("token.DEFAULT", ConfigType.COLOR, Color.BLACK);
-    public static final String COLOR_BRACKET = configDefault("token.BRACKET", ConfigType.COLOR, Color.BLACK);
-
-    public static final String COLOR_ERROR = configDefault("token.ERROR", ConfigType.COLOR, Color.RED);
-
-    public static final String COLOR_BACKGROUND = configDefault("token.BACKGROUND", ConfigType.COLOR, Color.WHITE);
+    public static final Map<ThemeEntry, String> THEME = initTheme();
 
     public static final String FONT_EDITOR = configDefault("font", ConfigType.FONT, new Font("Monospaced", Font.PLAIN, 14));
     public static final String FONT_TABLE = configDefault("fontTable", ConfigType.FONT, new Font("Monospaced", Font.PLAIN, 14));
@@ -95,6 +69,7 @@ public class Config {
     public static final String SAVE_FILE_CHOOSER = configDefault("saveFileChooser", ConfigType.FILE_CHOOSER, new FileChooserConfig());
     public static final String EXPORT_FILE_CHOOSER = configDefault("exportFileChooser", ConfigType.FILE_CHOOSER, new FileChooserConfig());
     public static final String SERVERLIST_FILE_CHOOSER = configDefault("serverListFileChooser", ConfigType.FILE_CHOOSER, new FileChooserConfig());
+    public static final String THEME_FILE_CHOOSER = configDefault("themeListFileChooser", ConfigType.FILE_CHOOSER, new FileChooserConfig());
 
     private static final String END_OF_WORKSPACE_MARKER = "endOfWorkspace";
 
@@ -484,6 +459,14 @@ public class Config {
         return result;
     }
 
+    public static Object colorToJSON(Color color) {
+        ArrayList<Integer> acolor = new ArrayList<>(3);
+        acolor.add(color.getRed());
+        acolor.add(color.getGreen());
+        acolor.add(color.getBlue());
+        return acolor;
+    }
+
     public void exportServerListToJSON(File f) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
@@ -499,12 +482,7 @@ public class Config {
             ps.put("password", s.getPassword());
             ps.put("useTls", s.getUseTLS());
             ps.put("authMethod", s.getAuthenticationMechanism());
-            ArrayList<Integer> color = new ArrayList<>(3);
-            Color bgc = s.getBackgroundColor();
-            color.add(bgc.getRed());
-            color.add(bgc.getGreen());
-            color.add(bgc.getBlue());
-            ps.put("color", color);
+            ps.put("color", colorToJSON(s.getBackgroundColor()));
         }
         cfg.put("servers",svs);
         cfg.put("serverTree", serverTreeToObj(serverTree));
@@ -1317,6 +1295,43 @@ public class Config {
 
         save();
         return true;
+    }
+
+    private static Map<ThemeEntry, String> initTheme() {
+        Map<ThemeEntry, String> result = new HashMap();
+        result.put(ThemeEntry.CHARVECTOR, configDefault("token.CHARVECTOR", ConfigType.COLOR, new Color(0,200,20)));
+        result.put(ThemeEntry.EOLCOMMENT, configDefault("token.EOLCOMMENT", ConfigType.COLOR, Color.GRAY));
+        result.put(ThemeEntry.IDENTIFIER, configDefault("token.IDENTIFIER", ConfigType.COLOR, new Color(180,160,0)));
+        result.put(ThemeEntry.OPERATOR,   configDefault("token.OPERATOR",   ConfigType.COLOR, Color.BLACK));
+        result.put(ThemeEntry.BOOLEAN,    configDefault("token.BOOLEAN",    ConfigType.COLOR, new Color(51,204,255)));
+        result.put(ThemeEntry.BYTE,       configDefault("token.BYTE",       ConfigType.COLOR, new Color(51,104,255)));
+        result.put(ThemeEntry.SHORT,      configDefault("token.SHORT",      ConfigType.COLOR, new Color(51,104,255)));
+        result.put(ThemeEntry.LONG,       configDefault("token.LONG",       ConfigType.COLOR, new Color(51,104,255)));
+        result.put(ThemeEntry.REAL,       configDefault("token.REAL",       ConfigType.COLOR, new Color(51,104,255)));
+        result.put(ThemeEntry.INTEGER,    configDefault("token.INTEGER",    ConfigType.COLOR, new Color(51,104,255)));
+        result.put(ThemeEntry.FLOAT,      configDefault("token.FLOAT",      ConfigType.COLOR, new Color(51,104,255)));
+        result.put(ThemeEntry.TIMESTAMP,  configDefault("token.TIMESTAMP",  ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.TIMESPAN,   configDefault("token.TIMESPAN",   ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.DATETIME,   configDefault("token.DATETIME",   ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.DATE,       configDefault("token.DATE",       ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.MONTH,      configDefault("token.MONTH",      ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.MINUTE,     configDefault("token.MINUTE",     ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.SECOND,     configDefault("token.SECOND",     ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.TIME,       configDefault("token.TIME",       ConfigType.COLOR, new Color(184,138,0)));
+        result.put(ThemeEntry.SYMBOL,     configDefault("token.SYMBOL",     ConfigType.COLOR, new Color(179,0,134)));
+        result.put(ThemeEntry.KEYWORD,    configDefault("token.KEYWORD",    ConfigType.COLOR, new Color(0,0,255)));
+        result.put(ThemeEntry.COMMAND,    configDefault("token.COMMAND",    ConfigType.COLOR, new Color(240,180,0)));
+        result.put(ThemeEntry.SYSTEM,     configDefault("token.SYSTEM",     ConfigType.COLOR, new Color(240,180,0)));
+        result.put(ThemeEntry.WHITESPACE, configDefault("token.WHITESPACE", ConfigType.COLOR, Color.BLACK));
+        result.put(ThemeEntry.DEFAULT,    configDefault("token.DEFAULT",    ConfigType.COLOR, Color.BLACK));
+        result.put(ThemeEntry.BRACKET,    configDefault("token.BRACKET",    ConfigType.COLOR, Color.BLACK));
+        result.put(ThemeEntry.ERROR,      configDefault("token.ERROR",      ConfigType.COLOR, Color.RED));
+        result.put(ThemeEntry.BACKGROUND, configDefault("token.BACKGROUND", ConfigType.COLOR, Color.WHITE));
+        return result;
+    }
+
+    public static String getThemeEntry(ThemeEntry key) {
+        return THEME.get(key);
     }
 
 }
