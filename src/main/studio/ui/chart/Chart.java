@@ -32,8 +32,12 @@ import studio.utils.WindowsAppUserMode;
 import javax.swing.Timer;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.*;
 
@@ -42,6 +46,8 @@ public class Chart implements ComponentListener {
 
     private static final Logger log = LogManager.getLogger();
     private static final Config config = Config.getInstance();
+
+    public final static int menuShortcutKeyMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
     private static final int CONFIG_UPDATE_DELAY = 1000;
 
@@ -142,6 +148,17 @@ public class Chart implements ComponentListener {
             frame.setVisible(true);
             frame.requestFocus();
             frame.toFront();
+
+            JRootPane rootPane = frame.getRootPane();
+            rootPane.registerKeyboardAction ( new ActionListener ()
+            {
+                @Override
+                public void actionPerformed ( final ActionEvent e )
+                {
+                    frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                }
+            }, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask), JComponent.WHEN_IN_FOCUSED_WINDOW );
+
         } finally {
             WindowsAppUserMode.setMainId();
         }
