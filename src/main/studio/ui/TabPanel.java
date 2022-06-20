@@ -65,6 +65,7 @@ public class TabPanel extends JPanel {
                 }
             } else {
                 EditorPane editor = new EditorPane(false);
+                editor.setLineWrap(true);
                 textArea = editor.getTextArea();
                 component = editor;
                 type = ResultType.TEXT;
