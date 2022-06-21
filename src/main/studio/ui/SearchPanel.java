@@ -10,10 +10,14 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.Vector;
+
+import studio.utils.OrderFocusTraversalPolicy;
 
 public class SearchPanel extends JPanel {
 
@@ -23,8 +27,8 @@ public class SearchPanel extends JPanel {
     private JToggleButton tglWholeWord;
     private JToggleButton tglRegex;
     private JToggleButton tglCaseSensitive;
-    private JComboBox txtFind;
-    private JComboBox txtReplace;
+    private JComboBox<String> txtFind;
+    private JComboBox<String> txtReplace;
 
     private final RSyntaxTextArea textArea;
     private final EditorPane editorPane;
@@ -57,6 +61,7 @@ public class SearchPanel extends JPanel {
         txtFind = new JComboBox();
         txtFind.setName("txtFind");
         txtFind.setEditable(true);
+
         txtReplace = new JComboBox();
         txtReplace.setName("txtReplace");
         txtReplace.setEditable(true);
@@ -115,6 +120,19 @@ public class SearchPanel extends JPanel {
                         .addLine(btnReplace, btnReplaceAll)
 
         );
+
+        Vector<Component> order = new Vector<Component>(8);
+        order.add(txtFind);     //UX: replace should be focused if pressing tab after typing the text to find
+        order.add(txtReplace);
+        order.add(btnFind);
+        order.add(btnFindBack);
+        order.add(btnMarkAll);
+        order.add(btnClose);
+        order.add(btnReplace);
+        order.add(btnReplaceAll);
+
+        setFocusTraversalPolicyProvider(true);
+        setFocusTraversalPolicy(new OrderFocusTraversalPolicy(order));
     }
 
     public void setReplaceVisible(boolean visible) {
@@ -234,7 +252,7 @@ public class SearchPanel extends JPanel {
         txtReplace.setSelectedIndex(0);
         editor.selectAll();
         context.setReplaceWith(replaceWithText);
-        doSearch(context, SearchAction.Replace);
+        doSearch(context, action);
     }
 
     private void replace()  {

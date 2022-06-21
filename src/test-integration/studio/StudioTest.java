@@ -66,6 +66,9 @@ public class StudioTest extends AssertJSwingJUnitTestCase {
         window.button("btnReplace").click();
         window.button("btnReplace").click();
         tb.requireText("cca");  //should replace the second "a", not the third
+        tb.setText("aaa");
+        window.button("btnReplaceAll").click();
+        tb.requireText("ccc");
     }
 
 }
