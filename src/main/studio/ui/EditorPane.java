@@ -160,7 +160,7 @@ public class EditorPane extends JPanel {
     }
 
     public void setTextAreaFont(Font font) { //don't call this setFont, it leads to an error
-        textArea.setFont(font);
+        //textArea.setFont(font);   //useless, now the equivalent operation is in RSToken.getStyle()
         scrollPane.getGutter().setLineNumberFont(font);
     }
 

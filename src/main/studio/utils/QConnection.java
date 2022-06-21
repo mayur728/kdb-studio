@@ -43,7 +43,7 @@ public class QConnection {
             password = i2 == connection.length() ? "" : connection.substring(i2+1);
         }
 
-        Color bgColor = Config.getInstance().getColor(Config.COLOR_BACKGROUND);
+        Color bgColor = Config.getInstance().getColor(Config.getThemeEntry(Config.ThemeEntry.BACKGROUND));
 
         for (Server s: servers) {
             if (s.getHost().equals(host) && s.getPort() == port && s.getUsername().equals(user) && s.getPassword().equals(password)) {
