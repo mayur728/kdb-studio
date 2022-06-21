@@ -10,10 +10,14 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.Vector;
+
+import studio.utils.OrderFocusTraversalPolicy;
 
 public class SearchPanel extends JPanel {
 
@@ -23,8 +27,8 @@ public class SearchPanel extends JPanel {
     private JToggleButton tglWholeWord;
     private JToggleButton tglRegex;
     private JToggleButton tglCaseSensitive;
-    private JTextField txtFind;
-    private JTextField txtReplace;
+    private JComboBox<String> txtFind;
+    private JComboBox<String> txtReplace;
 
     private final RSyntaxTextArea textArea;
     private final EditorPane editorPane;
@@ -54,10 +58,13 @@ public class SearchPanel extends JPanel {
         tglRegex = getButton(Util.SEARCH_REGEX_SHADED_ICON, Util.SEARCH_REGEX_ICON, "Regular expression");
         tglCaseSensitive = getButton(Util.SEARCH_CASE_SENSITIVE_SHADED_ICON, Util.SEARCH_CASE_SENSITIVE_ICON, "Case sensitive");
 
-        txtFind = new JTextField();
+        txtFind = new JComboBox();
         txtFind.setName("txtFind");
-        txtReplace = new JTextField();
+        txtFind.setEditable(true);
+
+        txtReplace = new JComboBox();
         txtReplace.setName("txtReplace");
+        txtReplace.setEditable(true);
 
         JLabel lblFind = new JLabel("Find: ");
         lblReplace = new JLabel("Replace: " );
@@ -78,8 +85,9 @@ public class SearchPanel extends JPanel {
         btnReplaceAll.setName("btnReplaceAll");
         JButton btnClose = new JButton(closeAction);
 
-        ActionMap am = txtFind.getActionMap();
-        InputMap im = txtFind.getInputMap();
+        JComponent editor = (JComponent)txtFind.getEditor().getEditorComponent();
+        ActionMap am = editor.getActionMap();
+        InputMap im = editor.getInputMap();
         int shift = InputEvent.SHIFT_DOWN_MASK;
         am.put("findAction", findAction);
         am.put("findBackAction", findBackAction);
@@ -90,8 +98,9 @@ public class SearchPanel extends JPanel {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,0),"findAction");
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3,shift),"findBackAction");
 
-        am = txtReplace.getActionMap();
-        im = txtReplace.getInputMap();
+        editor = (JComponent)txtReplace.getEditor().getEditorComponent();
+        am = editor.getActionMap();
+        im = editor.getInputMap();
         am.put("replaceAction", replaceAction);
         am.put("closeAction", closeAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0),"replaceAction");
@@ -111,6 +120,19 @@ public class SearchPanel extends JPanel {
                         .addLine(btnReplace, btnReplaceAll)
 
         );
+
+        Vector<Component> order = new Vector<Component>(8);
+        order.add(txtFind);     //UX: replace should be focused if pressing tab after typing the text to find
+        order.add(txtReplace);
+        order.add(btnFind);
+        order.add(btnFindBack);
+        order.add(btnMarkAll);
+        order.add(btnClose);
+        order.add(btnReplace);
+        order.add(btnReplaceAll);
+
+        setFocusTraversalPolicyProvider(true);
+        setFocusTraversalPolicy(new OrderFocusTraversalPolicy(order));
     }
 
     public void setReplaceVisible(boolean visible) {
@@ -124,14 +146,19 @@ public class SearchPanel extends JPanel {
     public void setVisible(boolean visible) {
         super.setVisible(visible);
         if (visible) {
-            txtFind.selectAll();
+            txtFind.getEditor().selectAll();
             txtFind.requestFocus();
         }
     }
 
     private SearchContext buildSearchContext() {
         SearchContext context = new SearchContext();
-        String text = txtFind.getText();
+        JTextField editor = (JTextField)txtFind.getEditor().getEditorComponent();
+        String text = editor.getText();
+        txtFind.removeItem(text);
+        txtFind.insertItemAt(text, 0);
+        txtFind.setSelectedIndex(0);
+        editor.selectAll();
         context.setSearchFor(text);
         context.setMatchCase(tglCaseSensitive.isSelected());
         context.setRegularExpression(tglRegex.isSelected());
@@ -216,16 +243,24 @@ public class SearchPanel extends JPanel {
         doSearch(context, SearchAction.Find);
     }
 
-    private void replace()  {
+    private void replaceGen(SearchAction action) {
         SearchContext context = buildSearchContext();
-        context.setReplaceWith(txtReplace.getText());
-        doSearch(context, SearchAction.Replace);
+        JTextField editor = (JTextField)txtReplace.getEditor().getEditorComponent();
+        String replaceWithText = editor.getText();
+        txtReplace.removeItem(replaceWithText);
+        txtReplace.insertItemAt(replaceWithText, 0);
+        txtReplace.setSelectedIndex(0);
+        editor.selectAll();
+        context.setReplaceWith(replaceWithText);
+        doSearch(context, action);
+    }
+
+    private void replace()  {
+        replaceGen(SearchAction.Replace);
     }
 
     private void replaceAll() {
-        SearchContext context = buildSearchContext();
-        context.setReplaceWith(txtReplace.getText());
-        doSearch(context, SearchAction.ReplaceAll);
+        replaceGen(SearchAction.ReplaceAll);
     }
 
     private void close() {
