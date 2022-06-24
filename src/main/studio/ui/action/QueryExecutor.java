@@ -44,6 +44,7 @@ public class QueryExecutor implements ProgressCallback {
     public void cancel() {
         if (worker == null) return;
         if (worker.isDone()) return;
+        worker.cancelQuery();   //avoid double-executing the query when cancelling
         worker.closeConnection();
         worker.cancel(true);
         worker = null;
@@ -156,6 +157,10 @@ public class QueryExecutor implements ProgressCallback {
                 queryLog.info("#{}: type={}, count={}, time={}", queryIndex, result.getResult().getType(), result.getResult().count(), result.getExecutionTime());
             }
             return result;
+        }
+
+        public void cancelQuery() {
+            c.cancel();
         }
 
         @Override

@@ -36,6 +36,7 @@ public class c {
     int j;
     int J;
     boolean a;
+    private volatile boolean cancelled;
     int rxBufferSize;
     private String encoding = "UTF-8";
 
@@ -636,17 +637,21 @@ public class c {
 
     public synchronized K.KBase k(K.KBase x, ProgressCallback progress) throws K4Exception, IOException {
         try {
-
+            cancelled = false;
             if (isClosed()) connect(true);
             try {
                 w(1, x);
                 inputStream.readFully(b = new byte[8]);
             } catch (IOException e) {
                 close();
-                // may be the socket was closed on the server side?
-                connect(true);
-                w(1, x);
-                inputStream.readFully(b = new byte[8]);
+                if (!cancelled) {
+                    // maybe the socket was closed on the server side?
+                    connect(true);
+                    w(1, x);
+                    inputStream.readFully(b = new byte[8]);
+                } else {
+                    return null;
+                }
             }
 
             return k(progress);
@@ -659,4 +664,9 @@ public class c {
     public K.KBase k(K.KBase x) throws K4Exception, IOException {
         return k(x, null);
     }
+
+    public void cancel() {
+        cancelled = true;
+    }
+
 }
