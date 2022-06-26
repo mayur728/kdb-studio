@@ -412,7 +412,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         addToMruFiles(filename);
         for (int i=0; i<tabbedEditors.getTabCount(); ++i) {
             EditorTab tab = getEditor(i);
-            if (tab.getFilename().equals(filename)) {
+            String fileName = tab.getFilename();
+            if (fileName != null && fileName.equals(filename)) {
                 tabbedEditors.setSelectedIndex(i);
                 return;
             }
