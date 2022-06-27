@@ -224,8 +224,9 @@ public class StudioPanel extends JPanel implements WindowListener {
 
         boolean queryRunning = editor.getQueryExecutor().running();
         stopAction.setEnabled(queryRunning);
-        executeAction.setEnabled(!queryRunning);
-        executeCurrentLineAction.setEnabled(!queryRunning);
+        boolean allowParallel = CONFIG.getBoolean(Config.ALLOW_PARALLEL_QUERY);
+        executeAction.setEnabled(allowParallel || !queryRunning);
+        executeCurrentLineAction.setEnabled(allowParallel || !queryRunning);
         refreshAction.setEnabled(lastQuery != null && !queryRunning);
 
         TabPanel tab = (TabPanel) tabbedPane.getSelectedComponent();
@@ -827,6 +828,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         CONFIG.setExecAllOption(dialog.getExecAllOption());
         CONFIG.setBoolean(Config.SAVE_ON_EXIT, dialog.isSaveOnExit());
         CONFIG.setBoolean(Config.FILE_WATCHER_ENABLED, dialog.isFileWatcherEnabled());
+        CONFIG.setBoolean(Config.ALLOW_PARALLEL_QUERY, dialog.isAllowParallelQuery());
         CONFIG.setBoolean(Config.AUTO_SAVE, dialog.isAutoSave());
         CONFIG.setEnum(Config.DEFAULT_LINE_ENDING, dialog.getDefaultLineEnding());
 

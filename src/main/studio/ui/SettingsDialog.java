@@ -25,6 +25,7 @@ public class SettingsDialog extends EscapeDialog {
     private JCheckBox chBoxAutoSave;
     private JCheckBox chBoxSaveOnExit;
     private JCheckBox chBoxFileWatcher;
+    private JCheckBox chBoxAllowParallelQuery;
     private JCheckBox chBoxRTSAAnimateBracketMatching;
     private JCheckBox chBoxRTSAHighlightCurrentLine;
     private JCheckBox chBoxRTSAWordWrap;
@@ -107,6 +108,10 @@ public class SettingsDialog extends EscapeDialog {
 
     public boolean isFileWatcherEnabled() {
         return chBoxFileWatcher.isSelected();
+    }
+
+    public boolean isAllowParallelQuery() {
+        return chBoxAllowParallelQuery.isSelected();
     }
 
     public boolean isAnimateBracketMatching() {
@@ -258,6 +263,8 @@ public class SettingsDialog extends EscapeDialog {
         chBoxSaveOnExit.setSelected(Config.getInstance().getBoolean(Config.SAVE_ON_EXIT));
         chBoxFileWatcher = new JCheckBox("File watcher (needs restart to take effect)");
         chBoxFileWatcher.setSelected(Config.getInstance().getBoolean(Config.FILE_WATCHER_ENABLED));
+        chBoxAllowParallelQuery = new JCheckBox("Allow parallel queries");
+        chBoxAllowParallelQuery.setSelected(Config.getInstance().getBoolean(Config.ALLOW_PARALLEL_QUERY));
 
         JLabel lblDefaultLineEnding = new JLabel ("Default line ending:");
         comboBoxLineEnding = new JComboBox<>(LineEnding.values());
@@ -287,7 +294,7 @@ public class SettingsDialog extends EscapeDialog {
                 new GroupLayoutSimple.Stack()
                         .addLineAndGlue(lblLookAndFeel, comboBoxLookAndFeel)
                         .addLineAndGlue(chBoxShowServerCombo, chBoxAutoSave, chBoxSaveOnExit)
-                        .addLineAndGlue(chBoxFileWatcher)
+                        .addLineAndGlue(chBoxFileWatcher, chBoxAllowParallelQuery)
                         .addLine(lblAuthMechanism, comboBoxAuthMechanism, lblUser, txtUser, lblPassword, txtPassword)
         );
 
