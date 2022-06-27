@@ -11,6 +11,7 @@ import studio.core.Studio;
 import studio.kdb.*;
 import studio.kdb.Config.ThemeEntry;
 import studio.qeditor.RSToken;
+import studio.qeditor.RSTokenMaker;
 import studio.ui.action.JSONServerList;
 import studio.ui.action.QPadImport;
 import studio.ui.action.QueryResult;
@@ -839,6 +840,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         changedEditor |= CONFIG.setBoolean(Config.RSTA_WORD_WRAP, dialog.isWordWrap());
         changedEditor |= CONFIG.setInt(Config.RSTA_INDENT_SIZE, dialog.getRTSAIndentSize());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_INDENT_USE_TAB, dialog.isRTSAIndentUseTab());
+        changedEditor |= CONFIG.setBoolean(Config.RSTA_UNINDENT_CURLY_BRACES, dialog.isRTSAUnindentCurlyBraces());
         Font font = new Font(dialog.getFontName(), Font.PLAIN, dialog.getFontSize());
         changedEditor |= CONFIG.setFont(Config.FONT_EDITOR, font);
 
@@ -901,6 +903,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 editorTab.setTextAreaFont(font);
             }
         }
+        RSTokenMaker.setUnindentCurlyBraces(CONFIG.getBoolean(Config.RSTA_UNINDENT_CURLY_BRACES));
     }
 
     private static void refreshResultSettings() {

@@ -8,6 +8,7 @@ import studio.kdb.Config;
 import studio.kdb.Lm;
 import studio.kdb.Server;
 import studio.kdb.Workspace;
+import studio.qeditor.RSTokenMaker;
 import studio.ui.StudioPanel;
 import studio.ui.Util;
 import studio.ui.action.WorkspaceSaver;
@@ -39,6 +40,7 @@ public class Studio {
     public static void init0() {
         //called from main and integration tests
         studio.ui.I18n.setLocale(Locale.getDefault());
+        RSTokenMaker.setUnindentCurlyBraces(Config.getInstance().getBoolean(Config.RSTA_UNINDENT_CURLY_BRACES));
     }
 
     public static StudioPanel createPanel(String[] args) {

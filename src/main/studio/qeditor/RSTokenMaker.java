@@ -14,6 +14,7 @@ public class RSTokenMaker extends TokenMakerBase {
     public static final String CONTENT_TYPE = "text/q";
 
     private QSyntaxParser parser = new QSyntaxParser();
+    private static boolean unindentCurlyBraces = false;
 
     // Make sure the same list and ordering in QToken, RSToken, RSTokenMaker.tokens
     private static final RSToken[] tokens = Stream.of(RSToken.values()).skip(1).toArray(RSToken[]::new);
@@ -61,9 +62,13 @@ public class RSTokenMaker extends TokenMakerBase {
         return firstToken;
     }
 
+    public static void setUnindentCurlyBraces(boolean value) {
+        unindentCurlyBraces = value;
+    }
+
     @Override
     public boolean getCurlyBracesDenoteCodeBlocks(int languageIndex) {
-        return true;
+        return unindentCurlyBraces;  //if set to true, the closing brace of functions will jump to the beginning of the line, which results in a syntax error
     }
 
     @Override
