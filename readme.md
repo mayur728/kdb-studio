@@ -21,12 +21,7 @@ Additionally the application features
 
 Screenshot
 ---------
-![alt tag](https://raw.githubusercontent.com/dzmipt/studio/master/meta/ssthumb.png)
-
-Current Version
-----
-
-3.34 build date 2018.02.28
+![alt tag](meta/ssthumb.png)
 
 Credits
 -----------
@@ -44,14 +39,9 @@ Studio for kdb+ uses the following open source projects:
 
 Installation
 --------------
-Download the latest release from
+Download the latest release from the "Releases" section on the right. Each tag has an associated "studio_javaXX.zip" file with the pre-built version.
 
-https://github.com/dzmipt/kdbStudio
-
-Gradle command is used to start
-
-    gradle run
-
+Use ```kdb-studio.bat``` to start. Edit that file to replace ```java.exe``` with ```javaw.exe``` to avoid the extra console window.
 
 Background
 ----------
@@ -59,25 +49,14 @@ Studio for kdb+ has been developed since October 2002, and the source was releas
 
 Studio is written 100% in Java. The primary motivation for its development was to be able to comfortably access remote kdb+ processes. In time, it has become clear that it is not an IDE as such, but is better described as a rapid execution environment. One can edit text in the "scratch" window, highlight a selection and execute it against a remote kdb+ process via tcp/ip, with the results displayed as a grid or as in the classic kdb+ console.
 
-In 2020, the [git repo] was forked. And now it is developed in a separate [dzmipt git repo].  
-
 License
 -------
 Apache 2 , see LICENSE file in repository root.
 
 N.B. JFreeChart and c.java components have their own respective licenses.
 
-Icon Experience Collection
-
-Selected icons within the lib/images directory are part of the Icon Experience
-collection (http://www.iconexperience.com) and may be freely used with Studio for kdb+
-without charge, but may not be used separately from Studio for kdb+ without a purchase
-of a license from Icon Experience.
-
 [Kx Systems]:http://www.kx.com
 [license]:https://github.com/CharlesSkelton/studio/blob/master/license.md
-[git repo]:https://github.com/CharlesSkelton/studio
-[dzmipt git repo]:https://github.com/dzmipt/studio
 [JFreeChart]:http://www.jfree.org/jfreechart/
 [Log4j 2]:https://logging.apache.org/log4j/2.x/index.html
 [Gradle]:https://gradle.org/
