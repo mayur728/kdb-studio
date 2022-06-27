@@ -423,7 +423,12 @@ public class StudioPanel extends JPanel implements WindowListener {
     }
 
     private void openFile() {
-        File file = StudioFileChooser.chooseFile(this, Config.OPEN_FILE_CHOOSER, JFileChooser.OPEN_DIALOG, null, null,
+        File currFile = null;
+        if ( tabbedEditors.getSelectedIndex() != -1) {
+            String filename = getEditor(tabbedEditors.getSelectedIndex()).getFilename();
+            if (filename != null) currFile = new File(filename);
+        }
+        File file = StudioFileChooser.chooseFile(this, Config.OPEN_FILE_CHOOSER, JFileChooser.OPEN_DIALOG, null, currFile,
                 new FileNameExtensionFilter("q script", "q"));
 
         if (file == null) return;
