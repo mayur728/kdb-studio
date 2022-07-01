@@ -93,11 +93,15 @@ dependencies {
     intTestImplementation group: 'org.assertj', name: 'assertj-swing-junit', version: '3.9.2'
 }
 
+application {
+    mainClass = 'studio.core.Studio'
+}
+
 jar {
     manifest {
         attributes(
             'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
-            'Main-Class': 'studio.core.Studio'
+            'Main-Class': application.mainClass
         )
     }
 }
