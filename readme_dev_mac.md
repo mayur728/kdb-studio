@@ -13,6 +13,7 @@ How to set up Q service
     - ```KDB+ 4.1 2024.04.29 Copyright (C) 1993-2024 Kx Systems```
       ```m64/ 10(24)core 16384MB [userid] [computer name].broadband [ip address] EXPIRE 2025.05.07 [email address] KDB PLUS TRIAL #*****```
   - To test it works type in ```1+1``` and you should get a result back ```2 ```
+  - Tip: to exit Q service type in ```\\```
 
 How to run KDB+ Studio
 - This is a gradle project so head over to the gradle build tool.
