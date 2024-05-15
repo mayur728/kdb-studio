@@ -27,5 +27,8 @@ How to connect KDB+ Studio to Q Service
 - Type in ```1+2+3``` in the top dialog box and click ```Query > Execute```
 - A result of ```8``` will appear in the bottom dialog box
 
+Documentation
+- [Q Service Commands]
 
 [Kx Q Service]:https://kx.com/kdb-personal-edition-download/
+[Q Service Commands]:https://code.kx.com/q/basics/ipc/
