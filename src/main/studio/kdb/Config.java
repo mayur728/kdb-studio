@@ -457,6 +457,9 @@ public class Config {
             for (Enumeration<TreeNode> e = root.children(); e.hasMoreElements();) {
                 children.add(serverTreeToObj((ServerTreeNode) e.nextElement()));
             }
+        } else{
+            Server server = root.getServer();
+            result.put("id", server.getId());
         }
         return result;
     }
@@ -474,9 +477,12 @@ public class Config {
         objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         Map<String,Object> cfg = new LinkedHashMap<>();
         ArrayList<Map<String,Object>> svs = new ArrayList<>();
+        int i = 0;
         for (Server s : servers.values()) {
             LinkedHashMap<String,Object> ps = new LinkedHashMap<>();
             svs.add(ps);
+            s.setId(String.valueOf(i++));
+            ps.put("id", s.getId());
             ps.put("name", s.getName());
             ps.put("host", s.getHost());
             ps.put("port", s.getPort());
@@ -514,15 +520,13 @@ public class Config {
                 }
             }
         } else {
-            if (jn.has("name")) {
-                String name = jn.get("name").asText("");
-                if (name.length() > 0) {
-                    if (serverMap.containsKey(name)) {
-                        Server s = serverMap.get(name);
-                        s.setFolder(tn);
-                        addServer(s);
-                        serverMap.remove(s);
-                    }
+            if (jn.has("id") || jn.has("name")) {
+                String id = jn.has("id") ? jn.get("id").asText("") : jn.get("name").asText("");
+                if (serverMap.containsKey(id)) {
+                    Server s = serverMap.get(id);
+                    s.setFolder(tn);
+                    addServer(s);
+                    serverMap.remove(id);
                 }
             }
         }
@@ -532,7 +536,7 @@ public class Config {
         ObjectMapper objectMapper = new ObjectMapper();
         StringBuilder sb = new StringBuilder();
         ArrayList<String> alreadyExist = new ArrayList<>();
-        ArrayList<Integer> noName = new ArrayList<>();
+        ArrayList<Integer> noId = new ArrayList<>();
         try {
             JsonNode root = objectMapper.readTree(f);
             if (!root.isObject()) return "JSON root node is not an object";
@@ -542,23 +546,28 @@ public class Config {
             JsonNode serverTreeNode = root.get("serverTree");
             if (!serversNode.isArray()) return "\"servers\" node is not an array";
             HashSet<String> existingServers = new HashSet<>();
-            for (Server s : servers.values()) existingServers.add(s.getName());
+            for (Server s : servers.values()) existingServers.add(s.getId());
             HashMap<String, Server> serverMap = new HashMap<>();
             int i=0;
             for (JsonNode serverNode : (Iterable<JsonNode>) ()->serversNode.elements()) {
                 if (!serverNode.isObject()) {
                     sb.append("Non-object found inside \"servers\" array at index "+i+"\n");
-                } else if (!serverNode.has("name")) {
-                    sb.append("Server at index "+i+" has no name\n");
                 } else {
-                    String sname = serverNode.get("name").asText();
-                    if (sname.length() == 0) {
-                        noName.add(i);
-                    } else if (existingServers.contains(sname)) {
-                        alreadyExist.add(sname);
+                    String sId = "";
+                    if (serverNode.has("id")) {
+                        sId = serverNode.get("id").asText("");
+                    } else if (serverNode.has("name")) {
+                        sId = serverNode.get("name").asText("");
+                    } else {
+                        noId.add(i);
+                    }
+
+                    if (existingServers.contains(sId)) {
+                        alreadyExist.add(sId);
                     } else {
                         Server s = new Server();
-                        s.setName(sname);
+                        s.setId(sId);
+                        if (serverNode.has("name")) s.setName(serverNode.get("name").asText(sId));
                         if (serverNode.has("host")) s.setHost(serverNode.get("host").asText(""));
                         if (serverNode.has("port")) s.setPort(serverNode.get("port").asInt(0));
                         if (serverNode.has("username")) s.setUsername(serverNode.get("username").asText(""));
@@ -571,7 +580,7 @@ public class Config {
                                 s.setBackgroundColor(new Color(color.get(0).asInt(255),color.get(1).asInt(255),color.get(2).asInt(255)));
                             }
                         }
-                        serverMap.put(sname, s);
+                        serverMap.put(sId, s);
                     }
                 }
                 ++i;
@@ -579,8 +588,8 @@ public class Config {
             if (serverTreeNode.isObject()) {
                 importServerTreeFromJSON(serverMap, true, serverTreeNode, serverTree);
             }
-            if (0<noName.size()) sb.append("The servers at the following indices have no names: "+noName);
-            if (0<alreadyExist.size()) sb.append("The following servers already exist and were not imported: "+alreadyExist);
+            if (!noId.isEmpty()) sb.append("The servers at the following indices have no id: "+noId);
+            if (!alreadyExist.isEmpty()) sb.append("The following servers already exist and were not imported: "+alreadyExist);
         } catch(IOException e) {
             return e.toString();
         }

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 public class Server {
+    private String id;
     private String authenticationMechanism;
     private Color backgroundColor = Color.white;
     private String name = "";
@@ -112,6 +113,10 @@ public class Server {
         this.useTLS = useTLS;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setHost(String host) {
         this.host = host;
     }
@@ -122,6 +127,10 @@ public class Server {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
