@@ -557,11 +557,10 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
             if (name == null || name.trim().length() == 0) return;
             newNode = new ServerTreeNode(name);
         } else {
-            AddServerForm addServerForm = new AddServerForm(this);
+            AddServerForm addServerForm = new AddServerForm(this, parent);
             addServerForm.alignAndShow();
             if (addServerForm.getResult() == DialogResult.CANCELLED) return;
             Server server = addServerForm.getServer();
-            server.setFolder(parent);
             newNode = new ServerTreeNode(server);
         }
         addExistingNode(node, newNode, location);
