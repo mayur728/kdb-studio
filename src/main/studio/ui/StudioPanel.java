@@ -573,12 +573,14 @@ public class StudioPanel extends JPanel implements WindowListener {
         StudioPanel thePanel = this;
 
         cleanAction = UserAction.create("Clean", Util.NEW_DOCUMENT_ICON, "Clean editor script", KeyEvent.VK_N,
-                null, e -> newFile());
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> newFile());
 
         arrangeAllAction = UserAction.create(I18n.getString("ArrangeAll"),
                 Util.ARRANGE_WINDOWS_ICON,
                 "Arrange all windows on screen",
-                KeyEvent.VK_A, null, e -> arrangeAll());
+                KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_A, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> arrangeAll());
 
         minMaxDividerAction = UserAction.create(I18n.getString("MaximizeEditorPane"),
                 Util.MAXIMIZE_EDITOR_ICON,
@@ -588,7 +590,8 @@ public class StudioPanel extends JPanel implements WindowListener {
 
         toggleDividerOrientationAction = UserAction.create(I18n.getString("ToggleDividerOrientation"),
                 Util.DIVIDER_ORIENTATION_ICON,
-                "Toggle the window divider's orientation", KeyEvent.VK_C, null, e -> toggleDividerOrientation());
+                "Toggle the window divider's orientation", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask),
+                e -> toggleDividerOrientation());
 
         closeTabAction = UserAction.create("Close Tab",
                 Util.CLOSE_ONE_ICON,
@@ -598,7 +601,8 @@ public class StudioPanel extends JPanel implements WindowListener {
         closeFileAction = UserAction.create("Close Window",
                 Util.CLOSE_ALL_ICON,
                 "Close current window (close all tabs)",
-                KeyEvent.VK_C, null, e -> closePanel());
+                KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> closePanel());
 
         openFileAction = UserAction.create(I18n.getString("Open"), Util.OPEN_ICON, "Open a script", KeyEvent.VK_O,
                 KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMask), e -> openFile());
@@ -629,7 +633,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 KeyEvent.VK_X, e -> JSONServerList.exportToJSON(this));
 
         editServerAction = UserAction.create(I18n.getString("Edit"), Util.SERVER_EDIT_ICON, "Edit the server details",
-                KeyEvent.VK_E, null, e -> {
+                KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask | InputEvent.ALT_MASK), e -> {
                     Server s = new Server(editor.getServer());
 
                     EditServerForm f = new EditServerForm(frame, s);
@@ -663,7 +667,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 });
 
         removeServerAction = UserAction.create(I18n.getString("Remove"), Util.DELETE_SERVER_ICON, "Remove this server",
-                KeyEvent.VK_R, null, e -> {
+                KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask | InputEvent.ALT_MASK), e -> {
                     int choice = JOptionPane.showOptionDialog(frame,
                             "Remove server " + editor.getServer().getFullName() + " from list?",
                             "Remove server?",
@@ -695,19 +699,23 @@ public class StudioPanel extends JPanel implements WindowListener {
                 e -> saveAll());
 
         saveAsFileAction = UserAction.create(I18n.getString("SaveAs"), Util.SAVE_AS_ICON, "Save script as",
-                KeyEvent.VK_A, null, e -> saveAsFile(editor));
+                KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK),
+                e -> saveAsFile(editor));
 
         exportAction = UserAction.create(I18n.getString("Export"), Util.EXPORT_ICON, "Export result set",
-                KeyEvent.VK_E, null, e -> export());
+                KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_X, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> export());
 
         chartAction = UserAction.create(I18n.getString("Chart"), Util.CHART_ICON, "Chart current data set",
-                KeyEvent.VK_E, null, e -> new Chart((KTableModel) getSelectedTable().getModel()));
+                KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> new Chart((KTableModel) getSelectedTable().getModel()));
 
         stopAction = UserAction.create(I18n.getString("Stop"), Util.STOP_ICON, "Stop the query",
-                KeyEvent.VK_S, null, e -> editor.getQueryExecutor().cancel());
+                KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> editor.getQueryExecutor().cancel());
 
         openInExcel = UserAction.create(I18n.getString("OpenInExcel"), Util.EXCEL_ICON, "Open in Excel",
-                KeyEvent.VK_O, null, e -> {
+                KeyEvent.VK_O, KeyStroke.getKeyStroke(KeyEvent.VK_O, menuShortcutKeyMask | InputEvent.SHIFT_MASK), e -> {
                     try {
                         File file = File.createTempFile("studioExport", ".xlsx");
                         new ExcelExporter().exportTableX(frame, getSelectedTable(), file, true);
@@ -737,17 +745,20 @@ public class StudioPanel extends JPanel implements WindowListener {
                 KeyEvent.VK_E, null, e -> about());
 
         exitAction = UserAction.create(I18n.getString("Exit"), "Close this window",
-                KeyEvent.VK_X, e -> quit());
+                KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_MASK | InputEvent.SHIFT_MASK),
+                e -> quit());
 
         settingsAction = UserAction.create("Settings",
                 Util.SETTINGS_ICON,
                 "Settings",
-                KeyEvent.VK_S, null, e -> settings());
+                KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask | InputEvent.ALT_MASK),
+                e -> settings());
 
         themeAction = UserAction.create("Theme",
                 null,
                 "Theme",
-                0, null, e -> themeEditor());
+                0, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
+                e -> themeEditor());
 
         codeKxComAction = UserAction.create("code.kx.com", Util.CODE_KX_COM_ICON, "Open code.kx.com",
                 KeyEvent.VK_C, null, e -> {
