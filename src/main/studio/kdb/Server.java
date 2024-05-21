@@ -29,6 +29,17 @@ public class Server {
         return p;
     }
 
+    public Properties getAsStringProperties() {
+        Properties p = new Properties();
+        p.put("NAME", name);
+        p.put("HOST", host);
+        p.put("PORT", Integer.toString(port));
+        p.put("USERNAME", username);
+        p.put("PASSWORD", password);
+        p.put("USETLS", Boolean.toString(useTLS));
+        return p;
+    }
+
     public String getAuthenticationMechanism() {
         return authenticationMechanism;
     }
