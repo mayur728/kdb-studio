@@ -14,10 +14,8 @@ import org.assertj.swing.fixture.JFileChooserFixture;
 import org.assertj.swing.fixture.JTextComponentFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import studio.core.Studio;
-import studio.ui.StudioPanel;
 
 import static org.assertj.swing.core.matcher.DialogMatcher.withTitle;
 import static org.assertj.swing.edt.GuiActionRunner.execute;
@@ -29,7 +27,6 @@ import static org.junit.Assert.*;
 public class StudioPanelTest extends AssertJSwingJUnitTestCase {
 
     private FrameFixture frame;
-    private StudioPanel panel;
 
     @Override
     protected void onSetUp() {
@@ -37,8 +34,7 @@ public class StudioPanelTest extends AssertJSwingJUnitTestCase {
             Path tempDirectory = Files.createTempDirectory(System.getProperty("user.name"));
             System.setProperty("user.home", tempDirectory.toString());
             Studio.init0();
-            panel = execute(() -> Studio.createPanel(new String[0]));
-            Assert.assertNotEquals("panel is not null", null, panel);
+            execute(() -> Studio.createPanel(new String[0]));
             frame = findFrame(new GenericTypeMatcher<Frame>(Frame.class) {
 
                 @Override
