@@ -897,7 +897,7 @@ public class Config {
 
             ServerTreeNode serverNode = parentNode.add(server);
             server.setFolder((ServerTreeNode) serverNode.getParent());
-            serverNames.add(server.toString());
+            serverNames.add(name);
         } catch (IOException e) {
             log.error("Could not load servers from the file system", e);
         }
