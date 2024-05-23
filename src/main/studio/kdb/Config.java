@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.tree.TreeNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -359,9 +358,9 @@ public class Config {
                 }
             }
         }
+        migrateServersFromConfigToFilesystem(filename);
         checkForUpgrade();
         initServers();
-        migrateServers(filename);
         initServerHistory();
         initTableConnExtractor();
     }
@@ -772,7 +771,7 @@ public class Config {
         return initServerFromKey("" + number);
     }
 
-    private void initServers() {
+    private void initServersFromProperties() {
         serverNames = new ArrayList<>();
         serverTree = new ServerTreeNode();
         servers = new HashMap<>();
@@ -803,9 +802,10 @@ public class Config {
         return number;
     }
 
-    private void migrateServers(String filename) {
+    private void migrateServersFromConfigToFilesystem(String filename) {
         String serverListLocation = p.getProperty("serverListLocation");
         if(Objects.isNull(serverListLocation) || serverListLocation.isEmpty()) {
+            initServersFromProperties();
             serverListLocation = filename.replace("studio.properties", "serverList");
 
             p.setProperty("serverListLocation", serverListLocation);
@@ -839,6 +839,67 @@ public class Config {
             } catch (IOException e) {
                 log.error("Could not save configuration to {}", filePath, e);
             }
+        }
+    }
+
+    private void initServers() {
+        serverNames = new ArrayList<>();
+        serverTree = new ServerTreeNode();
+        servers = new HashMap<>();
+        Path baseDir = Paths.get(p.getProperty("serverListLocation"));
+
+        loadServersRecursively(baseDir, serverTree);
+    }
+
+    private void loadServersRecursively(Path dir, ServerTreeNode parentNode) {
+        try (Stream<Path> paths = Files.list(dir)) {
+            List<Path> directories = new ArrayList<>();
+            List<Path> files = new ArrayList<>();
+
+            paths.forEach(path -> {
+                if (Files.isDirectory(path)) {
+                    directories.add(path);
+                } else if (path.toString().endsWith(".properties")) {
+                    files.add(path);
+                }
+            });
+
+            for (Path directory : directories) {
+                ServerTreeNode folderNode = parentNode.add(directory.getFileName().toString());
+                loadServersRecursively(directory, folderNode);
+            }
+
+            for (Path file : files) {
+                loadServerFromFile(file, parentNode);
+            }
+        } catch (IOException e) {
+            log.error("Could not initiate directory load", e);
+        }
+    }
+
+    private void loadServerFromFile(Path filePath, ServerTreeNode parentNode) {
+        try {
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(filePath.toFile()));
+
+            String name = properties.getProperty("NAME");
+            String host = properties.getProperty("HOST");
+            int port = Integer.parseInt(properties.getProperty("PORT"));
+            String username = properties.getProperty("USERNAME");
+            String password = properties.getProperty("PASSWORD");
+            boolean useTLS = Boolean.parseBoolean(properties.getProperty("USETLS"));
+            String authMechanism = properties.getProperty("AUTHENTICATION_MECHANISM");
+            Color backgroundColor = Objects.isNull(properties.getProperty("BACKGROUND_COLOR")) || properties.getProperty("BACKGROUND_COLOR").isEmpty() ?
+                    Color.WHITE : Color.decode("#" + properties.getProperty("BACKGROUND_COLOR"));
+
+            Server server = new Server(name, host, port, username, password, backgroundColor, authMechanism, useTLS);
+            servers.put(name, server);
+
+            ServerTreeNode serverNode = parentNode.add(server);
+            server.setFolder((ServerTreeNode) serverNode.getParent());
+            serverNames.add(server.toString());
+        } catch (IOException e) {
+            log.error("Could not load servers from the file system", e);
         }
     }
 

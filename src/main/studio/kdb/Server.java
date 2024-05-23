@@ -37,6 +37,8 @@ public class Server {
         p.put("USERNAME", username);
         p.put("PASSWORD", password);
         p.put("USETLS", Boolean.toString(useTLS));
+        p.put("AUTHENTICATION_MECHANISM", authenticationMechanism);
+        p.put("BACKGROUND_COLOR", String.format("%02X%02X%02X", backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue()));
         return p;
     }
 
