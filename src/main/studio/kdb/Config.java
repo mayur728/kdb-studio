@@ -72,6 +72,8 @@ public class Config {
     public static final String SERVERLIST_FILE_CHOOSER = configDefault("serverListFileChooser", ConfigType.FILE_CHOOSER, new FileChooserConfig());
     public static final String THEME_FILE_CHOOSER = configDefault("themeListFileChooser", ConfigType.FILE_CHOOSER, new FileChooserConfig());
 
+    public static String SERVER_LIST_LOCATION;
+
     private static final String END_OF_WORKSPACE_MARKER = "endOfWorkspace";
 
     private enum FontStyle {
@@ -803,15 +805,15 @@ public class Config {
     }
 
     private void migrateServersFromConfigToFilesystem(String filename) {
-        String serverListLocation = p.getProperty("serverListLocation");
-        if(Objects.isNull(serverListLocation) || serverListLocation.isEmpty()) {
+        SERVER_LIST_LOCATION = p.getProperty("serverListLocation");
+        if(Objects.isNull(SERVER_LIST_LOCATION) || SERVER_LIST_LOCATION.isEmpty()) {
             initServersFromProperties();
-            serverListLocation = filename.replace("studio.properties", "serverList");
+            SERVER_LIST_LOCATION = filename.replace("studio.properties", "serverList");
 
-            p.setProperty("serverListLocation", serverListLocation);
+            p.setProperty("serverListLocation", SERVER_LIST_LOCATION);
             save();
 
-            writeServerPropertiesToFiles(servers, serverListLocation);
+            writeServerPropertiesToFiles(servers, SERVER_LIST_LOCATION);
             removeServerPropertiesFromConfig();
         }
     }
@@ -846,13 +848,12 @@ public class Config {
         serverNames = new ArrayList<>();
         serverTree = new ServerTreeNode();
         servers = new HashMap<>();
-        Path baseDir = Paths.get(p.getProperty("serverListLocation"));
 
-        loadServersRecursively(baseDir, serverTree);
+        loadServersRecursively(Paths.get(SERVER_LIST_LOCATION), serverTree);
     }
 
     private void loadServersRecursively(Path dir, ServerTreeNode parentNode) {
-        try (Stream<Path> paths = Files.list(dir)) {
+        try (Stream<Path> paths = Files.list(dir).sorted(Comparator.naturalOrder())) {
             List<Path> directories = new ArrayList<>();
             List<Path> files = new ArrayList<>();
 
