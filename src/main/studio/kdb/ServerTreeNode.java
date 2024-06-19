@@ -94,6 +94,26 @@ public class ServerTreeNode extends DefaultMutableTreeNode {
         return false;
     }
 
+    public void renameFolder(String newFolderName) {
+        if (!isFolder()) {
+            throw new IllegalArgumentException("This node is not a folder");
+        }
+
+        ServerTreeNode parentNode = (ServerTreeNode) getParent();
+        if (parentNode == null) {
+            throw new IllegalStateException("Root folder cannot be renamed");
+        }
+
+        int index = parentNode.getIndex(this);
+        ServerTreeNode newFolderNode = parentNode.add(index, newFolderName);
+
+        for (ServerTreeNode child : childNodes()) {
+            newFolderNode.add(child.copy());
+        }
+
+        removeFromParent();
+    }
+
     public ServerTreeNode getChild(String folder) {
         for(ServerTreeNode child: childNodes()) {
             if (child.isFolder() && child.getFolder().equals(folder)) return child;

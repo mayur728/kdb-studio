@@ -48,7 +48,7 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
     private ServerTreeNode serverTree, root;
 
     private JPopupMenu popupMenu;
-    private UserAction removeAction, insertFolderAction, insertServerAction;
+    private UserAction removeAction, insertFolderAction, insertServerAction, editAction, cloneServerAction;
 
     public static final int DEFAULT_WIDTH = 300;
     public static final int DEFAULT_HEIGHT = 410;
@@ -352,12 +352,16 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
     }
 
     private void initActions() {
-        removeAction = UserAction.create("Remove", "Remove the node",
+        removeAction = UserAction.create("Remove", "Remove selection",
                 KeyEvent.VK_DELETE, e -> removeNode());
         insertServerAction = UserAction.create("Add Server", "Insert server into the folder",
                 KeyEvent.VK_N, e -> addNode(false));
         insertFolderAction = UserAction.create("Add Folder", "Insert folder into the folder",
                 KeyEvent.VK_I, e -> addNode(true));
+        editAction = UserAction.create("Edit", "Edit selection",
+                KeyEvent.VK_E, e -> editNode());
+        cloneServerAction = UserAction.create("Clone", "Clone Server",
+                KeyEvent.VK_E, e -> cloneServer());
 
         UserAction toggleAction = UserAction.create("toggle", e-> toggleTreeListView());
         UserAction focusTreeAction = UserAction.create("focus tree", e-> tree.requestFocusInWindow());
@@ -388,13 +392,14 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
 
         tree.setSelectionPath(path);
 
+        boolean isFolder = ((ServerTreeNode) path.getLastPathComponent()).isFolder();
+        cloneServerAction.setEnabled(!isFolder);
         if (isListView()) {
             if (empty) return;
             insertFolderAction.setEnabled(false);
             insertServerAction.setEnabled(false);
             removeAction.setEnabled(false);
         } else {
-            boolean isFolder = ((ServerTreeNode) path.getLastPathComponent()).isFolder();
             insertServerAction.setEnabled(isFolder);
             insertFolderAction.setEnabled(isFolder);
             removeAction.setEnabled(!empty);
@@ -408,6 +413,8 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
         popupMenu.add(insertFolderAction);
         popupMenu.add(insertServerAction);
         popupMenu.add(new JSeparator());
+        popupMenu.add(editAction);
+        popupMenu.add(cloneServerAction);
         popupMenu.add(removeAction);
     }
 
@@ -426,7 +433,8 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
         if (result != JOptionPane.YES_OPTION) return;
 
         TreeNode[] parentPath = ((ServerTreeNode) selectedNode.getParent()).getPath();
-        removeFromFilesystem(new File(Config.SERVER_LIST_LOCATION, node.fullPath()));
+        String fileName = selectedNode.isFolder() ? node.fullPath() : node + ".properties";
+        removeFromFilesystem(new File(Config.SERVER_LIST_LOCATION, fileName));
         node.removeFromParent();
         Config.getInstance().setServerTree(serverTree);
         refreshServers();
@@ -557,6 +565,67 @@ public class ServerList extends EscapeDialog implements TreeExpansionListener  {
                 log.error("Could not create folder: {}", folderPath, e);
             }
         }
+    }
+
+    private void editNode() {
+        ServerTreeNode selectedNode = (ServerTreeNode) tree.getLastSelectedPathComponent();
+        if (selectedNode == null) return;
+
+        if (selectedNode.isFolder()) {
+            String folderName = StudioOptionPane.showInputDialog(this, "Enter folder name", "Folder Name", selectedNode.getName());
+            if (folderName == null || folderName.trim().isEmpty()) return;
+
+            renameFolderOnFilesystem(selectedNode.getName(), folderName);
+            selectedNode.renameFolder(folderName);
+        } else {
+            String serverFullPath = selectedNode + ".properties";
+            EditServerForm editServerForm = new EditServerForm(this, selectedNode.getServer());
+            editServerForm.alignAndShow();
+            if (editServerForm.getResult() == DialogResult.CANCELLED) return;
+            Server server = editServerForm.getServer();
+
+            ServerTreeNode parentNode = (ServerTreeNode) selectedNode.getParent();
+            if (parentNode == null) {
+                log.error("Something went wrong while finding the selected node.");
+                return;
+            }
+            removeFromFilesystem(new File(Config.SERVER_LIST_LOCATION, serverFullPath));
+            saveServerToFilesystem(server);
+        }
+
+        refreshServers();
+    }
+
+    private void cloneServer() {
+        ServerTreeNode selectedNode = (ServerTreeNode) tree.getLastSelectedPathComponent();
+        if (selectedNode == null || selectedNode.isFolder()) return;
+        Server server = new Server(selectedNode.getServer());
+
+        EditServerForm editServerForm = new EditServerForm(this, selectedNode.getServer());
+        editServerForm.alignAndShow();
+        if (editServerForm.getResult() == DialogResult.CANCELLED) return;
+        Server newServer = editServerForm.getServer();
+
+        ServerTreeNode parentNode = (ServerTreeNode) selectedNode.getParent();
+        if (parentNode == null) {
+            log.error("Something went wrong while finding the selected node.");
+            return;
+        }
+
+        ServerTreeNode recoverNode = new ServerTreeNode(server);
+        addExistingNode(parentNode, recoverNode);
+        saveServerToFilesystem(newServer);
+
+        refreshServers();
+    }
+
+    private void renameFolderOnFilesystem(String folderName, String newFolderName) {
+        Path folderPath = Paths.get(Config.SERVER_LIST_LOCATION, root.fullPath(), folderName);
+        String folderPathString = folderPath.toString();
+        File folder = new File(folderPathString);
+
+        File newFolder = new File(folder.getParentFile(), newFolderName);
+        folder.renameTo(newFolder);
     }
 
     protected void moveNode(ServerTreeNode targetNode, ServerTreeNode transferableNode) {

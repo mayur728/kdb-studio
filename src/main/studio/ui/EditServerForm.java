@@ -1,10 +1,10 @@
 package studio.ui;
 
+import java.awt.Window;
 import studio.kdb.Server;
-import javax.swing.JFrame;
 
 public class EditServerForm extends ServerForm {
-    public EditServerForm(JFrame owner,Server server) {
+    public EditServerForm(Window owner, Server server) {
         super(owner,"Edit Server Details",server);
     }
 }

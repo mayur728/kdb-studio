@@ -100,6 +100,10 @@ public class StudioOptionPane {
         return JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.QUESTION_MESSAGE);
     }
 
+    public static String showInputDialog(Component parentComponent, String message, String title, String value) {
+        return JOptionPane.showInputDialog(parentComponent, message, title, JOptionPane.QUESTION_MESSAGE, null, null, value).toString();
+    }
+
     private static void findButtons(List<JButton> buttons, Container container) {
         if (container instanceof JButton) {
             buttons.add((JButton)container);
