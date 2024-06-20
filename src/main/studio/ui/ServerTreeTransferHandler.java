@@ -29,7 +29,7 @@ class ServerTreeTransferHandler extends TransferHandler {
         JTree.DropLocation dropLocation = (JTree.DropLocation) support.getDropLocation();
         TreePath path = dropLocation.getPath();
         if (path == null) {
-            return false;
+            return true;
         }
 
         ServerTreeNode targetNode = (ServerTreeNode) path.getLastPathComponent();
@@ -72,7 +72,13 @@ class ServerTreeTransferHandler extends TransferHandler {
 
         JTree.DropLocation dropLocation = (JTree.DropLocation) support.getDropLocation();
         TreePath path = dropLocation.getPath();
-        ServerTreeNode targetNode = (ServerTreeNode) path.getLastPathComponent();
+        ServerTreeNode targetNode;
+        if (path == null) {
+            // Dropping onto the root
+            targetNode = serverList.getServerTree();
+        } else {
+            targetNode = (ServerTreeNode) path.getLastPathComponent();
+        }
 
         try {
             ServerTreeNode transferableNode = (ServerTreeNode) support.getTransferable().getTransferData(nodesFlavor);

@@ -694,7 +694,7 @@ public class Config {
         }
     }
 
-    private void initServers() {
+    public void initServers() {
         serverNames = new ArrayList<>();
         serverTree = new ServerTreeNode();
         servers = new HashMap<>();
