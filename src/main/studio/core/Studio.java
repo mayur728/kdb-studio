@@ -36,23 +36,7 @@ public class Studio {
         System.setOut(stdoutStream);
         System.setErr(stderrStream);
     }
-    private static void enableDarkTheme() {
-        // Define dark theme colors
-        Color darkBackground = new Color(30, 30, 30);
-        Color darkForeground = new Color(200, 200, 200);
 
-        // Set dark theme colors for UIManager
-        UIManager.put("Panel.background", darkBackground);
-        UIManager.put("OptionPane.background", darkBackground);
-        UIManager.put("OptionPane.messageForeground", darkForeground);
-        UIManager.put("Label.foreground", darkForeground);
-        UIManager.put("TextArea.background", darkBackground);
-        UIManager.put("TextArea.foreground", darkForeground);
-        UIManager.put("TextField.background", darkBackground);
-        UIManager.put("TextField.foreground", darkForeground);
-        UIManager.put("Button.background", darkBackground);
-        UIManager.put("Button.foreground", darkForeground);
-    }
     public static void init0() {
         //called from main and integration tests
         studio.ui.I18n.setLocale(Locale.getDefault());
@@ -96,11 +80,9 @@ public class Studio {
     }
 
     public static void main(final String[] args) {
+
         initLogger();
         WindowsAppUserMode.setMainId();
-        // Enable dark theme
-        enableDarkTheme();
-
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
 
         if(System.getProperty("os.name","").contains("OS X")){ 

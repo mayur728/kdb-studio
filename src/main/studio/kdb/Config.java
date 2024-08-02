@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class Config {
+
     private static final Logger log = LogManager.getLogger();
 
     private enum ConfigType { STRING, INT, DOUBLE, BOOLEAN, FONT, BOUNDS, COLOR, ENUM, SIZE, FILE_CHOOSER}

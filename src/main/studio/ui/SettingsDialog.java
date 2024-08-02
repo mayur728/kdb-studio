@@ -1,5 +1,8 @@
 package studio.ui;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import studio.core.AuthenticationManager;
 import studio.core.Credentials;
 import studio.kdb.Config;
@@ -351,9 +354,18 @@ public class SettingsDialog extends EscapeDialog {
 
         public LookAndFeels() {
             mapLookAndFeels = new HashMap<>();
+
             for (UIManager.LookAndFeelInfo lf: UIManager.getInstalledLookAndFeels()) {
                 mapLookAndFeels.put(lf.getClassName(), new CustomiszedLookAndFeelInfo(lf));
             }
+            addFlatLafLookAndFeel("Light Mode", FlatLightLaf.class.getName());
+            addFlatLafLookAndFeel("Dark Mode", FlatDarkLaf.class.getName());
+            addFlatLafLookAndFeel("Darcula Mode", FlatDarculaLaf.class.getName());
+
+
+        }
+        private void addFlatLafLookAndFeel(String mode, String className) {
+            mapLookAndFeels.put(className, new CustomiszedLookAndFeelInfo(new UIManager.LookAndFeelInfo(mode, className)));
         }
         public CustomiszedLookAndFeelInfo[] getLookAndFeels() {
             return mapLookAndFeels.values().toArray(new CustomiszedLookAndFeelInfo[0]);
@@ -367,6 +379,7 @@ public class SettingsDialog extends EscapeDialog {
         public CustomiszedLookAndFeelInfo(UIManager.LookAndFeelInfo lfInfo) {
             super(lfInfo.getName(), lfInfo.getClassName());
         }
+
 
         @Override
         public String toString() {
