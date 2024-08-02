@@ -57,7 +57,7 @@ public class Config {
     public static final String RSTA_INDENT_SIZE = configDefault("rstaIndentSize", ConfigType.INT, 4);
     public static final String RSTA_INDENT_USE_TAB = configDefault("rstaIndentUseTab", ConfigType.BOOLEAN, false);
     public static final String RSTA_UNINDENT_CURLY_BRACES = configDefault("rstaUnindentCurlyBraces", ConfigType.BOOLEAN, false);
-
+    public static final String DARK_MODE = configDefault("switchmodes", ConfigType.BOOLEAN, false);
     public static final String DEFAULT_LINE_ENDING = configDefault("defaultLineEnding", ConfigType.ENUM, LineEnding.Unix);
 
     public static final Map<ThemeEntry, String> THEME = initTheme();

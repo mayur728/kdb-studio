@@ -752,7 +752,13 @@ public class StudioPanel extends JPanel implements WindowListener {
                 Util.SETTINGS_ICON,
                 "Settings",
                 KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask | InputEvent.ALT_MASK),
-                e -> settings());
+                e -> {
+                    try {
+                        settings();
+                    } catch (UnsupportedLookAndFeelException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
 
         themeAction = UserAction.create("Theme",
                 null,
@@ -805,6 +811,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                         KeyStroke.getKeyStroke(KeyEvent.VK_TAB, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> selectNextTab(false));
 
+
         lineEndingActions = new UserAction[LineEnding.values().length];
         for(LineEnding lineEnding: LineEnding.values()) {
             lineEndingActions[lineEnding.ordinal()] = UserAction.create(lineEnding.getDescription(),
@@ -817,7 +824,9 @@ public class StudioPanel extends JPanel implements WindowListener {
         wordWrapAction = UserAction.create("Word wrap", "Word wrap for all tabs",
                 KeyEvent.VK_W, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> toggleWordWrap());
+
     }
+
 
     private static StudioPanel getActivePanel() {
         Window window = FocusManager.getCurrentManager().getActiveWindow();
@@ -827,7 +836,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         return allPanels.get(0);
     }
 
-    public static void settings() {
+    public static void settings() throws UnsupportedLookAndFeelException {
         StudioPanel activePanel = getActivePanel();
         SettingsDialog dialog = new SettingsDialog(activePanel.frame);
         dialog.alignAndShow();
