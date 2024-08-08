@@ -140,9 +140,6 @@ public class StudioPanel extends JPanel implements WindowListener {
     private UserAction autoCompleteAction;
 
     private JFrame frame;
-    public List<String> functionNames; //= Arrays.asList("select", "select", "insert", "delete", "update", "table", "from", "where", "group", "by", "having", "seart", "seahfrt", "searsdt");
-    private JPopupMenu suggestionMenu;
-    private JList<String> suggestionList;
 
     private static List<StudioPanel> allPanels = new ArrayList<>();
 
@@ -202,164 +199,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         component.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backwardKeys);
     }
 
-    private void addDocumentListenersAndTriggerAutoComplete(RSyntaxTextArea textArea) {
 
-        suggestionMenu = new JPopupMenu();
-        suggestionList = new JList<>();
-        suggestionMenu.add(new JScrollPane(suggestionList));
-
-        textArea.getDocument().addDocumentListener  (new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateFunctionNames();
-                updateSuggestions();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateFunctionNames();
-                updateSuggestions();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateFunctionNames();
-                updateSuggestions();
-            }
-
-            private void updateFunctionNames(){
-                String text = textArea.getText();
-                functionNames = extractFunctionNames(text);
-            }
-
-            private void updateSuggestions() {
-
-                String text = textArea.getText();
-                int caretPosition = textArea.getCaretPosition();
-                int lastSpaceIndex = findLastNonWordChar(text, caretPosition - 1);
-                //int lastSpaceIndex = text.lastIndexOf(' ', caretPosition - 1);
-                String prefix = text.substring(lastSpaceIndex + 1, caretPosition);
-                if(prefix.isEmpty()) {
-                    suggestionMenu.setVisible(false);
-                }else {
-                    List<String> suggestions = getSuggestions(prefix);
-                    if(suggestions.isEmpty()) {
-                        suggestionMenu.setVisible(false);
-                    }else {
-                        suggestionList.setListData(suggestions.toArray(new String[0]));
-                        suggestionList.setSelectedIndex(0);
-                        showSuggestionPopup(textArea);
-                    }
-                }}
-        });
-
-        suggestionList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount() == 2){
-                    insertSelectedSuggestion(textArea);
-                }
-            }
-        });
-
-        suggestionList.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                if (keyCode == KeyEvent.VK_ENTER){
-                    insertSelectedSuggestion(textArea);
-                }
-                else if(keyCode == KeyEvent.VK_DOWN){
-                    int selectedIndex = suggestionList.getSelectedIndex();
-                    if(selectedIndex < suggestionList.getModel().getSize() - 1){
-                        suggestionList.setSelectedIndex(selectedIndex + 1);
-                    }
-                }
-                else if(keyCode == KeyEvent.VK_UP){
-                    int selectedIndex = suggestionList.getSelectedIndex();
-                    if(selectedIndex > 0){
-                        suggestionList.setSelectedIndex(selectedIndex - 1);
-                    }
-                }
-                else if(keyCode == KeyEvent.VK_ESCAPE){
-                    suggestionMenu.setVisible(false);
-                }
-            }
-        });
-
-        this.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                suggestionMenu.setVisible(false);
-            }
-        });
-    }
-
-    private List<String> extractFunctionNames(String text) {
-        List<String> functionNames = new ArrayList<>();
-
-        Pattern pattern = Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*:\\s*\\{[^}]*\\}");
-        Matcher matcher = pattern.matcher(text);
-        while(matcher.find()){
-            functionNames.add(matcher.group(1));
-        }
-        return functionNames;
-    }
-
-    private List<String> getSuggestions(String prefix) {
-        List<String> filteredSuggestions = functionNames.stream()
-                .filter(name -> name.startsWith(prefix//text
-                ))
-                .distinct()
-                .collect(Collectors.toList());
-
-        return filteredSuggestions;
-    }
-
-    private int findLastNonWordChar(String text, int index){
-        while(index >=0){
-            char c = text.charAt(index);
-            if(!Character.isLetterOrDigit(c)){
-                return index;
-            }
-            index --;
-        }
-        return -1;
-    }
-
-
-    private void showSuggestionPopup(RSyntaxTextArea textArea) {
-        try{
-            int caretPosition = textArea.getCaretPosition();
-            Rectangle caretCoords = textArea.modelToView(caretPosition);
-            suggestionMenu.show(textArea, caretCoords.x, caretCoords.y + caretCoords.height);
-            SwingUtilities.invokeLater(() -> suggestionList.requestFocusInWindow());
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private void insertSelectedSuggestion(RSyntaxTextArea textArea) {
-        String selectedValue = suggestionList.getSelectedValue();
-        if(selectedValue != null){
-            try{
-                int caretPosition = textArea.getCaretPosition();
-                int lastSpaceIndex = findLastNonWordChar(textArea.getText(), caretPosition - 1);
-                //String prefix = textArea.getText().substring(lastSpaceIndex + 1, caretPosition);
-                int start = lastSpaceIndex + 1;
-                int end = caretPosition;
-                Document doc = textArea.getDocument();
-                if (start >= 0 && end >=start && end <= doc.getLength()){
-                    doc.remove(start, end - start);
-                    doc.insertString(start, selectedValue, null);
-                }
-                suggestionMenu.setVisible(false);
-
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
 
     private void setActionsEnabled(boolean value, Action... actions) {
         for (Action action: actions) {
@@ -1030,6 +870,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         boolean changedEditor = CONFIG.setBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING, dialog.isAnimateBracketMatching());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE, dialog.isHighlightCurrentLine());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_WORD_WRAP, dialog.isWordWrap());
+        changedEditor |= CONFIG.setBoolean(Config.RSTA_AUTO_COMPLETE, dialog.isAutoComplete());
         changedEditor |= CONFIG.setInt(Config.RSTA_INDENT_SIZE, dialog.getRTSAIndentSize());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_INDENT_USE_TAB, dialog.isRTSAIndentUseTab());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_UNINDENT_CURLY_BRACES, dialog.isRTSAUnindentCurlyBraces());
@@ -1087,15 +928,10 @@ public class StudioPanel extends JPanel implements WindowListener {
 
         if(CONFIG.getBoolean(Config.RSTA_AUTO_COMPLETE))
         {
-            addDocumentListenersAndTriggerAutoComplete(textArea);
+            editor.getPane().addDocumentListenersAndTriggerAutoComplete(textArea);
         }
-
-        refreshEditorsSettings();
         refreshActionState();
         rebuildAll();
-        //textArea.restoreDefaultSyntaxScheme();
-        textArea.removeAll();
-
     }
 
     private static void refreshEditorsSettings() {
