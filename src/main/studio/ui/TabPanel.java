@@ -6,13 +6,20 @@ import studio.ui.action.QueryResult;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableRowSorter;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TabPanel extends JPanel {
     private StudioPanel panel;
 
     private JToolBar toolbar = null;
+    private JToolBar filterToolbar = null;
     private JToggleButton tglBtnComma;
     private JButton uploadBtn = null;
     private QueryResult queryResult;
@@ -21,6 +28,7 @@ public class TabPanel extends JPanel {
     private QGrid grid = null;
     private KFormatContext formatContext = new KFormatContext(KFormatContext.DEFAULT);
     private ResultType type;
+    private Map<Integer, Integer> hashCodeIndexMap = null;
 
     public TabPanel(StudioPanel panel, QueryResult queryResult, KTableModel model) {
         this.panel = panel;
@@ -92,6 +100,39 @@ public class TabPanel extends JPanel {
             toolbar.add(tglBtnComma);
             toolbar.add(Box.createRigidArea(new Dimension(16,16)));
             toolbar.add(uploadBtn);
+
+            if(ResultType.TABLE == type) {
+                hashCodeIndexMap = new HashMap<Integer, Integer>();
+                filterToolbar = new JToolBar();
+                filterToolbar.setFloatable(false);
+                filterToolbar.add(Box.createRigidArea(new Dimension(16,16)));
+                String[] columns = (String[]) ((K.Flip) result).x.getArray();
+                filterToolbar.add(new JLabel("Filters: "));
+                for (int i = 0; i< columns.length; i++) {
+                    filterToolbar.add(new JLabel(columns[i] +": "));
+                    JTextField textfieldFilter = new JTextField();
+                    hashCodeIndexMap.put(textfieldFilter.getDocument().hashCode(), i);
+                    textfieldFilter.getDocument().addDocumentListener(new DocumentListener() {
+                        @Override
+                        public void insertUpdate(DocumentEvent e) {
+                            applyFilter(e);
+                        }
+
+                        @Override
+                        public void removeUpdate(DocumentEvent e) {
+                            grid.getTable().setRowSorter(null);
+
+                        }
+
+                        @Override
+                        public void changedUpdate(DocumentEvent e) {
+                            applyFilter(e);
+                        }
+                    });
+                    filterToolbar.add(textfieldFilter);
+                }
+            }
+
             updateFormatting();
         } else {
             textArea = new JTextPane();
@@ -108,6 +149,18 @@ public class TabPanel extends JPanel {
         add(component, BorderLayout.CENTER);
     }
 
+    private void applyFilter(DocumentEvent e) {
+        try {
+            int index = hashCodeIndexMap.get(e.getDocument().hashCode());
+            String filterInput = e.getDocument().getText(0, e.getDocument().getLength());
+            TableRowSorter<KTableModel> tableRowSorter = new TableRowSorter<>(((KTableModel)grid.getTable().getModel()));
+            grid.getTable().setRowSorter(tableRowSorter);
+            tableRowSorter.setRowFilter(RowFilter.regexFilter("(?i).*" + filterInput +".*", index));
+        } catch (BadLocationException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     public void addInto(JTabbedPane tabbedPane) {
         String title = type.title;
         if (isTable()) {
@@ -118,6 +171,9 @@ public class TabPanel extends JPanel {
         tabbedPane.setSelectedIndex(tabIndex);
         tabbedPane.setToolTipTextAt(tabIndex, "Executed at server: " + queryResult.getServer().getDescription(true));
         updateToolbarLocation(tabbedPane);
+        if (isTable()) {
+            updateFilterToolbarLocation(tabbedPane);
+        }
     }
 
     public void updateToolbarLocation(JTabbedPane tabbedPane) {
@@ -130,6 +186,16 @@ public class TabPanel extends JPanel {
         } else {
             toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
             add(toolbar, BorderLayout.NORTH);
+        }
+    }
+
+    public void updateFilterToolbarLocation(JTabbedPane tabbedPane) {
+        if (filterToolbar == null) return;
+
+        remove(filterToolbar);
+        if (tabbedPane.getTabPlacement() == JTabbedPane.TOP) {
+            filterToolbar.setLayout(new BoxLayout(filterToolbar, BoxLayout.X_AXIS));
+            add(filterToolbar, BorderLayout.NORTH);
         }
     }
 
