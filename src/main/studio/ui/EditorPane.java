@@ -8,6 +8,7 @@ import studio.ui.rstextarea.RSTextAreaFactory;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -36,6 +37,7 @@ public class EditorPane extends JPanel {
     private JList<String> suggestionList;
     private Timer updateTimer;
     private static final Config CONFIG = Config.getInstance();
+    private boolean suppressPopup = false;
 
     private final SearchPanel searchPanel;
 
@@ -109,7 +111,9 @@ public class EditorPane extends JPanel {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 updateFunctionNames();
-                updateSuggestions(e);
+                if (isTyping(e)) {
+                    updateSuggestions(e);
+                }
             }
 
             @Override
@@ -122,6 +126,16 @@ public class EditorPane extends JPanel {
             public void changedUpdate(DocumentEvent e) {
                 suggestionMenu.setVisible(false);
                 updateFunctionNames();
+            }
+
+            private boolean isTyping(DocumentEvent e) {
+                try {
+                    String textChange = e.getDocument().getText(e.getOffset(), e.getLength());
+                    return textChange.length() == 1 && !(Character.isWhitespace(textChange.charAt(0)));
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                    return false;
+                }
             }
 
             private void updateFunctionNames() {
@@ -144,7 +158,7 @@ public class EditorPane extends JPanel {
                     } else if (prefix.isEmpty()) {
                         suggestionMenu.setVisible(false);
                     } else {
-                        java.util.List<String> suggestions = getSuggestions(prefix, lastSpaceIndex, caretPosition);
+                        java.util.List<String> suggestions = getSuggestions(prefix);
                         if (suggestions.isEmpty()) {
                             suggestionMenu.setVisible(false);
                         } else {
@@ -154,24 +168,6 @@ public class EditorPane extends JPanel {
                         }
                     }
                 }
-            }
-        });
-
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                if (suggestionMenu.isVisible()) {
-                    int keyCode = e.getKeyCode();
-                    if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_ESCAPE) {
-                        SwingUtilities.invokeLater(() -> {
-                            suggestionList.revalidate();
-                            suggestionList.repaint();
-                            KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(suggestionList, e);
-                        });
-                        return true; // Consume the event
-                    }
-                }
-                return false; // Let the event be dispatched normally
             }
         });
 
@@ -188,7 +184,7 @@ public class EditorPane extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
-                if (keyCode == KeyEvent.VK_ENTER) {
+                if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_TAB) {
                     insertSelectedSuggestion(textArea);
                 } else if (keyCode == KeyEvent.VK_DOWN) {
                     int selectedIndex = suggestionList.getSelectedIndex();
@@ -202,6 +198,23 @@ public class EditorPane extends JPanel {
                     }
                 } else if (keyCode == KeyEvent.VK_ESCAPE) {
                     suggestionMenu.setVisible(false);
+                }
+            }
+        });
+
+        textArea.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (suggestionMenu.isVisible()) {
+                    int keyCode = e.getKeyCode();
+                    if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_UP) {
+                        suggestionList.dispatchEvent(e);
+                    } else if (keyCode == KeyEvent.VK_ESCAPE) {
+                        suggestionMenu.setVisible(false);
+                    } else if (keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_TAB) {
+                        insertSelectedSuggestion(textArea);
+                        e.consume();
+                    }
                 }
             }
         });
@@ -220,8 +233,9 @@ public class EditorPane extends JPanel {
         return functionNames;
     }
 
-    private java.util.List<String> getSuggestions(String prefix, int lastSpaceIndex, int caretPosition) {
+    private java.util.List<String> getSuggestions(String prefix) {
         Set<String> suggestions = new HashSet<>();
+        String suggestion = null;
 
         for (String functionName : functionNames) {
             if (functionName.startsWith(prefix)) {
@@ -229,13 +243,20 @@ public class EditorPane extends JPanel {
                 int endIndex = functionName.indexOf('.', startIndex);
                 int lastDotIndexPrefix = prefix.lastIndexOf('.');
                 if (lastDotIndexPrefix != -1 && endIndex != -1) {
-                    suggestions.add(functionName.substring(lastDotIndexPrefix + 1, endIndex));
+                    suggestion = functionName.substring(lastDotIndexPrefix, endIndex);
+                    if (!suggestion.equals(prefix) && !suggestion.equals(prefix.substring(lastDotIndexPrefix)))
+                        suggestions.add(suggestion);
                 } else if (lastDotIndexPrefix != -1) {
-                    suggestions.add(functionName.substring(lastDotIndexPrefix + 1));
+                    suggestion = functionName.substring(lastDotIndexPrefix);
+                    if (!suggestion.equals(prefix) && !suggestion.equals(prefix.substring(lastDotIndexPrefix)))
+                        suggestions.add(suggestion);
                 } else if (endIndex != -1) {
-                    suggestions.add(functionName.substring(0, endIndex));
+                    suggestion = functionName.substring(0, endIndex);
+                    if (!suggestion.equals(prefix))
+                        suggestions.add(suggestion);
                 } else {
-                    suggestions.add(functionName);
+                    if (!functionName.equals(prefix))
+                        suggestions.add(functionName);
                 }
             }
         }
@@ -267,11 +288,14 @@ public class EditorPane extends JPanel {
         }
     }
 
-    private void showSuggestionPopupWithTimer(RSyntaxTextArea textArea){
-        if(updateTimer != null && updateTimer.isRunning()){
+    private void showSuggestionPopupWithTimer(RSyntaxTextArea textArea) {
+        if (suppressPopup) {
+            return; // Don't show the popup if suppressed
+        }
+        if (updateTimer != null && updateTimer.isRunning()) {
             updateTimer.restart();
-        }else {
-            updateTimer = new Timer(300, e -> showSuggestionPopup(textArea));
+        } else {
+            updateTimer = new Timer(200, e -> showSuggestionPopup(textArea));
             updateTimer.setRepeats(false);
             updateTimer.start();
         }
@@ -281,6 +305,7 @@ public class EditorPane extends JPanel {
         String selectedValue = suggestionList.getSelectedValue();
         if (selectedValue != null) {
             try {
+                suppressPopup = true; // suppress the popup
                 int caretPosition = textArea.getCaretPosition();
                 int lastSpaceIndex = findLastNonWordChar(textArea.getText(), caretPosition - 1);
                 int start = lastSpaceIndex + 1;
@@ -291,11 +316,11 @@ public class EditorPane extends JPanel {
 
                 Document doc = textArea.getDocument();
                 if (start >= 0 && end >= start && end <= doc.getLength()) {
-                    if(lastDotIndexPrefix != -1){
-                        String value = selectedValue.substring(((prefix.length()-1) - lastDotIndexPrefix));
+                    if (lastDotIndexPrefix != -1) {
+                        String value = selectedValue.substring(((prefix.length() - 1) - lastDotIndexPrefix) + 1);
                         doc.insertString(caretPosition, value, null);
                         suggestionMenu.setVisible(false);
-                    }else {
+                    } else {
                         doc.insertString(caretPosition, selectedValue.substring(end - start), null);
                         suggestionMenu.setVisible(false);
                     }
@@ -304,6 +329,8 @@ public class EditorPane extends JPanel {
                 textArea.requestFocusInWindow(); //Return focus to textArea
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                suppressPopup = false; // Re-enable the popup after insertion
             }
         }
     }

@@ -924,6 +924,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         {
             editor.getPane().addDocumentListenersAndTriggerAutoComplete(textArea);
         }
+        refreshEditorsSettings();
         refreshActionState();
         rebuildAll();
     }
@@ -942,6 +943,10 @@ public class StudioPanel extends JPanel implements WindowListener {
                 textArea.setTabsEmulated(!CONFIG.getBoolean(Config.RSTA_INDENT_USE_TAB));
                 textArea.setSyntaxScheme(RSToken.getDefaulSyntaxScheme());
                 editorTab.setTextAreaFont(font);
+                if(CONFIG.getBoolean(Config.RSTA_AUTO_COMPLETE))
+                {
+                    editorTab.getPane().addDocumentListenersAndTriggerAutoComplete(editorTab.getPane().getTextArea());
+                }
             }
         }
         RSTokenMaker.setUnindentCurlyBraces(CONFIG.getBoolean(Config.RSTA_UNINDENT_CURLY_BRACES));
