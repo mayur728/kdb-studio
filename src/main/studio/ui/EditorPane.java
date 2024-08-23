@@ -17,6 +17,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -32,7 +34,7 @@ public class EditorPane extends JPanel {
     private final Box boxStatus;
     private final Box statusBar;
 
-    public java.util.List<String> functionNames;
+    public List<String> functionNames;
     private JPopupMenu suggestionMenu;
     private JList<String> suggestionList;
     private Timer updateTimer;
@@ -158,7 +160,7 @@ public class EditorPane extends JPanel {
                     } else if (prefix.isEmpty()) {
                         suggestionMenu.setVisible(false);
                     } else {
-                        java.util.List<String> suggestions = getSuggestions(prefix);
+                        List<String> suggestions = getSuggestions(prefix);
                         if (suggestions.isEmpty()) {
                             suggestionMenu.setVisible(false);
                         } else {
@@ -220,8 +222,8 @@ public class EditorPane extends JPanel {
         });
     }
 
-    private java.util.List<String> extractFunctionNames(String text) {
-        java.util.List<String> functionNames = new ArrayList<>();
+    private List<String> extractFunctionNames(String text) {
+        List<String> functionNames = new ArrayList<>();
 
         Pattern pattern = Pattern.compile("(?<dot>[.]*)\\b(?<name>[a-zA-Z_][a-zA-Z0-9_.]*)\\s*:\\s*\\{[^}]*\\}");
         Matcher matcher = pattern.matcher(text);
@@ -233,7 +235,7 @@ public class EditorPane extends JPanel {
         return functionNames;
     }
 
-    private java.util.List<String> getSuggestions(String prefix) {
+    private List<String> getSuggestions(String prefix) {
         Set<String> suggestions = new HashSet<>();
         String suggestion = null;
 
@@ -260,7 +262,10 @@ public class EditorPane extends JPanel {
                 }
             }
         }
-        return new ArrayList<>(suggestions);
+        List<String> sortedSuggestions = new ArrayList<>(suggestions);
+        Collections.sort(sortedSuggestions);
+
+        return sortedSuggestions;
     }
 
     private int findLastNonWordChar(String text, int index) {
