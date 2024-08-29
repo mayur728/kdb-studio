@@ -22,6 +22,7 @@ public class TabPanel extends JPanel {
     private JToolBar filterToolbar = null;
     private JToggleButton tglBtnComma;
     private JButton uploadBtn = null;
+    private JButton enableFilterBtn = null;
     private QueryResult queryResult;
     private K.KBase result;
     private JTextComponent textArea = null;
@@ -29,6 +30,8 @@ public class TabPanel extends JPanel {
     private KFormatContext formatContext = new KFormatContext(KFormatContext.DEFAULT);
     private ResultType type;
     private Map<Integer, Integer> hashCodeIndexMap = null;
+    private JScrollPane scrollPane;
+    private final double COLUMN_PIXEL_FACTOR = 1.568d;
 
     public TabPanel(StudioPanel panel, QueryResult queryResult, KTableModel model) {
         this.panel = panel;
@@ -95,42 +98,24 @@ public class TabPanel extends JPanel {
             uploadBtn.setFocusable(false);
             uploadBtn.addActionListener(e -> upload());
 
+            enableFilterBtn = new JButton(Util.FIND_ICON);
+            enableFilterBtn.setToolTipText("Show hide filter toolbar");
+            enableFilterBtn.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            enableFilterBtn.setFocusable(false);
+            enableFilterBtn.addActionListener(e -> {scrollPane.setVisible(!scrollPane.isVisible());
+                                                    this.revalidate();
+                                                    this.repaint();});
+
             toolbar = new JToolBar();
             toolbar.setFloatable(false);
             toolbar.add(tglBtnComma);
             toolbar.add(Box.createRigidArea(new Dimension(16,16)));
             toolbar.add(uploadBtn);
+            toolbar.add(enableFilterBtn);
 
             if(ResultType.TABLE == type) {
                 hashCodeIndexMap = new HashMap<Integer, Integer>();
-                filterToolbar = new JToolBar();
-                filterToolbar.setFloatable(false);
-                filterToolbar.add(Box.createRigidArea(new Dimension(16,16)));
-                String[] columns = (String[]) ((K.Flip) result).x.getArray();
-                filterToolbar.add(new JLabel("Filters: "));
-                for (int i = 0; i< columns.length; i++) {
-                    filterToolbar.add(new JLabel(columns[i] +": "));
-                    JTextField textfieldFilter = new JTextField();
-                    hashCodeIndexMap.put(textfieldFilter.getDocument().hashCode(), i);
-                    textfieldFilter.getDocument().addDocumentListener(new DocumentListener() {
-                        @Override
-                        public void insertUpdate(DocumentEvent e) {
-                            applyFilter(e);
-                        }
-
-                        @Override
-                        public void removeUpdate(DocumentEvent e) {
-                            grid.getTable().setRowSorter(null);
-
-                        }
-
-                        @Override
-                        public void changedUpdate(DocumentEvent e) {
-                            applyFilter(e);
-                        }
-                    });
-                    filterToolbar.add(textfieldFilter);
-                }
+                populateFilterToolbar();
             }
 
             updateFormatting();
@@ -147,6 +132,38 @@ public class TabPanel extends JPanel {
 
         setLayout(new BorderLayout());
         add(component, BorderLayout.CENTER);
+    }
+
+    private void populateFilterToolbar() {
+        filterToolbar = new JToolBar();
+        filterToolbar.setFloatable(false);
+        filterToolbar.add(Box.createRigidArea(new Dimension(16,16)));
+        filterToolbar.add(new JLabel("Filters: "));
+        String[] columns = (String[]) ((K.Flip) result).x.getArray();
+        for (int i = 0; i< columns.length; i++) {
+            filterToolbar.add(new JLabel(columns[i] +": "));
+            int colWidth = String.valueOf(getTable().getModel().getValueAt(0,1)).length();
+            JTextField textfieldFilter = new JTextField("", (int) Math.round(colWidth/COLUMN_PIXEL_FACTOR));
+            hashCodeIndexMap.put(textfieldFilter.getDocument().hashCode(), i);
+            textfieldFilter.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    applyFilter(e);
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    grid.getTable().setRowSorter(null);
+
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    applyFilter(e);
+                }
+            });
+            filterToolbar.add(textfieldFilter);
+        }
     }
 
     private void applyFilter(DocumentEvent e) {
@@ -194,9 +211,19 @@ public class TabPanel extends JPanel {
 
         remove(filterToolbar);
         if (tabbedPane.getTabPlacement() == JTabbedPane.TOP) {
-            filterToolbar.setLayout(new BoxLayout(filterToolbar, BoxLayout.X_AXIS));
-            add(filterToolbar, BorderLayout.NORTH);
+            filterToolbarScrollPaneNesting();
         }
+    }
+
+    private void filterToolbarScrollPaneNesting() {
+        filterToolbar.setLayout(new BoxLayout(filterToolbar, BoxLayout.X_AXIS));
+        scrollPane = new JScrollPane(filterToolbar, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        JScrollBar toolBarHorizontalScrollBar = scrollPane.getHorizontalScrollBar();
+        JScrollBar tableHorizontalScrollBar = grid.getScrollPane().getHorizontalScrollBar();
+        toolBarHorizontalScrollBar.addAdjustmentListener(e -> tableHorizontalScrollBar.setValue(e.getValue()));
+        tableHorizontalScrollBar.addAdjustmentListener(e -> toolBarHorizontalScrollBar.setValue(e.getValue()));
+        scrollPane.setVisible(false);
+        add(scrollPane, BorderLayout.NORTH);
     }
 
     private void updateFormatting() {
