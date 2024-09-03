@@ -23,6 +23,7 @@ public class TabPanel extends JPanel {
     private JToggleButton tglBtnComma;
     private JButton uploadBtn = null;
     private JButton enableFilterBtn = null;
+    private JButton caseSensitiveFilterBtn = null;
     private QueryResult queryResult;
     private K.KBase result;
     private JTextComponent textArea = null;
@@ -31,7 +32,7 @@ public class TabPanel extends JPanel {
     private ResultType type;
     private Map<Integer, Integer> hashCodeIndexMap = null;
     private JScrollPane scrollPane;
-    private final double COLUMN_PIXEL_FACTOR = 1.568d;
+    private boolean caseSensitiveFilter = true;
 
     public TabPanel(StudioPanel panel, QueryResult queryResult, KTableModel model) {
         this.panel = panel;
@@ -106,12 +107,26 @@ public class TabPanel extends JPanel {
                                                     this.revalidate();
                                                     this.repaint();});
 
+            caseSensitiveFilterBtn = new JButton(Util.SEARCH_CASE_SENSITIVE_ICON);
+            caseSensitiveFilterBtn.setToolTipText("Case sensitive toggle");
+            caseSensitiveFilterBtn.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            caseSensitiveFilterBtn.setFocusable(false);
+            caseSensitiveFilterBtn.addActionListener(e -> {
+              caseSensitiveFilter = !caseSensitiveFilter;
+                if (caseSensitiveFilter) {
+                    caseSensitiveFilterBtn.setIcon(Util.SEARCH_CASE_SENSITIVE_ICON);
+                } else {
+                    caseSensitiveFilterBtn.setIcon(Util.SEARCH_CASE_SENSITIVE_SHADED_ICON);
+                }
+            });
+
             toolbar = new JToolBar();
             toolbar.setFloatable(false);
             toolbar.add(tglBtnComma);
             toolbar.add(Box.createRigidArea(new Dimension(16,16)));
             toolbar.add(uploadBtn);
             toolbar.add(enableFilterBtn);
+            toolbar.add(caseSensitiveFilterBtn);
 
             if(ResultType.TABLE == type) {
                 hashCodeIndexMap = new HashMap<Integer, Integer>();
@@ -134,16 +149,18 @@ public class TabPanel extends JPanel {
         add(component, BorderLayout.CENTER);
     }
 
-    private void populateFilterToolbar() {
+    protected void populateFilterToolbar() {
         filterToolbar = new JToolBar();
         filterToolbar.setFloatable(false);
         filterToolbar.add(Box.createRigidArea(new Dimension(16,16)));
         filterToolbar.add(new JLabel("Filters: "));
         String[] columns = (String[]) ((K.Flip) result).x.getArray();
         for (int i = 0; i< columns.length; i++) {
-            filterToolbar.add(new JLabel(columns[i] +": "));
-            int colWidth = String.valueOf(getTable().getModel().getValueAt(0,1)).length();
-            JTextField textfieldFilter = new JTextField("", (int) Math.round(colWidth/COLUMN_PIXEL_FACTOR));
+            JLabel filterLable = new JLabel(columns[i] +": ");
+            filterToolbar.add(filterLable);
+            int colWithFromModel = getTable().getColumnModel().getColumn(i).getPreferredWidth();
+            JTextField textfieldFilter = new JTextField();
+            textfieldFilter.setPreferredSize(new Dimension((int) (colWithFromModel - filterLable.getPreferredSize().getWidth()), 0));
             hashCodeIndexMap.put(textfieldFilter.getDocument().hashCode(), i);
             textfieldFilter.getDocument().addDocumentListener(new DocumentListener() {
                 @Override
@@ -172,7 +189,13 @@ public class TabPanel extends JPanel {
             String filterInput = e.getDocument().getText(0, e.getDocument().getLength());
             TableRowSorter<KTableModel> tableRowSorter = new TableRowSorter<>(((KTableModel)grid.getTable().getModel()));
             grid.getTable().setRowSorter(tableRowSorter);
-            tableRowSorter.setRowFilter(RowFilter.regexFilter("(?i).*" + filterInput +".*", index));
+            String regex = "";
+            if (caseSensitiveFilter) {
+                regex = "(?i).*" + filterInput +".*";
+            } else {
+                regex = ".*" + filterInput +".*";
+            }
+            tableRowSorter.setRowFilter(RowFilter.regexFilter(regex, index));
         } catch (BadLocationException ex) {
             throw new RuntimeException(ex);
         }
