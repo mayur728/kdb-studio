@@ -1,13 +1,15 @@
 package studio.ui;
 
-import studio.kdb.*;
 import studio.kdb.ListModel;
+import studio.kdb.*;
 import studio.ui.action.QueryResult;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TabPanel extends JPanel {
     private StudioPanel panel;
@@ -15,6 +17,7 @@ public class TabPanel extends JPanel {
     private JToolBar toolbar = null;
     private JToggleButton tglBtnComma;
     private JButton uploadBtn = null;
+    private JToggleButton tglBtnView;
     private QueryResult queryResult;
     private K.KBase result;
     private JTextComponent textArea = null;
@@ -22,10 +25,17 @@ public class TabPanel extends JPanel {
     private KFormatContext formatContext = new KFormatContext(KFormatContext.DEFAULT);
     private ResultType type;
 
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+
+    private final static Set<TabData> hiddenTabs = new HashSet<>();
+
     public TabPanel(StudioPanel panel, QueryResult queryResult, KTableModel model) {
         this.panel = panel;
         this.queryResult = queryResult;
         this.result = queryResult.getResult();
+        this.cardLayout = new CardLayout();
+        this.cardPanel = new JPanel(cardLayout);
         initComponents(model);
     }
 
@@ -71,6 +81,9 @@ public class TabPanel extends JPanel {
                 type = ResultType.TEXT;
             }
 
+            // Add components to cardPanel
+            cardPanel.add(component, type.name());
+
             tglBtnComma = new JToggleButton(Util.COMMA_CROSSED_ICON);
             tglBtnComma.setSelectedIcon(Util.COMMA_ICON);
 
@@ -87,12 +100,23 @@ public class TabPanel extends JPanel {
             uploadBtn.setFocusable(false);
             uploadBtn.addActionListener(e -> upload());
 
+            tglBtnView = new JToggleButton(Util.TABLE_ICON);
+            tglBtnView.setSelectedIcon(Util.CONSOLE_ICON);
+            tglBtnView.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            tglBtnView.setToolTipText("Table View / Console View Switch");
+            tglBtnView.setFocusable(false);
+            tglBtnView.addActionListener(e -> toggleView(tglBtnView.isSelected()));
+
+
             toolbar = new JToolBar();
             toolbar.setFloatable(false);
             toolbar.add(tglBtnComma);
-            toolbar.add(Box.createRigidArea(new Dimension(16,16)));
+            toolbar.add(Box.createRigidArea(new Dimension(16, 16)));
             toolbar.add(uploadBtn);
+            toolbar.add(Box.createRigidArea(new Dimension(16, 16)));
+            toolbar.add(tglBtnView);
             updateFormatting();
+            // toggleView(tglBtnView.isSelected());
         } else {
             textArea = new JTextPane();
             String hint = QErrors.lookup(queryResult.getError().getMessage());
@@ -102,11 +126,54 @@ public class TabPanel extends JPanel {
             textArea.setEditable(false);
             component = new JScrollPane(textArea);
             type = ResultType.ERROR;
+
+            // Add error component to cardPanel
+            cardPanel.add(component, type.name());
         }
 
         setLayout(new BorderLayout());
         add(component, BorderLayout.CENTER);
+
     }
+
+    public void toggleView(boolean showTableView) {
+        JTabbedPane tabbedPane = (JTabbedPane) this.getParent();
+
+        // Iterate through all tabs in the tabbedPane and manage their visibility
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            Component tabComponent = tabbedPane.getComponentAt(i);
+            if (tabComponent instanceof TabPanel) {
+                TabPanel tabPanel = (TabPanel) tabComponent;
+                boolean isTable = tabPanel.getType() == ResultType.TABLE;
+
+                // Get the title and icon (optional) of the tab
+                String title = tabbedPane.getTitleAt(i);
+                Icon icon = tabbedPane.getIconAt(i);
+
+                // Check if the current tab matches the view (table or toggle)
+                if (showTableView == isTable) {
+                    // If not already in hiddenTabs, add it
+                    if (!hiddenTabs.contains(new TabData(tabPanel, title, icon))) {
+                        hiddenTabs.add(new TabData(tabPanel, title, icon));
+                    }
+                } else {
+                    // Add tab to hiddenTabs before removing it
+                    hiddenTabs.add(new TabData(tabPanel, title, icon));
+                    tabbedPane.remove(tabPanel);  // Remove the tab from the tabbedPane
+                    i--;  // Adjust index since we removed an item
+                }
+            }
+        }
+        // Re-add the hidden tabs that match the view
+        for (TabData tabData : hiddenTabs) {
+            boolean isTable = tabData.tabPanel.getType() == ResultType.TABLE;
+            if (showTableView == isTable && tabbedPane.indexOfComponent(tabData.tabPanel) == -1) {
+                // Re-add tab with its title and icon
+                tabbedPane.addTab(tabData.title, tabData.icon, tabData.tabPanel);
+            }
+        }
+    }
+
 
     public void addInto(JTabbedPane tabbedPane) {
         String title = type.title;
@@ -140,7 +207,7 @@ public class TabPanel extends JPanel {
         }
         if (type == ResultType.TEXT) {
             String text;
-            if ((result instanceof K.UnaryPrimitive) && ((K.UnaryPrimitive)result).isIdentity() ) text = "";
+            if ((result instanceof K.UnaryPrimitive) && ((K.UnaryPrimitive) result).isIdentity()) text = "";
             else {
                 text = Util.limitString(result.toString(formatContext), Config.getInstance().getMaxCharsInResult());
             }
@@ -175,9 +242,10 @@ public class TabPanel extends JPanel {
 
         private final String title;
         private final Icon icon;
+
         ResultType(String title, Icon icon) {
             this.title = title;
             this.icon = icon;
         }
-    };
+    }
 }
