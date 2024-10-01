@@ -86,6 +86,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.11.2'
     implementation group: 'org.drjekyll', name: 'fontchooser', version: '2.4'
     implementation group: 'net.java.dev.jna', name: 'jna', version: '5.10.0'
+    implementation 'com.formdev:flatlaf:3.4.1'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
