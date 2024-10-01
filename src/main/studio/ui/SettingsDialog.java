@@ -32,6 +32,7 @@ public class SettingsDialog extends EscapeDialog {
     private JCheckBox chBoxRTSAAnimateBracketMatching;
     private JCheckBox chBoxRTSAHighlightCurrentLine;
     private JCheckBox chBoxRTSAWordWrap;
+    private JCheckBox chBoxRTSAAutoComplete;
     private JCheckBox chBoxRTSAIndentUseTab;
     private JCheckBox chBoxRTSAUnindentCurlyBraces;
     private JComboBox<CustomiszedLookAndFeelInfo> comboBoxLookAndFeel;
@@ -141,6 +142,10 @@ public class SettingsDialog extends EscapeDialog {
         return chBoxRTSAWordWrap.isSelected();
     }
 
+    public boolean isAutoComplete() {
+        return chBoxRTSAAutoComplete.isSelected();
+    }
+
     public LineEnding getDefaultLineEnding() {
         return (LineEnding) comboBoxLineEnding.getSelectedItem();
     }
@@ -199,6 +204,9 @@ public class SettingsDialog extends EscapeDialog {
 
         chBoxRTSAWordWrap = new JCheckBox("Word wrap");
         chBoxRTSAWordWrap.setSelected(Config.getInstance().getBoolean(Config.RSTA_WORD_WRAP));
+
+        chBoxRTSAAutoComplete = new JCheckBox("Auto Complete");
+        chBoxRTSAAutoComplete.setSelected(Config.getInstance().getBoolean(Config.RSTA_AUTO_COMPLETE));
 
         JLabel lblRTSAIndentSize = new JLabel("Indentation size:");
         NumberFormatter formatter = new NumberFormatter();
@@ -305,7 +313,7 @@ public class SettingsDialog extends EscapeDialog {
         layout = new GroupLayoutSimple(pnlEditor);
         layout.setStacks(
                 new GroupLayoutSimple.Stack()
-                        .addLineAndGlue(chBoxRTSAAnimateBracketMatching, chBoxRTSAHighlightCurrentLine, chBoxRTSAWordWrap)
+                        .addLineAndGlue(chBoxRTSAAnimateBracketMatching, chBoxRTSAHighlightCurrentLine, chBoxRTSAWordWrap, chBoxRTSAAutoComplete)
                         .addLineAndGlue(lblRTSAIndentSize, txtRTSAIndentSize, chBoxRTSAIndentUseTab, chBoxRTSAUnindentCurlyBraces)
                         .addLineAndGlue(lblDefaultLineEnding, comboBoxLineEnding)
                         .addLineAndGlue(lblExecAll, comboBoxExecAll)

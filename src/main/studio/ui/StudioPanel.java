@@ -133,6 +133,8 @@ public class StudioPanel extends JPanel implements WindowListener {
     private UserAction prevEditorTabAction;
     private UserAction[] lineEndingActions;
     private UserAction wordWrapAction;
+    private UserAction autoCompleteAction;
+
     private JFrame frame;
 
     private static List<StudioPanel> allPanels = new ArrayList<>();
@@ -217,6 +219,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         redoAction.setEnabled(textArea.canRedo());
 
         wordWrapAction.setSelected(CONFIG.getBoolean(Config.RSTA_WORD_WRAP));
+        autoCompleteAction.setSelected(CONFIG.getBoolean(Config.RSTA_AUTO_COMPLETE));
 
         for (LineEnding lineEnding: LineEnding.values() ) {
             lineEndingActions[lineEnding.ordinal()].setSelected(editor.getLineEnding() == lineEnding);
@@ -752,13 +755,7 @@ public class StudioPanel extends JPanel implements WindowListener {
                 Util.SETTINGS_ICON,
                 "Settings",
                 KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask | InputEvent.ALT_MASK),
-                e -> {
-                    try {
-                        settings();
-                    } catch (UnsupportedLookAndFeelException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                });
+                e -> settings());
 
         themeAction = UserAction.create("Theme",
                 null,
@@ -811,7 +808,6 @@ public class StudioPanel extends JPanel implements WindowListener {
                         KeyStroke.getKeyStroke(KeyEvent.VK_TAB, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> selectNextTab(false));
 
-
         lineEndingActions = new UserAction[LineEnding.values().length];
         for(LineEnding lineEnding: LineEnding.values()) {
             lineEndingActions[lineEnding.ordinal()] = UserAction.create(lineEnding.getDescription(),
@@ -825,8 +821,10 @@ public class StudioPanel extends JPanel implements WindowListener {
                 KeyEvent.VK_W, KeyStroke.getKeyStroke(KeyEvent.VK_W, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> toggleWordWrap());
 
+        autoCompleteAction = UserAction.create("Auto complete", "Auto complete suggestions pop up",
+                KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK),
+                e -> toggleAutoComplete(editor));
     }
-
 
     private static StudioPanel getActivePanel() {
         Window window = FocusManager.getCurrentManager().getActiveWindow();
@@ -836,7 +834,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         return allPanels.get(0);
     }
 
-    public static void settings() throws UnsupportedLookAndFeelException {
+    public static void settings() {
         StudioPanel activePanel = getActivePanel();
         SettingsDialog dialog = new SettingsDialog(activePanel.frame);
         dialog.alignAndShow();
@@ -866,6 +864,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         boolean changedEditor = CONFIG.setBoolean(Config.RSTA_ANIMATE_BRACKET_MATCHING, dialog.isAnimateBracketMatching());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_HIGHLIGHT_CURRENT_LINE, dialog.isHighlightCurrentLine());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_WORD_WRAP, dialog.isWordWrap());
+        changedEditor |= CONFIG.setBoolean(Config.RSTA_AUTO_COMPLETE, dialog.isAutoComplete());
         changedEditor |= CONFIG.setInt(Config.RSTA_INDENT_SIZE, dialog.getRTSAIndentSize());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_INDENT_USE_TAB, dialog.isRTSAIndentUseTab());
         changedEditor |= CONFIG.setBoolean(Config.RSTA_UNINDENT_CURLY_BRACES, dialog.isRTSAUnindentCurlyBraces());
@@ -915,6 +914,21 @@ public class StudioPanel extends JPanel implements WindowListener {
         rebuildAll();
     }
 
+    private void toggleAutoComplete(EditorTab editor) {
+        RSyntaxTextArea textArea = editor.getPane().getTextArea();
+        boolean value = CONFIG.getBoolean(Config.RSTA_AUTO_COMPLETE);
+
+        CONFIG.setBoolean(Config.RSTA_AUTO_COMPLETE, !value);
+
+        if(CONFIG.getBoolean(Config.RSTA_AUTO_COMPLETE))
+        {
+            editor.getPane().addDocumentListenersAndTriggerAutoComplete(textArea);
+        }
+        refreshEditorsSettings();
+        refreshActionState();
+        rebuildAll();
+    }
+
     private static void refreshEditorsSettings() {
         Font font = CONFIG.getFont(Config.FONT_EDITOR);
         for (StudioPanel panel: allPanels) {
@@ -929,6 +943,10 @@ public class StudioPanel extends JPanel implements WindowListener {
                 textArea.setTabsEmulated(!CONFIG.getBoolean(Config.RSTA_INDENT_USE_TAB));
                 textArea.setSyntaxScheme(RSToken.getDefaulSyntaxScheme());
                 editorTab.setTextAreaFont(font);
+                if(CONFIG.getBoolean(Config.RSTA_AUTO_COMPLETE))
+                {
+                    editorTab.getPane().addDocumentListenersAndTriggerAutoComplete(editorTab.getPane().getTextArea());
+                }
             }
         }
         RSTokenMaker.setUnindentCurlyBraces(CONFIG.getBoolean(Config.RSTA_UNINDENT_CURLY_BRACES));
@@ -1133,6 +1151,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         menu.addSeparator();
 
         menu.add(new JCheckBoxMenuItem(wordWrapAction));
+        menu.add(new JCheckBoxMenuItem(autoCompleteAction));
 
         JMenu lineEndingSubMenu = new JMenu("Line Ending");
         for (Action action: lineEndingActions) {

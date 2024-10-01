@@ -54,6 +54,7 @@ public class Config {
     public static final String RSTA_ANIMATE_BRACKET_MATCHING = configDefault("rstaAnimateBracketMatching", ConfigType.BOOLEAN, true);
     public static final String RSTA_HIGHLIGHT_CURRENT_LINE = configDefault("rstaHighlightCurrentLine", ConfigType.BOOLEAN, true);
     public static final String RSTA_WORD_WRAP = configDefault("rstaWordWrap", ConfigType.BOOLEAN, false);
+    public static final String RSTA_AUTO_COMPLETE = configDefault("rstaAutoComplete", ConfigType.BOOLEAN, false);
     public static final String RSTA_INDENT_SIZE = configDefault("rstaIndentSize", ConfigType.INT, 4);
     public static final String RSTA_INDENT_USE_TAB = configDefault("rstaIndentUseTab", ConfigType.BOOLEAN, false);
     public static final String RSTA_UNINDENT_CURLY_BRACES = configDefault("rstaUnindentCurlyBraces", ConfigType.BOOLEAN, false);
