@@ -6,21 +6,33 @@ import studio.ui.action.QueryResult;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableRowSorter;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TabPanel extends JPanel {
     private StudioPanel panel;
 
     private JToolBar toolbar = null;
+    private JToolBar filterToolbar = null;
     private JToggleButton tglBtnComma;
     private JButton uploadBtn = null;
+    private JButton enableFilterBtn = null;
+    private JButton caseSensitiveFilterBtn = null;
     private QueryResult queryResult;
     private K.KBase result;
     private JTextComponent textArea = null;
     private QGrid grid = null;
     private KFormatContext formatContext = new KFormatContext(KFormatContext.DEFAULT);
     private ResultType type;
+    private Map<Integer, Integer> hashCodeIndexMap = null;
+    private JScrollPane scrollPane;
+    private boolean caseSensitiveFilter = true;
 
     public TabPanel(StudioPanel panel, QueryResult queryResult, KTableModel model) {
         this.panel = panel;
@@ -87,11 +99,40 @@ public class TabPanel extends JPanel {
             uploadBtn.setFocusable(false);
             uploadBtn.addActionListener(e -> upload());
 
+            enableFilterBtn = new JButton(Util.FIND_ICON);
+            enableFilterBtn.setToolTipText("Show hide filter toolbar");
+            enableFilterBtn.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            enableFilterBtn.setFocusable(false);
+            enableFilterBtn.addActionListener(e -> {scrollPane.setVisible(!scrollPane.isVisible());
+                                                    this.revalidate();
+                                                    this.repaint();});
+
+            caseSensitiveFilterBtn = new JButton(Util.SEARCH_CASE_SENSITIVE_ICON);
+            caseSensitiveFilterBtn.setToolTipText("Case sensitive toggle");
+            caseSensitiveFilterBtn.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            caseSensitiveFilterBtn.setFocusable(false);
+            caseSensitiveFilterBtn.addActionListener(e -> {
+              caseSensitiveFilter = !caseSensitiveFilter;
+                if (caseSensitiveFilter) {
+                    caseSensitiveFilterBtn.setIcon(Util.SEARCH_CASE_SENSITIVE_ICON);
+                } else {
+                    caseSensitiveFilterBtn.setIcon(Util.SEARCH_CASE_SENSITIVE_SHADED_ICON);
+                }
+            });
+
             toolbar = new JToolBar();
             toolbar.setFloatable(false);
             toolbar.add(tglBtnComma);
             toolbar.add(Box.createRigidArea(new Dimension(16,16)));
             toolbar.add(uploadBtn);
+            toolbar.add(enableFilterBtn);
+            toolbar.add(caseSensitiveFilterBtn);
+
+            if(ResultType.TABLE == type) {
+                hashCodeIndexMap = new HashMap<Integer, Integer>();
+                populateFilterToolbar();
+            }
+
             updateFormatting();
         } else {
             textArea = new JTextPane();
@@ -108,6 +149,58 @@ public class TabPanel extends JPanel {
         add(component, BorderLayout.CENTER);
     }
 
+    protected void populateFilterToolbar() {
+        filterToolbar = new JToolBar();
+        filterToolbar.setFloatable(false);
+        filterToolbar.add(Box.createRigidArea(new Dimension(16,16)));
+        filterToolbar.add(new JLabel("Filters: "));
+        String[] columns = (String[]) ((K.Flip) result).x.getArray();
+        for (int i = 0; i< columns.length; i++) {
+            JLabel filterLable = new JLabel(columns[i] +": ");
+            filterToolbar.add(filterLable);
+            int colWithFromModel = getTable().getColumnModel().getColumn(i).getPreferredWidth();
+            JTextField textfieldFilter = new JTextField();
+            textfieldFilter.setPreferredSize(new Dimension((int) (colWithFromModel - filterLable.getPreferredSize().getWidth()), 0));
+            hashCodeIndexMap.put(textfieldFilter.getDocument().hashCode(), i);
+            textfieldFilter.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    applyFilter(e);
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    grid.getTable().setRowSorter(null);
+
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    applyFilter(e);
+                }
+            });
+            filterToolbar.add(textfieldFilter);
+        }
+    }
+
+    private void applyFilter(DocumentEvent e) {
+        try {
+            int index = hashCodeIndexMap.get(e.getDocument().hashCode());
+            String filterInput = e.getDocument().getText(0, e.getDocument().getLength());
+            TableRowSorter<KTableModel> tableRowSorter = new TableRowSorter<>(((KTableModel)grid.getTable().getModel()));
+            grid.getTable().setRowSorter(tableRowSorter);
+            String regex = "";
+            if (caseSensitiveFilter) {
+                regex = "(?i).*" + filterInput +".*";
+            } else {
+                regex = ".*" + filterInput +".*";
+            }
+            tableRowSorter.setRowFilter(RowFilter.regexFilter(regex, index));
+        } catch (BadLocationException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     public void addInto(JTabbedPane tabbedPane) {
         String title = type.title;
         if (isTable()) {
@@ -118,6 +211,9 @@ public class TabPanel extends JPanel {
         tabbedPane.setSelectedIndex(tabIndex);
         tabbedPane.setToolTipTextAt(tabIndex, "Executed at server: " + queryResult.getServer().getDescription(true));
         updateToolbarLocation(tabbedPane);
+        if (isTable()) {
+            updateFilterToolbarLocation(tabbedPane);
+        }
     }
 
     public void updateToolbarLocation(JTabbedPane tabbedPane) {
@@ -131,6 +227,26 @@ public class TabPanel extends JPanel {
             toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.X_AXIS));
             add(toolbar, BorderLayout.NORTH);
         }
+    }
+
+    public void updateFilterToolbarLocation(JTabbedPane tabbedPane) {
+        if (filterToolbar == null) return;
+
+        remove(filterToolbar);
+        if (tabbedPane.getTabPlacement() == JTabbedPane.TOP) {
+            filterToolbarScrollPaneNesting();
+        }
+    }
+
+    private void filterToolbarScrollPaneNesting() {
+        filterToolbar.setLayout(new BoxLayout(filterToolbar, BoxLayout.X_AXIS));
+        scrollPane = new JScrollPane(filterToolbar, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        JScrollBar toolBarHorizontalScrollBar = scrollPane.getHorizontalScrollBar();
+        JScrollBar tableHorizontalScrollBar = grid.getScrollPane().getHorizontalScrollBar();
+        toolBarHorizontalScrollBar.addAdjustmentListener(e -> tableHorizontalScrollBar.setValue(e.getValue()));
+        tableHorizontalScrollBar.addAdjustmentListener(e -> toolBarHorizontalScrollBar.setValue(e.getValue()));
+        scrollPane.setVisible(false);
+        add(scrollPane, BorderLayout.NORTH);
     }
 
     private void updateFormatting() {

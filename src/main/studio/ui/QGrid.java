@@ -20,6 +20,7 @@ public class QGrid extends JPanel {
     private final JTable table;
     private CellRenderer cellRenderer;
     private KFormatContext formatContext = KFormatContext.DEFAULT;
+    private final JScrollPane scrollPane;
 
     public JTable getTable() {
         return table;
@@ -114,7 +115,7 @@ public class QGrid extends JPanel {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setShowVerticalLines(true);
         table.getTableHeader().setReorderingAllowed(true);
-        final JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane = new JScrollPane(table);
 
         TableRowHeader trh = new TableRowHeader(table);
         scrollPane.setRowHeaderView(trh);
@@ -259,6 +260,10 @@ public class QGrid extends JPanel {
         popupMenu.add(copyExcelFormatAction);
         popupMenu.add(copyHtmlFormatAction);
         return popupMenu;
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
     }
 
 }
