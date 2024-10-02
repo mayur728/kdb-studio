@@ -4,15 +4,17 @@ import studio.kdb.Config;
 import studio.kdb.K;
 import studio.kdb.KFormatContext;
 import studio.kdb.KTableModel;
-import java.awt.Color;
-import java.awt.Component;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 
 class CellRenderer extends DefaultTableCellRenderer {
-    private static final Color keyColor = new Color(220,255,220);
-    private static final Color altColor = new Color(220,220,255);
-    private static final Color nullColor = new Color(255,150,150);
+    private static final Color keyColor = new Color(220, 255, 220);
+    private static final Color altColor = new Color(220, 220, 255);
+    private static final Color altColor2 = new Color(39, 51, 71);
+
+    private static final Color nullColor = new Color(255, 150, 150);
     private static final Color selColor = UIManager.getColor("Table.selectionBackground");
     private static final Color fgColor = UIManager.getColor("Table.foreground");
     private JTable table = null;
@@ -51,19 +53,26 @@ class CellRenderer extends DefaultTableCellRenderer {
         if (value != null) {
             K.KBase kb = (K.KBase) value;
             String text = kb.toString(
-                kb instanceof K.KBaseVector ? formatContextWithType : formatContextNoType);
+                    kb instanceof K.KBaseVector ? formatContextWithType : formatContextNoType);
             text = Util.limitString(text, Config.getInstance().getMaxCharsInTableCell());
             setText(text);
             setForeground(kb.isNull() ? nullColor : fgColor);
+
 
             if (!isSelected) {
                 KTableModel ktm = (KTableModel) table.getModel();
                 column = table.convertColumnIndexToModel(column);
                 if (ktm.isKey(column))
                     setBackground(keyColor);
-                else if (row % 2 == 0)
-                    setBackground(altColor);
-                else
+                else if (row % 2 == 0) {
+                    LookAndFeel currentLaf = UIManager.getLookAndFeel();
+                    String lafName = currentLaf.getName();
+
+                    if (lafName.contains("Flat")) {
+                        setBackground(altColor2); // Custom color for FlatLaf
+                    } else
+                        setBackground(altColor);
+                } else
                     setBackground(UIManager.getColor("Table.background"));
             } else {
                 setForeground(UIManager.getColor("Table.selectionForeground"));
