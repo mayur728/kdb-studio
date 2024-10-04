@@ -29,6 +29,19 @@ public class Server {
         return p;
     }
 
+    public Properties getAsStringProperties() {
+        Properties p = new Properties();
+        p.put("NAME", name);
+        p.put("HOST", host);
+        p.put("PORT", Integer.toString(port));
+        p.put("USERNAME", username);
+        p.put("PASSWORD", password);
+        p.put("USETLS", Boolean.toString(useTLS));
+        p.put("AUTHENTICATION_MECHANISM", authenticationMechanism);
+        p.put("BACKGROUND_COLOR", String.format("%02X%02X%02X", backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue()));
+        return p;
+    }
+
     public String getAuthenticationMechanism() {
         return authenticationMechanism;
     }

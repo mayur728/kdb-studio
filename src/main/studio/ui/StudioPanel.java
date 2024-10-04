@@ -12,8 +12,6 @@ import studio.kdb.*;
 import studio.kdb.Config.ThemeEntry;
 import studio.qeditor.RSToken;
 import studio.qeditor.RSTokenMaker;
-import studio.ui.action.JSONServerList;
-import studio.ui.action.QPadImport;
 import studio.ui.action.QueryResult;
 import studio.ui.action.WorkspaceSaver;
 import studio.ui.chart.Chart;
@@ -47,7 +45,6 @@ import java.util.List;
 import java.util.*;
 
 import static javax.swing.JSplitPane.VERTICAL_SPLIT;
-import static studio.ui.EscapeDialog.DialogResult.ACCEPTED;
 import static studio.ui.EscapeDialog.DialogResult.CANCELLED;
 
 public class StudioPanel extends JPanel implements WindowListener {
@@ -122,12 +119,6 @@ public class StudioPanel extends JPanel implements WindowListener {
     private UserAction themeAction;
     private UserAction toggleDividerOrientationAction;
     private UserAction minMaxDividerAction;
-    private UserAction importFromQPadAction;
-    private UserAction importFromJSONAction;
-    private UserAction exportToJSONAction;
-    private UserAction editServerAction;
-    private UserAction addServerAction;
-    private UserAction removeServerAction;
     private UserAction toggleCommaFormatAction;
     private UserAction nextEditorTabAction;
     private UserAction prevEditorTabAction;
@@ -144,8 +135,6 @@ public class StudioPanel extends JPanel implements WindowListener {
     public final static int menuShortcutKeyMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
     private final static Cursor textCursor = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
     private final static Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-
-    private final static int MAX_SERVERS_TO_CLONE = 20;
 
     private static final Config CONFIG = Config.getInstance();
     
@@ -210,10 +199,6 @@ public class StudioPanel extends JPanel implements WindowListener {
                     executeCurrentLineAction, refreshAction);
             return;
         }
-
-        Server server = editor.getServer();
-        editServerAction.setEnabled(server != null);
-        removeServerAction.setEnabled(server != null);
 
         undoAction.setEnabled(textArea.canUndo());
         redoAction.setEnabled(textArea.canRedo());
@@ -627,71 +612,6 @@ public class StudioPanel extends JPanel implements WindowListener {
         serverHistoryAction = UserAction.create("Server History", null, "Recent selected servers", KeyEvent.VK_R,
                 KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask | InputEvent.SHIFT_MASK),
                 e -> showServerList(true));
-
-        importFromQPadAction = UserAction.create("Import Servers from QPad...", null, "Import from Servers.cfg",
-                KeyEvent.VK_I, null, e -> QPadImport.doImport(this));
-        importFromJSONAction = UserAction.create("Import Servers from JSON...", "Import server list from JSON",
-                KeyEvent.VK_J, e -> JSONServerList.importFromJSON(this, this));
-        exportToJSONAction = UserAction.create("Export Servers to JSON...", "Export server list to JSON",
-                KeyEvent.VK_X, e -> JSONServerList.exportToJSON(this));
-
-        editServerAction = UserAction.create(I18n.getString("Edit"), Util.SERVER_EDIT_ICON, "Edit the server details",
-                KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask | InputEvent.ALT_MASK), e -> {
-                    Server s = new Server(editor.getServer());
-
-                    EditServerForm f = new EditServerForm(frame, s);
-                    f.alignAndShow();
-                    if (f.getResult() == ACCEPTED) {
-                        if (stopAction.isEnabled())
-                            stopAction.actionPerformed(e);
-
-                        ConnectionPool.getInstance().purge(editor.getServer());
-                        CONFIG.removeServer(editor.getServer());
-
-                        s = f.getServer();
-                        CONFIG.addServer(s);
-                        setServer(s);
-                        rebuildAll();
-                    }
-                });
-
-
-        addServerAction = UserAction.create(I18n.getString("Add"), Util.ADD_SERVER_ICON, "Configure a new server",
-                KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_A, menuShortcutKeyMask | InputEvent.ALT_MASK), e -> {
-                    AddServerForm f = new AddServerForm(frame, null);
-                    f.alignAndShow();
-                    if (f.getResult() == ACCEPTED) {
-                        Server s = f.getServer();
-                        CONFIG.addServer(s);
-                        ConnectionPool.getInstance().purge(s);   //?
-                        setServer(s);
-                        rebuildAll();
-                    }
-                });
-
-        removeServerAction = UserAction.create(I18n.getString("Remove"), Util.DELETE_SERVER_ICON, "Remove this server",
-                KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask | InputEvent.ALT_MASK), e -> {
-                    int choice = JOptionPane.showOptionDialog(frame,
-                            "Remove server " + editor.getServer().getFullName() + " from list?",
-                            "Remove server?",
-                            JOptionPane.YES_NO_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            Util.QUESTION_ICON,
-                            null, // use standard button titles
-                            null);      // no default selection
-
-                    if (choice == 0) {
-                        CONFIG.removeServer(editor.getServer());
-
-                        Server[] servers = CONFIG.getServers();
-
-                        if (servers.length > 0)
-                            setServer(servers[0]);
-
-                        rebuildAll();
-                    }
-                });
-
 
         saveFileAction = UserAction.create(I18n.getString("Save"), Util.SAVE_ICON, "Save the script",
                 KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask),
@@ -1164,60 +1084,13 @@ public class StudioPanel extends JPanel implements WindowListener {
         menu.addSeparator();
         menu.add(new JMenuItem(findAction));
         menu.add(new JMenuItem(replaceAction));
-//        menu.addSeparator();
-//        menu.add(new JMenuItem(editFontAction));
         menubar.add(menu);
 
         menu = new JMenu(I18n.getString("Server"));
         menu.setMnemonic(KeyEvent.VK_S);
-        menu.add(new JMenuItem(addServerAction));
-        menu.add(new JMenuItem(editServerAction));
-        menu.add(new JMenuItem(removeServerAction));
 
-        Server server = editor.getServer();
-        Server[] servers = CONFIG.getServers();
-        if (servers.length > 0) {
-            JMenu subMenu = new JMenu(I18n.getString("Clone"));
-            subMenu.setIcon(Util.SERVER_CLONE_ICON);
-
-            int count = MAX_SERVERS_TO_CLONE;
-            for (int i = 0;i < servers.length;i++) {
-                final Server s = servers[i];
-                if (!s.equals(server) && count <= 0) continue;
-                count--;
-                JMenuItem item = new JMenuItem(s.getFullName());
-                item.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        Server clone = new Server(s);
-                        clone.setName("Clone of " + clone.getName());
-
-                        EditServerForm f = new EditServerForm(frame,clone);
-                        f.alignAndShow();
-
-                        if (f.getResult() == ACCEPTED) {
-                            clone = f.getServer();
-                            CONFIG.addServer(clone);
-                            //ebuildToolbar();
-                            setServer(clone);
-                            ConnectionPool.getInstance().purge(clone); //?
-                            rebuildAll();
-                        }
-                    }
-                });
-
-                subMenu.add(item);
-            }
-
-            menu.add(subMenu);
-        }
-
-        menu.addSeparator();
         menu.add(new JMenuItem(serverListAction));
         menu.add(new JMenuItem(serverHistoryAction));
-        menu.add(new JMenuItem(importFromQPadAction));
-        menu.add(new JMenuItem(importFromJSONAction));
-        menu.add(new JMenuItem(exportToJSONAction));
 
         menubar.add(menu);
 
@@ -1389,11 +1262,6 @@ public class StudioPanel extends JPanel implements WindowListener {
         toolbar.add(txtServer);
         toolbar.add(serverListAction);
         toolbar.addSeparator();
-    }
-
-    public void updateServerComboBox() {
-        comboServer.removeAllItems();
-        for (String name : Config.getInstance().getServerNames()) comboServer.addItem(name);
     }
 
     private void rebuildToolbar() {
@@ -1615,11 +1483,8 @@ public class StudioPanel extends JPanel implements WindowListener {
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-//        rebuildMenuAndTooblar();
-
         frame.getContentPane().add(toolbar,BorderLayout.NORTH);
         frame.getContentPane().add(splitpane,BorderLayout.CENTER);
-        // frame.setSize(frame.getContentPane().getPreferredSize());
 
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
@@ -1632,7 +1497,6 @@ public class StudioPanel extends JPanel implements WindowListener {
         if (Util.LOGO_ICON != null)
             frame.setIconImage(Util.LOGO_ICON.getImage());
 
-        //     frame.pack();
         frame.setVisible(true);
         splitpane.setDividerLocation(0.5);
 
@@ -1757,7 +1621,7 @@ public class StudioPanel extends JPanel implements WindowListener {
         if (option == Config.ExecAllOption.Execute) {
             return editor.getText();
         }
-        //Ask
+
         int result = StudioOptionPane.showYesNoDialog(frame, "Nothing is selected. Execute the whole script?",
                 "Execute All?");
 
